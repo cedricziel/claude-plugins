@@ -7,7 +7,7 @@ export const meta = {
 
 // args: { repoDir?, number, repo, cli, decision, proposedComment, proposedLabels?: [], duplicateOf? }
 const { number, repo, cli, decision, proposedComment } = args
-if (!number || !repo || !cli || !decision || !proposedComment) throw new Error('args.number, repo, cli, decision and proposedComment are required')
+if (!number || !repo || !cli || !decision || !proposedComment) throw new Error('args.number, repo, cli, decision and proposedComment are required — invoke via /issue-run, which supplies them from issue-triage')
 const AT = args.repoDir ? `Work in the repository checkout at ${args.repoDir} (cd there first; git and CLI commands run against that repo). ` : ''
 const CLOSES = { 'close-fixed': 'completed', 'close-invalid': 'not planned', duplicate: 'not planned' }
 const closeAs = CLOSES[decision]

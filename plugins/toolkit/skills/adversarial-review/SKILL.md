@@ -40,7 +40,7 @@ Invoking this skill is the user's explicit opt-in to multi-agent orchestration â
 
 2. Run the workflow, passing the absolute diff path:
    ```
-   Workflow({ scriptPath: "${CLAUDE_PLUGIN_ROOT}/workflows/adversarial-review.js",
+   Workflow({ name: "toolkit:adversarial-review",
               args: { diffPath: "<abs path>", target: "<PR #123 | branch x | working tree>",
                       maxFindings: <n>, reviewModel: "sonnet" } })
    ```

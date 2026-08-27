@@ -1,7 +1,7 @@
 export const meta = {
   name: 'issue-triage',
   description: 'Is this issue real? Fetch it, verify its claims against HEAD, size it, and propose a decision — no outward actions',
-  whenToUse: 'First step of /issue-run, or alone to check whether an issue is still valid',
+  whenToUse: 'First step of /issue-run, or alone to check whether an issue is still valid. Args: an issue URL, or { number, repo, cli, repoDir? } from scripts/issue-ref.sh',
   phases: [
     { title: 'Fetch', detail: 'issue, comments, linked PRs' },
     { title: 'Investigate', detail: 'code, history, tracker, premise — in parallel' },
@@ -9,10 +9,15 @@ export const meta = {
   ],
 }
 
-// args: { number, repo, cli: 'gh'|'fj', repoDir? }   (from scripts/issue-ref.sh; repoDir when the session cwd is not the repo)
-const { number, repo, cli } = args
-if (!number || !repo || !cli) throw new Error('args.number, args.repo and args.cli are required (see scripts/issue-ref.sh)')
-const AT = args.repoDir ? `Work in the repository checkout at ${args.repoDir} (cd there first; git and CLI commands run against that repo). ` : ''
+// args: { number, repo, cli: 'gh'|'fj', repoDir? } from scripts/issue-ref.sh — or a bare issue URL string
+const fromUrl = (s) => {
+  const m = typeof s === 'string' && s.match(/^https?:\/\/([^/]+)\/([^/]+\/[^/]+)\/(?:issues|pulls?)\/(\d+)/)
+  return m ? { number: Number(m[3]), repo: m[2], cli: m[1] === 'github.com' ? 'gh' : 'fj' } : null
+}
+const resolved = fromUrl(args) || fromUrl(args?.ref) || fromUrl(args?.url) || args || {}
+const { number, repo, cli } = resolved
+if (!number || !repo || !cli) throw new Error('need an issue URL, or { number, repo, cli } — run scripts/issue-ref.sh <ref> for bare numbers and owner/repo#N')
+const AT = resolved.repoDir ? `Work in the repository checkout at ${resolved.repoDir} (cd there first; git and CLI commands run against that repo). ` : ''
 const ISSUE_REF = `${repo}#${number}`
 const forgeHint = `Use the \`${cli}\` CLI for the tracker.`
 

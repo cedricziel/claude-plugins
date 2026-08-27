@@ -10,7 +10,7 @@ export const meta = {
 
 // args: { repoDir?, number, repo, base, issue: {title, expected, claims[]}, premise?: {testPath, worktree, testCommand}, branch?, fleetBrief, maxLines?, implementModel? }
 const { number, repo, base, issue, premise, fleetBrief } = args
-if (!number || !repo || !base || !issue || !fleetBrief) throw new Error('args.number, repo, base, issue and fleetBrief are required')
+if (!number || !repo || !base || !issue || !fleetBrief) throw new Error('args.number, repo, base, issue and fleetBrief are required — invoke via /issue-run, which supplies them from issue-triage')
 const branch = args.branch || `fix/${number}-${issue.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40)}`
 const AT = args.repoDir ? `Work in the repository checkout at ${args.repoDir} (cd there first; git and CLI commands run against that repo). ` : ''
 const MAX = args.maxLines ?? 500

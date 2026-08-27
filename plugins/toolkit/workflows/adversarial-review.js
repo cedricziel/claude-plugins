@@ -11,7 +11,7 @@ export const meta = {
 
 // args: { diffPath: string, target: string, votes?: number, maxFindings?: number, reviewModel?: string }
 const diffPath = args?.diffPath
-if (!diffPath) throw new Error('args.diffPath is required (produced by scripts/review-target.sh)')
+if (!diffPath) throw new Error('args.diffPath is required — invoke via /adversarial-review, which produces it with scripts/review-target.sh')
 const target = args?.target || 'working tree'
 const VOTES = args?.votes ?? 3
 const MAX = args?.maxFindings ?? 8
