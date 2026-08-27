@@ -26,6 +26,8 @@ Marketplace `cedricziel`; single plugin `plugins/toolkit`.
 
 ## Conventions
 
+- Every leaf returns `refused: null` on success or a reason string on any early exit,
+  and names its budget guard `BUDGET_FLOOR` with a comment saying what it protects.
 - Every `agent()` call names its model: `WORK` (sonnet) for mechanical steps, `THINK`
   (opus) for judgment. Never inherit the session model — that silently means fable.
 
