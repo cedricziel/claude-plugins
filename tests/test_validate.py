@@ -35,6 +35,8 @@ def make_repo(tmp):
     os.chmod(p / "scripts" / "h.sh", 0o755)
     (p / "hooks" / "hooks.json").write_text(json.dumps({"hooks": {"Stop": [{"hooks": [
         {"type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/h.sh\" x"}]}]}}))
+    (p / "workflows").mkdir()
+    (p / "workflows" / "w.js").write_text("export const meta = { name: 'w', description: 'd' }\n")
     return p
 
 
@@ -83,6 +85,18 @@ class ValidateTest(unittest.TestCase):
         r = run(self.tmp)
         self.assertNotEqual(r.returncode, 0)
         self.assertIn("c.md", r.stdout)
+
+    def test_workflow_without_meta_fails(self):
+        (self.plugin / "workflows" / "w.js").write_text("const x = 1\n")
+        r = run(self.tmp)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("w.js", r.stdout)
+
+    def test_workflow_name_must_match_filename(self):
+        (self.plugin / "workflows" / "w.js").write_text("export const meta = { name: 'other', description: 'd' }\n")
+        r = run(self.tmp)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("w.js", r.stdout)
 
     def test_name_mismatch_fails(self):
         (self.plugin / ".claude-plugin" / "plugin.json").write_text(json.dumps({"name": "other", "version": "1.0.0", "description": "d"}))

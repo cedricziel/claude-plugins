@@ -71,6 +71,21 @@ def check_hooks(plugin_dir):
                         err(f"{hooks_json}: {ref} is not executable")
 
 
+def check_workflow(js):
+    text = js.read_text()
+    m = re.search(r"export\s+const\s+meta\s*=\s*\{(.*?)\}", text, re.S)
+    if not m:
+        err(f"{js}: missing `export const meta = {{...}}`")
+        return
+    name = re.search(r"name\s*:\s*['\"]([^'\"]+)['\"]", m.group(1))
+    if not name:
+        err(f"{js}: meta has no name")
+    elif name.group(1) != js.stem:
+        err(f"{js}: meta.name '{name.group(1)}' does not match filename")
+    if not re.search(r"description\s*:", m.group(1)):
+        err(f"{js}: meta has no description")
+
+
 def check_plugin(root, entry):
     name = entry.get("name", "?")
     source = entry.get("source", "")
@@ -92,6 +107,8 @@ def check_plugin(root, entry):
     for cmd in sorted((plugin_dir / "commands").glob("*.md")):
         if not cmd.read_text().strip():
             err(f"{cmd}: empty command file")
+    for js in sorted((plugin_dir / "workflows").glob("*.js")):
+        check_workflow(js)
     check_hooks(plugin_dir)
 
 

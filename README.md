@@ -22,6 +22,7 @@ Everything I use day to day, in one plugin — including my global working rules
 | `commit-discipline` | Atomic semantic commits, small always-shippable PRs |
 | `git-stacked-prs` | Split large changes into a stack of reviewable PRs |
 | `writing-tests` | Test-writing principles from the TDD canon |
+| `adversarial-review` | `/adversarial-review [PR\|branch]` — runs the multi-agent workflow below |
 | `coderabbit` | Working with CodeRabbit reviews on PRs |
 | `forgejo-cli` | Using `fj` against Forgejo/Codeberg instances |
 | `signaldb-observe` | Instrument an app with OpenTelemetry and ship to SignalDB |
@@ -39,6 +40,12 @@ Everything I use day to day, in one plugin — including my global working rules
 
 Knobs and off-switches are documented in the headers of `plugins/toolkit/scripts/*.sh`.
 Disable per repo with `.no-rebase-nudge` / `.no-format-hook`; override the test command with `.tdd-test-cmd`.
+
+**Workflows**
+
+| Workflow | What it does |
+|---|---|
+| `adversarial-review` | 5 review lenses in parallel → each finding faces 3 refuters with distinct angles, survives on majority → critic names what was missed. Reviewers default to `sonnet`. |
 
 **Commands**
 

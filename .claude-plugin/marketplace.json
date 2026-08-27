@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Cedric Ziel's Claude Code plugins",
-    "version": "1.3.0"
+    "version": "1.4.0"
   },
   "plugins": [
     {
       "name": "toolkit",
       "source": "./plugins/toolkit",
       "description": "Everyday toolkit: git workflow skills, TDD hooks, code-review helpers, Forgejo CLI, SignalDB observability, dashboard design, and GitHub issue/PR commands.",
-      "version": "1.3.0",
+      "version": "1.4.0",
       "author": {
         "name": "Cedric Ziel",
         "url": "https://github.com/cedricziel"
