@@ -15,6 +15,9 @@ Marketplace `cedricziel`; single plugin `plugins/toolkit`.
   approval between runs. `--yes` skips the gates; it never changes the leaves.
 - **Decisions are proposed, not taken.** Triage returns a decision plus evidence
   and proposed text; posting is a later step.
+- **Invoke by path.** Plugin workflows are not resolvable by `name`; skills call
+  `Workflow({ scriptPath: "${CLAUDE_PLUGIN_ROOT}/workflows/<name>.js" })` and pass
+  `repoDir` when the session cwd is not the target repo.
 - **Explicit-only triggers.** A skill that launches a workflow fires only on its
   slash command or a literal ask, states its agent cost, and lists what it does
   NOT trigger on.

@@ -5,9 +5,10 @@ export const meta = {
   phases: [{ title: 'Resolve', detail: 'comment, label, close' }],
 }
 
-// args: { number, repo, cli, decision, proposedComment, proposedLabels?: [], duplicateOf? }
+// args: { repoDir?, number, repo, cli, decision, proposedComment, proposedLabels?: [], duplicateOf? }
 const { number, repo, cli, decision, proposedComment } = args
 if (!number || !repo || !cli || !decision || !proposedComment) throw new Error('args.number, repo, cli, decision and proposedComment are required')
+const AT = args.repoDir ? `Work in the repository checkout at ${args.repoDir} (cd there first; git and CLI commands run against that repo). ` : ''
 const CLOSES = { 'close-fixed': 'completed', 'close-invalid': 'not planned', duplicate: 'not planned' }
 const closeAs = CLOSES[decision]
 if (!closeAs && decision !== 'needs-info') throw new Error(`issue-resolve does not handle decision '${decision}'`)
@@ -25,7 +26,7 @@ const RESULT = {
 
 phase('Resolve')
 const result = await agent(
-  `On issue ${repo}#${number}, using the \`${cli}\` CLI:
+  `${AT}On issue ${repo}#${number}, using the \`${cli}\` CLI:
 1. Post this comment verbatim:\n---\n${proposedComment}\n---
 2. Apply labels ${JSON.stringify(args.proposedLabels || [])} — only those that already exist in the repo; skip the rest and say which.
 ${closeAs ? `3. Close the issue as "${closeAs}"${args.duplicateOf ? ` (duplicate of #${args.duplicateOf})` : ''}.` : '3. Leave the issue open.'}

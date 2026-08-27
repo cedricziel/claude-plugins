@@ -8,9 +8,10 @@ export const meta = {
   ],
 }
 
-// args: { branch, base, number, repo, cli, title?, summary: {problem, approach, tests}, findings?: [{file,line,title}] }
+// args: { repoDir?, branch, base, number, repo, cli, title?, summary: {problem, approach, tests}, findings?: [{file,line,title}] }
 const { branch, base, number, repo, cli, summary } = args
 if (!branch || !base || !number || !repo || !cli || !summary) throw new Error('args.branch, base, number, repo, cli and summary are required')
+const AT = args.repoDir ? `Work in the repository checkout at ${args.repoDir} (cd there first; git and CLI commands run against that repo). ` : ''
 const findings = (args.findings || []).map((f) => `- [ ] ${f.file}:${f.line} — ${f.title}`).join('\n')
 
 const PR = {
@@ -31,7 +32,7 @@ const FIX = { type: 'object', properties: { pushed: { type: 'boolean' }, detail:
 
 phase('PR')
 const pr = await agent(
-  `Open a DRAFT pull request for branch ${branch} into ${base} on ${repo} using ${cli}.
+  `${AT}Open a DRAFT pull request for branch ${branch} into ${base} on ${repo} using ${cli}.
 Title: ${args.title || summary.problem} (no angle brackets, semantic-commit style).
 Body, proper grammar:
 ## Problem
@@ -49,14 +50,14 @@ if (!pr) throw new Error('PR was not opened')
 
 phase('CI')
 const watch = (label) => agent(
-  `Watch CI for PR #${pr.number} on ${repo} (${cli}) until the NEWEST run finishes; ignore superseded runs that still show red. Report the state and whether every failure is formatting/lint only.`,
+  `${AT}${AT}Watch CI for PR #${pr.number} on ${repo} (${cli}) until the NEWEST run finishes; ignore superseded runs that still show red. Report the state and whether every failure is formatting/lint only.`,
   { label, phase: 'CI', schema: CI, effort: 'low' },
 )
 let ci = await watch('ci')
 let lintFix = null
 if (ci?.state === 'red' && ci.lintOnly) {
   lintFix = await agent(
-    `CI on PR #${pr.number} is red only for formatting/lint: ${ci.detail}
+    `${AT}CI on PR #${pr.number} is red only for formatting/lint: ${ci.detail}
 In this isolated worktree: \`git fetch origin && git checkout ${branch}\`, run the project's formatter/linter, commit as "style: apply formatter", push.`,
     { label: 'lint-fix', phase: 'CI', schema: FIX, isolation: 'worktree', effort: 'low' },
   )

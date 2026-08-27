@@ -9,9 +9,10 @@ export const meta = {
   ],
 }
 
-// args: { number, repo, cli: 'gh'|'fj' }   (from scripts/issue-ref.sh)
+// args: { number, repo, cli: 'gh'|'fj', repoDir? }   (from scripts/issue-ref.sh; repoDir when the session cwd is not the repo)
 const { number, repo, cli } = args
 if (!number || !repo || !cli) throw new Error('args.number, args.repo and args.cli are required (see scripts/issue-ref.sh)')
+const AT = args.repoDir ? `Work in the repository checkout at ${args.repoDir} (cd there first; git and CLI commands run against that repo). ` : ''
 const ISSUE_REF = `${repo}#${number}`
 const forgeHint = `Use the \`${cli}\` CLI for the tracker.`
 
@@ -66,7 +67,7 @@ const TRIAGE = {
 
 phase('Fetch')
 const issue = await agent(
-  `Fetch issue ${ISSUE_REF} with its labels, comments and any linked or referencing PRs. ${forgeHint}
+  `${AT}Fetch issue ${ISSUE_REF} with its labels, comments and any linked or referencing PRs. ${forgeHint}
 Extract every factual claim separately (what happens, where, since when, under which conditions). Do not judge them yet.`,
   { label: 'fetch', phase: 'Fetch', schema: ISSUE, effort: 'low' },
 )
@@ -77,29 +78,29 @@ const claims = issue.claims.map((c, i) => `${i + 1}. ${c}`).join('\n')
 const HDR = `Issue ${ISSUE_REF} "${issue.title}" (${issue.kind})`
 const [code, history, tracker, premise] = await parallel([
   () => agent(
-    `${HDR} claims:\n${claims}\n
+    `${AT}${AT}${HDR} claims:\n${claims}\n
 Search the code at HEAD for everything these claims touch. For each claim say whether the code as written supports or contradicts it, with file:line references.`,
     { label: 'code', phase: 'Investigate', schema: EVIDENCE }),
   () => agent(
-    `${HDR} claims:\n${claims}\n
+    `${AT}${AT}${HDR} claims:\n${claims}\n
 Search git history (\`git log -S\`, \`git log --grep\`, blame on the relevant lines) for changes that already addressed or introduced this since the issue was filed. Report commits and whether they landed on the default branch.`,
     { label: 'history', phase: 'Investigate', schema: EVIDENCE }),
   () => agent(
-    `${HDR}. ${forgeHint}
+    `${AT}${AT}${HDR}. ${forgeHint}
 Search the tracker for duplicates and related items: same symptom, same file, same feature — open and closed issues, and PRs (merged or not). Linked PRs already known: ${JSON.stringify(issue.linkedPRs)}.`,
     { label: 'tracker', phase: 'Investigate', schema: EVIDENCE, effort: 'low' }),
   () => agent(
     issue.kind === 'bug'
-      ? `${HDR} reports a bug. Claims:\n${claims}\nExpected: ${issue.expected}
+      ? `${AT}${HDR} reports a bug. Claims:\n${claims}\nExpected: ${issue.expected}
 You are in an isolated worktree at HEAD. Write the smallest test that reproduces the claimed behaviour, in the project's test style, and run it. Report honestly whether it fails for the stated reason. Leave the test file in the worktree (do not commit) and return its path and the worktree path.`
-      : `${HDR} requests: ${issue.expected}
+      : `${AT}${HDR} requests: ${issue.expected}
 Check whether this behaviour already exists (feature flag, undocumented option, partial implementation). Report what exists and what is missing. Return reproduced='not-applicable'.`,
     { label: 'premise', phase: 'Investigate', schema: PREMISE, isolation: issue.kind === 'bug' ? 'worktree' : undefined }),
 ])
 
 phase('Decide')
 const triage = await agent(
-  `Decide what to do with ${HDR}.
+  `${AT}Decide what to do with ${HDR}.
 
 Claims:\n${claims}\n
 Existing labels: ${issue.labels.join(', ') || 'none'}

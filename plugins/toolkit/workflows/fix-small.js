@@ -8,10 +8,11 @@ export const meta = {
   ],
 }
 
-// args: { number, repo, base, issue: {title, expected, claims[]}, premise?: {testPath, worktree, testCommand}, branch?, fleetBrief, maxLines?, implementModel? }
+// args: { repoDir?, number, repo, base, issue: {title, expected, claims[]}, premise?: {testPath, worktree, testCommand}, branch?, fleetBrief, maxLines?, implementModel? }
 const { number, repo, base, issue, premise, fleetBrief } = args
 if (!number || !repo || !base || !issue || !fleetBrief) throw new Error('args.number, repo, base, issue and fleetBrief are required')
 const branch = args.branch || `fix/${number}-${issue.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40)}`
+const AT = args.repoDir ? `Work in the repository checkout at ${args.repoDir} (cd there first; git and CLI commands run against that repo). ` : ''
 const MAX = args.maxLines ?? 500
 
 const IMPL = {
@@ -43,7 +44,7 @@ const repro = premise?.testPath
   ? `A reproducing test already exists at ${premise.worktree}/${premise.testPath} (run with: ${premise.testCommand}). Copy it into your worktree first; it must go red before your fix and green after.`
   : 'Start with a failing test that pins the reported behaviour.'
 
-const implementPrompt = (feedback) => `Read ${fleetBrief} first and follow it.
+const implementPrompt = (feedback) => `${AT}Read ${fleetBrief} first and follow it.
 You are in an isolated worktree. Run \`git fetch origin\` and create branch ${branch} from origin/${base}.
 Fix issue ${repo}#${number}: "${issue.title}".
 Expected: ${issue.expected}
@@ -58,7 +59,7 @@ let impl = await agent(implementPrompt(''), { label: 'implement', phase: 'Implem
 if (!impl || impl.blocked) return { branch, impl, verify: null, ok: false }
 
 phase('Verify')
-const verifyPrompt = () => `Fresh eyes. In an isolated worktree, \`git fetch origin && git checkout ${branch}\`.
+const verifyPrompt = () => `${AT}Fresh eyes. In an isolated worktree, \`git fetch origin && git checkout ${branch}\`.
 Check, with commands, not by reading the report: the tests named below pass; the fix actually addresses ${repo}#${number} "${issue.title}"; every commit message is semantic and mentions no AI; the diff against origin/${base} is under ${MAX} lines; no files outside ${JSON.stringify(impl.filesTouched)} changed; the project's lint/format is clean.
 Implementer's report: ${JSON.stringify(impl)}`
 let verify = await agent(verifyPrompt(), { label: 'verify', phase: 'Verify', schema: VERIFY, isolation: 'worktree', model: 'sonnet' })
