@@ -13,7 +13,7 @@ Cedric Ziel's [Claude Code](https://docs.claude.com/en/docs/claude-code) plugin 
 
 ### toolkit
 
-Everything I use day to day, in one plugin.
+Everything I use day to day, in one plugin — including my global working rules, so a fresh machine only needs the plugin, not a synced `~/.claude/CLAUDE.md`. `instructions/fleet-brief.md` is the checklist handed to code-committing subagents.
 
 **Skills** (loaded automatically when relevant)
 
@@ -31,6 +31,7 @@ Everything I use day to day, in one plugin.
 
 | Event | What it does |
 |---|---|
+| `SessionStart` | Injects `instructions/global.md` (working rules + Caveman Compression) as context; re-injected after compaction. Disable with `TOOLKIT_INSTRUCTIONS_DISABLE=1` |
 | `PostToolUse` (Edit/Write) | Auto-formats the edited file (cargo fmt/rustfmt, goimports/gofmt, swiftformat/swift-format, dart, ruff/black, prettier) — fail-open |
 | `PostToolUse` (Edit/Write) | Nudges when source changes come without test changes |
 | `Stop` | Blocks finishing while the project's test suite is red (fails open on environment errors) |
