@@ -1,0 +1,13 @@
+{
+  "name": "toolkit",
+  "version": "1.0.0",
+  "description": "Cedric's everyday Claude Code toolkit: git workflow skills (commit discipline, stacked PRs), TDD hooks, code-review helpers, Forgejo CLI, SignalDB observability, dashboard design, and project utility commands.",
+  "author": {
+    "name": "Cedric Ziel",
+    "url": "https://github.com/cedricziel"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/cedricziel/claude-plugins",
+  "homepage": "https://github.com/cedricziel/claude-plugins",
+  "keywords": ["git", "tdd", "hooks", "code-review", "forgejo", "signaldb", "opentelemetry", "dashboards", "workflow"]
+}

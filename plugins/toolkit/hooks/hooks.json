@@ -1,0 +1,41 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/tdd-hook.sh\" edit-check",
+            "timeout": 15,
+            "statusMessage": "TDD check"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/tdd-hook.sh\" stop-check",
+            "timeout": 300,
+            "statusMessage": "TDD gate: running tests"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/rebase-hook.sh\"",
+            "timeout": 30,
+            "statusMessage": "Checking branch sync with main"
+          }
+        ]
+      }
+    ]
+  }
+}
