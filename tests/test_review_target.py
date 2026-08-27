@@ -5,11 +5,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from helpers import git
+
 SCRIPT = Path(__file__).resolve().parent.parent / "plugins" / "toolkit" / "scripts" / "review-target.sh"
-
-
-def git(repo, *a):
-    subprocess.run(["git", *a], cwd=repo, check=True, capture_output=True)
 
 
 class ReviewTargetTest(unittest.TestCase):
