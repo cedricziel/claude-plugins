@@ -40,11 +40,7 @@ Disable per repo with `.no-rebase-nudge`; override the test command with `.tdd-t
 
 **Commands**
 
-`/commit`, `/test`, `/review`, `/pr-review`, `/issue`, `/issue-create`, `/format`,
-`/find-todos`, `/fix-imports`, `/cleanup-types`, `/remove-comments`, `/cleanproject`,
-`/undo`, `/context-cache`, `/session-start`, `/session-end`.
-
-Several utility commands are adapted from [CCPlugins](https://github.com/brennercruvinel/CCPlugins) (MIT).
+`/issue <number>` (analyze and fix a GitHub issue), `/issue-create <context>`, `/pr-review <number>`.
 
 ## Development
 
