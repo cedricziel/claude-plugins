@@ -105,6 +105,9 @@ Check whether this behaviour already exists (feature flag, undocumented option, 
     { label: 'premise', phase: 'Investigate', schema: PREMISE, model: WORK, isolation: issue.kind === 'bug' ? 'worktree' : undefined }),
 ])
 
+const BUDGET_FLOOR = 30_000   // one opus decision call
+if (budget.total && budget.remaining() < BUDGET_FLOOR) return { issue: { ref: ISSUE_REF, number, repo, ...issue }, evidence: { code, history, tracker, premise }, triage: null, refused: 'budget exhausted before the decision' }
+
 phase('Decide')
 const triage = await agent(
   `${AT}Decide what to do with ${HDR}.
@@ -130,4 +133,4 @@ Write proposedComment in proper grammar: what was checked, what was found, what 
   { label: 'decide', phase: 'Decide', schema: TRIAGE, model: THINK },
 )
 
-return { issue: { ref: ISSUE_REF, number, repo, ...issue }, evidence: { code, history, tracker, premise }, triage }
+return { issue: { ref: ISSUE_REF, number, repo, ...issue }, evidence: { code, history, tracker, premise }, triage, refused: null }

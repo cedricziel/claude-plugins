@@ -1,6 +1,6 @@
 export const meta = {
   name: 'pr-open',
-  description: 'Open a draft PR for a pushed branch and watch its CI to a verdict — the only outward-facing step',
+  description: 'Open a draft PR for a pushed branch and watch its CI to a verdict — the PR-opening outward step; pr-watch handles review comments afterwards',
   whenToUse: 'After fix-small (and optionally adversarial-review) once a human has approved opening the PR',
   phases: [
     { title: 'PR', detail: 'draft PR with problem/approach/tests/Closes' },
@@ -8,7 +8,7 @@ export const meta = {
   ],
 }
 
-// args: { repoDir?, branch, base, number, repo, cli, title?, summary: {problem, approach, tests}, findings?: [{file,line,title}] }
+// args: { repoDir?, branch, base, number, repo, cli, title?, summary: {problem, approach, tests, risk?, focus?}, findings?: [{file,line,title}], label? }
 const { branch, base, number, repo, cli, summary } = args
 if (!branch || !base || !number || !repo || !cli || !summary) throw new Error('args.branch, base, number, repo, cli and summary are required — invoke via /issue-run, which supplies them from fix-small')
 const AT = args.repoDir ? `Work in the repository checkout at ${args.repoDir} (cd there first; git and CLI commands run against that repo). ` : ''
@@ -43,9 +43,13 @@ ${summary.problem}
 ${summary.approach}
 ## Tests
 ${summary.tests}
+## Risk
+${summary.risk || 'Low: scoped to the files named above; no behaviour outside the issue changes.'}
+## Where to look
+${summary.focus || 'Start with the test, then the smallest diff hunk.'}
 ${findings ? `## Review findings to address\n${findings}\n` : ''}
 Closes #${number}
-Do not enable auto-merge. Return the PR number and URL.`,
+Apply the label "${args.label || 'agent'}" if it exists in the repo (skip silently otherwise). Do not enable auto-merge. Return the PR number and URL.`,
   { label: 'open', phase: 'PR', schema: PR, model: WORK, effort: 'low' },
 )
 if (!pr) throw new Error('PR was not opened')
@@ -66,4 +70,4 @@ In this isolated worktree: \`git fetch origin && git checkout ${branch}\`, run t
   if (lintFix?.pushed) ci = await watch('ci#2')
 }
 
-return { pr: pr.number, url: pr.url, ci, lintFix }
+return { pr: pr.number, url: pr.url, ci, lintFix, refused: null }

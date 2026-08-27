@@ -9,10 +9,16 @@ export const meta = {
   ],
 }
 
-// args: { diffPath: string, target: string, votes?: number, maxFindings?: number, reviewModel?: string }
+// args: { diffPath: string, diffLines?: number, target: string, votes?: number, maxFindings?: number, minLines?: number, reviewModel?: string }
 const diffPath = args?.diffPath
 if (!diffPath) throw new Error('args.diffPath is required — invoke via /adversarial-review, which produces it with scripts/review-target.sh')
 const target = args?.target || 'working tree'
+const MIN = args?.minLines ?? 100
+const BUDGET_FLOOR = 80_000   // enough for one refuter round; below this, report findings unverified
+if (typeof args?.diffLines === 'number' && args.diffLines < MIN) {
+  log(`diff is ${args.diffLines} lines (< ${MIN}); adversarial review is wasted on small changes — skipping`)
+  return { target, refused: `diff under ${MIN} lines`, confirmed: [], rejected: [], gaps: [], dropped: 0 }
+}
 const VOTES = args?.votes ?? 3
 const MAX = args?.maxFindings ?? 8
 const THINK = args?.reviewModel ?? args?.thinkModel ?? 'opus'   // review, refute, critique are judgment work
@@ -98,6 +104,8 @@ const chosen = all.slice(0, MAX)
 log(`${all.length} unique findings from ${reviews.filter(Boolean).length} lenses; verifying top ${chosen.length}`)
 if (all.length > chosen.length) log(`dropped ${all.length - chosen.length} lower-severity findings (raise maxFindings to include them)`)
 
+if (budget.total && budget.remaining() < BUDGET_FLOOR) { log('budget low; reporting unverified findings'); return { target, refused: 'budget exhausted before verification', confirmed: [], rejected: [], unverified: chosen, gaps: [], dropped: all.length - chosen.length } }
+
 phase('Verify')
 const judged = await parallel(chosen.map((f) => () =>
   parallel(REFUTERS.slice(0, VOTES).map((angle, i) => () =>
@@ -134,6 +142,7 @@ What did the reviewers miss? Read the diff and the touched files. Name only conc
 
 return {
   target,
+  refused: null,
   confirmed: confirmed.map(({ votes, survives, ...f }) => ({ ...f, evidence: votes.filter((v) => !v.refuted).map((v) => v.reason) })),
   rejected: rejected.map((f) => ({ file: f.file, line: f.line, title: f.title, why: f.votes.filter((v) => v.refuted).map((v) => v.reason)[0] })),
   gaps: critic?.gaps ?? [],

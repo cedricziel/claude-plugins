@@ -35,4 +35,4 @@ ${closeAs ? `3. Close the issue as "${closeAs}"${args.duplicateOf ? ` (duplicate
 Report exactly what happened.`,
   { label: `resolve:${decision}`, phase: 'Resolve', schema: RESULT, model: WORK, effort: 'low' },
 )
-return { decision, ...result }
+return { decision, ...result, refused: null }
