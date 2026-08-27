@@ -10,6 +10,8 @@ export const meta = {
 }
 
 // args: { number, repo, cli: 'gh'|'fj', repoDir? } from scripts/issue-ref.sh — or a bare issue URL string
+const THINK = args?.thinkModel ?? 'opus'   // judgment: decide, review, refute, critique
+const WORK = args?.workModel ?? 'sonnet'    // mechanical: fetch, search, implement, verify, CI
 const fromUrl = (s) => {
   const m = typeof s === 'string' && s.match(/^https?:\/\/([^/]+)\/([^/]+\/[^/]+)\/(?:issues|pulls?)\/(\d+)/)
   return m ? { number: Number(m[3]), repo: m[2], cli: m[1] === 'github.com' ? 'gh' : 'fj' } : null
@@ -74,7 +76,7 @@ phase('Fetch')
 const issue = await agent(
   `${AT}Fetch issue ${ISSUE_REF} with its labels, comments and any linked or referencing PRs. ${forgeHint}
 Extract every factual claim separately (what happens, where, since when, under which conditions). Do not judge them yet.`,
-  { label: 'fetch', phase: 'Fetch', schema: ISSUE, effort: 'low' },
+  { label: 'fetch', phase: 'Fetch', schema: ISSUE, model: WORK, effort: 'low' },
 )
 if (!issue) throw new Error('could not fetch the issue')
 
@@ -85,22 +87,22 @@ const [code, history, tracker, premise] = await parallel([
   () => agent(
     `${AT}${AT}${HDR} claims:\n${claims}\n
 Search the code at HEAD for everything these claims touch. For each claim say whether the code as written supports or contradicts it, with file:line references.`,
-    { label: 'code', phase: 'Investigate', schema: EVIDENCE }),
+    { label: 'code', phase: 'Investigate', schema: EVIDENCE, model: WORK }),
   () => agent(
     `${AT}${AT}${HDR} claims:\n${claims}\n
 Search git history (\`git log -S\`, \`git log --grep\`, blame on the relevant lines) for changes that already addressed or introduced this since the issue was filed. Report commits and whether they landed on the default branch.`,
-    { label: 'history', phase: 'Investigate', schema: EVIDENCE }),
+    { label: 'history', phase: 'Investigate', schema: EVIDENCE, model: WORK }),
   () => agent(
     `${AT}${AT}${HDR}. ${forgeHint}
 Search the tracker for duplicates and related items: same symptom, same file, same feature — open and closed issues, and PRs (merged or not). Linked PRs already known: ${JSON.stringify(issue.linkedPRs)}.`,
-    { label: 'tracker', phase: 'Investigate', schema: EVIDENCE, effort: 'low' }),
+    { label: 'tracker', phase: 'Investigate', schema: EVIDENCE, model: WORK, effort: 'low' }),
   () => agent(
     issue.kind === 'bug'
       ? `${AT}${HDR} reports a bug. Claims:\n${claims}\nExpected: ${issue.expected}
 You are in an isolated worktree at HEAD. Write the smallest test that reproduces the claimed behaviour, in the project's test style, and run it. Report honestly whether it fails for the stated reason. Leave the test file in the worktree (do not commit) and return its path and the worktree path.`
       : `${AT}${HDR} requests: ${issue.expected}
 Check whether this behaviour already exists (feature flag, undocumented option, partial implementation). Report what exists and what is missing. Return reproduced='not-applicable'.`,
-    { label: 'premise', phase: 'Investigate', schema: PREMISE, isolation: issue.kind === 'bug' ? 'worktree' : undefined }),
+    { label: 'premise', phase: 'Investigate', schema: PREMISE, model: WORK, isolation: issue.kind === 'bug' ? 'worktree' : undefined }),
 ])
 
 phase('Decide')
@@ -125,7 +127,7 @@ Decision rules:
 - fix-small: real, and the fix is one PR under 500 lines.
 - fix-stack: real, but larger than one PR or touching several subsystems.
 Write proposedComment in proper grammar: what was checked, what was found, what happens next. Do NOT post anything.`,
-  { label: 'decide', phase: 'Decide', schema: TRIAGE },
+  { label: 'decide', phase: 'Decide', schema: TRIAGE, model: THINK },
 )
 
 return { issue: { ref: ISSUE_REF, number, repo, ...issue }, evidence: { code, history, tracker, premise }, triage }
