@@ -39,7 +39,7 @@ Call workflows as `Workflow({ name: "toolkit:<name>", args })` (plugin workflows
 3. **Fix** — `Workflow({ name: "toolkit:fix-small", args: { number, repo, base: BASE, issue: result.issue, premise: result.evidence.premise, fleetBrief: "${CLAUDE_PLUGIN_ROOT}/instructions/fleet-brief.md" } })`.
    If `ok` is false or `impl.blocked` is set: report why and stop. No PR for an unverified fix.
 
-4. **Review** (only with `--review`) — `Workflow({ name: "toolkit:adversarial-review", args: { target: "branch <branch>", diffPath, maxFindings: 6, reviewModel: "sonnet" } })` after producing `diffPath` with `scripts/review-target.sh <branch> <scratchpad>/review.patch`. Critical/high confirmed findings: feed them back through one more `fix-small` run with `branch` set and the findings appended to `issue.claims`; otherwise carry them into the PR checklist.
+4. **Review** (only with `--review`) — `Workflow({ name: "toolkit:adversarial-review", args: { target: "branch <branch>", diffPath, maxFindings: 6 } })` after producing `diffPath` with `scripts/review-target.sh <branch> <scratchpad>/review.patch`. Critical/high confirmed findings: feed them back through one more `fix-small` run with `branch` set and the findings appended to `issue.claims`; otherwise carry them into the PR checklist.
 
 5. **GATE 2** (skip with `--yes`): show the branch, diff size, tests run, verifier result, and confirmed findings. Ask: open the PR?
 

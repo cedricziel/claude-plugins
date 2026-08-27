@@ -9,6 +9,8 @@ export const meta = {
 const { number, repo, cli, decision, proposedComment } = args
 if (!number || !repo || !cli || !decision || !proposedComment) throw new Error('args.number, repo, cli, decision and proposedComment are required — invoke via /issue-run, which supplies them from issue-triage')
 const AT = args.repoDir ? `Work in the repository checkout at ${args.repoDir} (cd there first; git and CLI commands run against that repo). ` : ''
+const THINK = args?.thinkModel ?? 'opus'   // judgment: decide, review, refute, critique
+const WORK = args?.workModel ?? 'sonnet'    // mechanical: fetch, search, implement, verify, CI
 const CLOSES = { 'close-fixed': 'completed', 'close-invalid': 'not planned', duplicate: 'not planned' }
 const closeAs = CLOSES[decision]
 if (!closeAs && decision !== 'needs-info') throw new Error(`issue-resolve does not handle decision '${decision}'`)
@@ -31,6 +33,6 @@ const result = await agent(
 2. Apply labels ${JSON.stringify(args.proposedLabels || [])} — only those that already exist in the repo; skip the rest and say which.
 ${closeAs ? `3. Close the issue as "${closeAs}"${args.duplicateOf ? ` (duplicate of #${args.duplicateOf})` : ''}.` : '3. Leave the issue open.'}
 Report exactly what happened.`,
-  { label: `resolve:${decision}`, phase: 'Resolve', schema: RESULT, effort: 'low' },
+  { label: `resolve:${decision}`, phase: 'Resolve', schema: RESULT, model: WORK, effort: 'low' },
 )
 return { decision, ...result }

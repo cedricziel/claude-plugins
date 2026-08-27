@@ -46,7 +46,7 @@ Disable per repo with `.no-rebase-nudge` / `.no-format-hook`; override the test 
 
 | Workflow | What it does |
 |---|---|
-| `adversarial-review` | 5 review lenses in parallel → each finding faces 3 refuters with distinct angles, survives on majority → critic names what was missed. Reviewers default to `sonnet`. |
+| `adversarial-review` | 5 review lenses in parallel → each finding faces 3 refuters with distinct angles, survives on majority → critic names what was missed. Judgment steps run on `opus`. |
 | `issue-triage` | Fetch an issue, verify its claims against HEAD (code, history, tracker, repro test in a worktree), size it, propose a decision + comment. No outward actions. |
 | `fix-small` | One-PR fix in an isolated worktree (TDD from the repro test, lint, simplify, semantic commits), fresh-eyes verification with one repair round, push. No PR. |
 | `pr-open` | Draft PR with problem/approach/tests/`Closes #N`, watch the newest CI run, fix a lint/format red once. |

@@ -13,6 +13,8 @@ const { number, repo, base, issue, premise, fleetBrief } = args
 if (!number || !repo || !base || !issue || !fleetBrief) throw new Error('args.number, repo, base, issue and fleetBrief are required — invoke via /issue-run, which supplies them from issue-triage')
 const branch = args.branch || `fix/${number}-${issue.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40)}`
 const AT = args.repoDir ? `Work in the repository checkout at ${args.repoDir} (cd there first; git and CLI commands run against that repo). ` : ''
+const THINK = args?.thinkModel ?? 'opus'   // judgment: decide, review, refute, critique
+const WORK = args?.workModel ?? 'sonnet'    // mechanical: fetch, search, implement, verify, CI
 const MAX = args.maxLines ?? 500
 
 const IMPL = {
@@ -55,22 +57,22 @@ Rules: minimal change for this issue only; TDD; run the project's lint/format; a
 Push the branch to origin when done.`
 
 phase('Implement')
-let impl = await agent(implementPrompt(''), { label: 'implement', phase: 'Implement', schema: IMPL, isolation: 'worktree', model: args.implementModel })
+let impl = await agent(implementPrompt(''), { label: 'implement', phase: 'Implement', schema: IMPL, isolation: 'worktree', model: args.implementModel ?? WORK })
 if (!impl || impl.blocked) return { branch, impl, verify: null, ok: false }
 
 phase('Verify')
 const verifyPrompt = () => `${AT}Fresh eyes. In an isolated worktree, \`git fetch origin && git checkout ${branch}\`.
 Check, with commands, not by reading the report: the tests named below pass; the fix actually addresses ${repo}#${number} "${issue.title}"; every commit message is semantic and mentions no AI; the diff against origin/${base} is under ${MAX} lines; no files outside ${JSON.stringify(impl.filesTouched)} changed; the project's lint/format is clean.
 Implementer's report: ${JSON.stringify(impl)}`
-let verify = await agent(verifyPrompt(), { label: 'verify', phase: 'Verify', schema: VERIFY, isolation: 'worktree', model: 'sonnet' })
+let verify = await agent(verifyPrompt(), { label: 'verify', phase: 'Verify', schema: VERIFY, isolation: 'worktree', model: WORK })
 
 if (verify && !verify.ok) {
   log(`verifier found ${verify.problems.length} problem(s); one repair round`)
   const repaired = await agent(implementPrompt(verify.problems.map((p) => `- ${p}`).join('\n')),
-    { label: 'repair', phase: 'Implement', schema: IMPL, isolation: 'worktree', model: args.implementModel })
+    { label: 'repair', phase: 'Implement', schema: IMPL, isolation: 'worktree', model: args.implementModel ?? WORK })
   if (repaired && !repaired.blocked) {
     impl = repaired
-    verify = await agent(verifyPrompt(), { label: 'verify#2', phase: 'Verify', schema: VERIFY, isolation: 'worktree', model: 'sonnet' })
+    verify = await agent(verifyPrompt(), { label: 'verify#2', phase: 'Verify', schema: VERIFY, isolation: 'worktree', model: WORK })
   }
 }
 

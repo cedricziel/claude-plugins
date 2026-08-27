@@ -42,9 +42,9 @@ Invoking this skill is the user's explicit opt-in to multi-agent orchestration â
    ```
    Workflow({ name: "toolkit:adversarial-review",
               args: { diffPath: "<abs path>", target: "<PR #123 | branch x | working tree>",
-                      maxFindings: <n>, reviewModel: "sonnet" } })
+                      maxFindings: <n> } })
    ```
-   `reviewModel: "sonnet"` follows the default-delegation rule; omit it (inherit the session model) only if the user asks for maximum rigour.
+   Reviewers, refuters and the critic run on `opus` (judgment work); pass `reviewModel` only if the user asks for a different tier.
 
 3. Render the result:
    - **Confirmed** â€” table: `file:line`, severity, title, failure scenario, one line of refuter evidence. These are the findings.
@@ -57,4 +57,4 @@ Invoking this skill is the user's explicit opt-in to multi-agent orchestration â
 
 ## Cost
 
-1 + 5 + 3Â·N + 1 agents (N = verified findings). At the default N=8 that is ~31 calls; the reviewers and refuters are the bulk, which is why they default to `sonnet`.
+1 + 5 + 3Â·N + 1 agents (N = verified findings), all on `opus`. At the default N=8 that is ~31 calls.

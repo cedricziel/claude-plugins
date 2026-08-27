@@ -26,6 +26,9 @@ Marketplace `cedricziel`; single plugin `plugins/toolkit`.
 
 ## Conventions
 
+- Every `agent()` call names its model: `WORK` (sonnet) for mechanical steps, `THINK`
+  (opus) for judgment. Never inherit the session model — that silently means fable.
+
 - Bump `version` in both `plugins/toolkit/.claude-plugin/plugin.json` and
   `.claude-plugin/marketplace.json` on every change; breaking removals bump minor.
 - `python3 -m unittest discover -s tests && python3 scripts/validate.py` before commit.

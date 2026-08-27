@@ -12,6 +12,8 @@ export const meta = {
 const { branch, base, number, repo, cli, summary } = args
 if (!branch || !base || !number || !repo || !cli || !summary) throw new Error('args.branch, base, number, repo, cli and summary are required — invoke via /issue-run, which supplies them from fix-small')
 const AT = args.repoDir ? `Work in the repository checkout at ${args.repoDir} (cd there first; git and CLI commands run against that repo). ` : ''
+const THINK = args?.thinkModel ?? 'opus'   // judgment: decide, review, refute, critique
+const WORK = args?.workModel ?? 'sonnet'    // mechanical: fetch, search, implement, verify, CI
 const findings = (args.findings || []).map((f) => `- [ ] ${f.file}:${f.line} — ${f.title}`).join('\n')
 
 const PR = {
@@ -44,14 +46,14 @@ ${summary.tests}
 ${findings ? `## Review findings to address\n${findings}\n` : ''}
 Closes #${number}
 Do not enable auto-merge. Return the PR number and URL.`,
-  { label: 'open', phase: 'PR', schema: PR, effort: 'low' },
+  { label: 'open', phase: 'PR', schema: PR, model: WORK, effort: 'low' },
 )
 if (!pr) throw new Error('PR was not opened')
 
 phase('CI')
 const watch = (label) => agent(
   `${AT}${AT}Watch CI for PR #${pr.number} on ${repo} (${cli}) until the NEWEST run finishes; ignore superseded runs that still show red. Report the state and whether every failure is formatting/lint only.`,
-  { label, phase: 'CI', schema: CI, effort: 'low' },
+  { label, phase: 'CI', schema: CI, model: WORK, effort: 'low' },
 )
 let ci = await watch('ci')
 let lintFix = null
@@ -59,7 +61,7 @@ if (ci?.state === 'red' && ci.lintOnly) {
   lintFix = await agent(
     `${AT}CI on PR #${pr.number} is red only for formatting/lint: ${ci.detail}
 In this isolated worktree: \`git fetch origin && git checkout ${branch}\`, run the project's formatter/linter, commit as "style: apply formatter", push.`,
-    { label: 'lint-fix', phase: 'CI', schema: FIX, isolation: 'worktree', effort: 'low' },
+    { label: 'lint-fix', phase: 'CI', schema: FIX, isolation: 'worktree', model: WORK, effort: 'low' },
   )
   if (lintFix?.pushed) ci = await watch('ci#2')
 }

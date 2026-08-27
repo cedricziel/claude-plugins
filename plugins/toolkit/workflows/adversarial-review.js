@@ -15,7 +15,7 @@ if (!diffPath) throw new Error('args.diffPath is required — invoke via /advers
 const target = args?.target || 'working tree'
 const VOTES = args?.votes ?? 3
 const MAX = args?.maxFindings ?? 8
-const reviewModel = args?.reviewModel  // undefined → inherit session model
+const THINK = args?.reviewModel ?? args?.thinkModel ?? 'opus'   // review, refute, critique are judgment work
 
 const LENSES = [
   'correctness (logic errors, off-by-one, wrong branch conditions, unhandled cases)',
@@ -81,7 +81,7 @@ const reviews = await parallel(LENSES.map((lens) => () =>
 Read the unified diff at ${diffPath}. Open the surrounding files in the repository when the diff alone is not enough to judge.
 Report only defects that have a concrete failure scenario. Do not report style, naming, or hypothetical concerns.
 Line numbers must refer to the NEW side of the diff.`,
-    { label: `review:${lens.split(' ')[0]}`, phase: 'Review', schema: FINDINGS, model: reviewModel },
+    { label: `review:${lens.split(' ')[0]}`, phase: 'Review', schema: FINDINGS, model: THINK },
   ),
 ))
 
@@ -110,7 +110,7 @@ Failure scenario: ${f.failure_scenario}
 Your job is to REFUTE this claim. Approach: ${angle}.
 Read the actual code in the repository; do not reason from the diff alone.
 If you cannot find solid evidence either way, answer refuted=true — the burden of proof is on the claim.`,
-      { label: `refute:${f.file.split('/').pop()}#${i + 1}`, phase: 'Verify', schema: VERDICT, model: reviewModel },
+      { label: `refute:${f.file.split('/').pop()}#${i + 1}`, phase: 'Verify', schema: VERDICT, model: THINK },
     ),
   )).then((votes) => {
     const v = votes.filter(Boolean)
@@ -129,7 +129,7 @@ const critic = await agent(
 ${confirmed.map((f) => `- ${f.file}:${f.line} ${f.title}`).join('\n') || '- none'}
 
 What did the reviewers miss? Read the diff and the touched files. Name only concrete, unexamined risks — behaviours, inputs, or interactions the findings above do not cover. If nothing is missing, return an empty list.`,
-  { label: 'critic', phase: 'Critic', schema: GAPS },
+  { label: 'critic', phase: 'Critic', schema: GAPS, model: THINK },
 )
 
 return {
