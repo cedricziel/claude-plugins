@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from helpers import git
+from helpers import git, init_repo
 
 SCRIPT = Path(__file__).resolve().parent.parent / "plugins" / "toolkit" / "scripts" / "issue-ref.sh"
 
@@ -12,7 +12,7 @@ SCRIPT = Path(__file__).resolve().parent.parent / "plugins" / "toolkit" / "scrip
 class IssueRefTest(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
-        git(self.tmp, "init", "-q")
+        init_repo(self.tmp)
 
     def tearDown(self):
         shutil.rmtree(self.tmp)

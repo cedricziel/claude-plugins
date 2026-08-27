@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from helpers import git
+from helpers import git, init_repo
 
 SCRIPT = Path(__file__).resolve().parent.parent / "plugins" / "toolkit" / "scripts" / "default-branch.sh"
 
@@ -12,7 +12,7 @@ SCRIPT = Path(__file__).resolve().parent.parent / "plugins" / "toolkit" / "scrip
 class DefaultBranchTest(unittest.TestCase):
     def setUp(self):
         self.repo = Path(tempfile.mkdtemp())
-        git(self.repo, "init", "-q", "-b", "main")
+        init_repo(self.repo)
 
     def tearDown(self):
         shutil.rmtree(self.repo)

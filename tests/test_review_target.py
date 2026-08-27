@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from helpers import git
+from helpers import git, init_repo
 
 SCRIPT = Path(__file__).resolve().parent.parent / "plugins" / "toolkit" / "scripts" / "review-target.sh"
 
@@ -15,8 +15,7 @@ class ReviewTargetTest(unittest.TestCase):
         self.tmp = Path(tempfile.mkdtemp())
         self.repo = self.tmp / "repo"; self.repo.mkdir()
         self.bin = self.tmp / "bin"; self.bin.mkdir()
-        git(self.repo, "init", "-q", "-b", "main")
-        git(self.repo, "config", "user.email", "t@t"); git(self.repo, "config", "user.name", "t")
+        init_repo(self.repo)
         (self.repo / "a.txt").write_text("one\n")
         git(self.repo, "add", "."); git(self.repo, "commit", "-qm", "init")
 
