@@ -31,12 +31,13 @@ Everything I use day to day, in one plugin.
 
 | Event | What it does |
 |---|---|
+| `PostToolUse` (Edit/Write) | Auto-formats the edited file (cargo fmt/rustfmt, goimports/gofmt, swiftformat/swift-format, dart, ruff/black, prettier) — fail-open |
 | `PostToolUse` (Edit/Write) | Nudges when source changes come without test changes |
 | `Stop` | Blocks finishing while the project's test suite is red (fails open on environment errors) |
 | `UserPromptSubmit` | Reminds to rebase when the branch has fallen behind the default branch |
 
 Knobs and off-switches are documented in the headers of `plugins/toolkit/scripts/*.sh`.
-Disable per repo with `.no-rebase-nudge`; override the test command with `.tdd-test-cmd`.
+Disable per repo with `.no-rebase-nudge` / `.no-format-hook`; override the test command with `.tdd-test-cmd`.
 
 **Commands**
 
