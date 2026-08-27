@@ -1,11 +1,23 @@
 ---
 name: adversarial-review
-description: Multi-agent adversarial code review of a PR, branch, or the working tree — five review lenses in parallel, then every finding must survive three independent refutation attempts, then a critic asks what was missed. Use when the user invokes /adversarial-review, asks for an "adversarial", "thorough", "multi-agent" or "paranoid" review before merging, or wants review findings verified rather than just listed.
+description: Multi-agent adversarial code review (5 lenses, 3 refuters per finding, critic). TRIGGER ONLY on an explicit ask — the user types /adversarial-review, or says "adversarial review" / "adversarially review" / "run the adversarial review" naming a PR, branch, or the working tree. DO NOT trigger for "review this", "code review", "thorough review", "look over my changes", or CodeRabbit follow-ups — those are /code-review (or the coderabbit skill). Never self-trigger on PR size or risk; at most SUGGEST it in one line when a diff touches auth, migrations, concurrency, or exceeds 500 lines.
 ---
 
 # Adversarial review
 
-Runs the `adversarial-review` workflow shipped with this plugin. Invoking this skill is the user's explicit opt-in to multi-agent orchestration — do not ask again.
+Runs the `adversarial-review` workflow shipped with this plugin. ~30 agent calls per run.
+
+## When this fires
+
+| Ask | Action |
+|---|---|
+| `/adversarial-review [target]` | run it |
+| "adversarial(ly) review PR 12 / this branch / my changes" | run it |
+| "review this", "code review", "thorough review" | **not this skill** — `/code-review` |
+| "address the CodeRabbit comments" | **not this skill** — coderabbit skill |
+| a large or risky diff you happen to be working on | do not run; you may suggest it in one line |
+
+Invoking this skill is the user's explicit opt-in to multi-agent orchestration — do not ask again once triggered.
 
 ## Usage
 

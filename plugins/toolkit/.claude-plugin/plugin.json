@@ -1,6 +1,6 @@
 {
   "name": "toolkit",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Cedric's everyday Claude Code toolkit: git workflow skills (commit discipline, stacked PRs), TDD hooks, code-review helpers, Forgejo CLI, SignalDB observability, dashboard design, and GitHub issue/PR commands.",
   "author": {
     "name": "Cedric Ziel",
