@@ -1,0 +1,2 @@
+- Always use semantic commits.
+- Default no code comment; see the code-comments skill for when one earns its place.
