@@ -6,12 +6,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/format-hook.sh\"",
-            "timeout": 60,
-            "statusMessage": "Formatting"
-          },
-          {
-            "type": "command",
             "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/tdd-hook.sh\" edit-check",
             "timeout": 15,
             "statusMessage": "TDD check"
