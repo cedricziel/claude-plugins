@@ -22,13 +22,15 @@ it in automatically.
 | Skill | Purpose |
 |---|---|
 | `unslop` | Strips AI-slop tells (filler openers, false-emphasis, marketing words, decorative em dashes) from user-facing prose: docs, PR/issue descriptions, commit bodies, comments |
-| `code-comments` | When a code comment earns its place; referenced from `toolkit`'s `instructions/global.md` |
+| `code-comments` | When a code comment earns its place; referenced from `instructions/global.md` below |
+| `test-strategy` | What deserves a test, what kind (unit/integration/e2e), and when; referenced from `instructions/global.md` below |
 
 **Hooks**
 
 | Event | What it does |
 |---|---|
 | `PostToolUse` (Edit/Write) | Auto-formats the edited file (cargo fmt/rustfmt, goimports/gofmt, swiftformat/swift-format, dart, ruff/black, prettier) — fail-open |
+| `SessionStart` | Injects `instructions/global.md` (output style, semantic commits, default-no-comment, test-strategy pointer) as context; re-injected after compaction. Disable with `COMMON_INSTRUCTIONS_DISABLE=1` |
 
 ### toolkit
 
@@ -57,7 +59,7 @@ Everything I use day to day, in one plugin — including my global working rules
 | `Stop` | Blocks finishing while the project's test suite is red (fails open on environment errors) |
 | `UserPromptSubmit` | Reminds to rebase when the branch has fallen behind the default branch |
 
-Knobs and off-switches are documented in the headers of `plugins/toolkit/scripts/*.sh`.
+Knobs and off-switches are documented in the headers of `plugins/{common,toolkit}/scripts/*.sh`.
 Disable per repo with `.no-rebase-nudge` / `.no-format-hook`; override the test command with `.tdd-test-cmd`.
 
 **Workflows**

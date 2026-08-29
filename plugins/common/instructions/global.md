@@ -1,0 +1,4 @@
+- Output style: brief, plain language, no jargon. Talk like a person explaining something to a colleague, not a scientist writing a paper.
+- Always use semantic commits; split messages that need "and" (see the commit-discipline skill in toolkit for the full format).
+- Default no code comment; see the code-comments skill for when one earns its place.
+- New behavior/bugfix needs a test, a pure refactor doesn't; see the test-strategy skill for what/what-kind.
