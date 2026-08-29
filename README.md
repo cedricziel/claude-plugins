@@ -11,9 +11,27 @@ Cedric Ziel's [Claude Code](https://docs.claude.com/en/docs/claude-code) plugin 
 
 ## Plugins
 
+### common
+
+Shared building blocks used by `toolkit` (and installable on its own). `toolkit`
+declares it as a plugin dependency, so `/plugin install toolkit@cedricziel` pulls
+it in automatically.
+
+**Skills** (loaded automatically when relevant)
+
+| Skill | Purpose |
+|---|---|
+| `unslop` | Strips AI-slop tells (filler openers, false-emphasis, marketing words, decorative em dashes) from user-facing prose: docs, PR/issue descriptions, commit bodies, comments |
+
+**Hooks**
+
+| Event | What it does |
+|---|---|
+| `PostToolUse` (Edit/Write) | Auto-formats the edited file (cargo fmt/rustfmt, goimports/gofmt, swiftformat/swift-format, dart, ruff/black, prettier) — fail-open |
+
 ### toolkit
 
-Everything I use day to day, in one plugin — including my global working rules, so a fresh machine only needs the plugin, not a synced `~/.claude/CLAUDE.md`. `instructions/fleet-brief.md` is the checklist handed to code-committing subagents.
+Everything I use day to day, in one plugin — including my global working rules, so a fresh machine only needs the plugin, not a synced `~/.claude/CLAUDE.md`. `instructions/fleet-brief.md` is the checklist handed to code-committing subagents. Depends on `common@cedricziel`.
 
 **Skills** (loaded automatically when relevant)
 
@@ -34,7 +52,6 @@ Everything I use day to day, in one plugin — including my global working rules
 | Event | What it does |
 |---|---|
 | `SessionStart` | Injects `instructions/global.md` (working rules + Caveman Compression) as context; re-injected after compaction. Disable with `TOOLKIT_INSTRUCTIONS_DISABLE=1` |
-| `PostToolUse` (Edit/Write) | Auto-formats the edited file (cargo fmt/rustfmt, goimports/gofmt, swiftformat/swift-format, dart, ruff/black, prettier) — fail-open |
 | `PostToolUse` (Edit/Write) | Nudges when source changes come without test changes |
 | `Stop` | Blocks finishing while the project's test suite is red (fails open on environment errors) |
 | `UserPromptSubmit` | Reminds to rebase when the branch has fallen behind the default branch |

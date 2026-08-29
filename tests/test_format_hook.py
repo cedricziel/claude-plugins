@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-HOOK = Path(__file__).resolve().parent.parent / "plugins" / "toolkit" / "scripts" / "format-hook.sh"
+HOOK = Path(__file__).resolve().parent.parent / "plugins" / "common" / "scripts" / "format-hook.sh"
 
 
 class FormatHookTest(unittest.TestCase):

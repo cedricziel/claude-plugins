@@ -1,0 +1,13 @@
+{
+  "name": "common",
+  "version": "1.0.0",
+  "description": "Shared building blocks for Cedric's plugins: the auto-format PostToolUse hook and the unslop writing-cleanup skill.",
+  "author": {
+    "name": "Cedric Ziel",
+    "url": "https://github.com/cedricziel"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/cedricziel/claude-plugins",
+  "homepage": "https://github.com/cedricziel/claude-plugins",
+  "keywords": ["hooks", "formatting", "writing", "shared"]
+}
