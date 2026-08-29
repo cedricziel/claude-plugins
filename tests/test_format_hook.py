@@ -106,6 +106,24 @@ class FormatHookTest(unittest.TestCase):
         f = self.touch("README.md")
         self.assertIn("prettier --write", self.run_hook(f))
 
+    def test_prettier_local_bin_survives_space_in_repo_path(self):
+        spaced_repo = self.tmp / "repo with space"
+        spaced_repo.mkdir()
+        subprocess.run(["git", "init", "-q"], cwd=spaced_repo, check=True)
+        bin_dir = spaced_repo / "node_modules" / ".bin"
+        bin_dir.mkdir(parents=True)
+        stub = bin_dir / "prettier"
+        stub.write_text(f'#!/bin/sh\necho "prettier $*" >> "{self.log}"\n')
+        stub.chmod(0o755)
+        f = spaced_repo / "a.ts"
+        f.write_text("x\n")
+        e = {"PATH": f"{self.bin}:/usr/bin:/bin", "HOME": str(self.tmp)}
+        payload = json.dumps({"tool_name": "Edit", "tool_input": {"file_path": str(f)}})
+        r = subprocess.run(["bash", str(HOOK)], input=payload, capture_output=True, text=True, env=e, cwd=spaced_repo)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        out = self.log.read_text() if self.log.exists() else ""
+        self.assertIn(str(f), out)
+
     def test_unknown_extension_noop(self):
         self.stub("prettier")
         f = self.touch("a.xyz")

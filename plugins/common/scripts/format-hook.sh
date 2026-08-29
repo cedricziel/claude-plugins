@@ -27,10 +27,11 @@ root=$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null || echo "$dir")
 has() { command -v "$1" >/dev/null 2>&1; }
 quiet() { "$@" >/dev/null 2>&1 || true; }
 
+prettier_cmd=()
 prettier_bin() {
-  if [ -x "$root/node_modules/.bin/prettier" ]; then echo "$root/node_modules/.bin/prettier"
-  elif has prettier; then echo prettier
-  elif has npx; then echo "npx --yes prettier"
+  if [ -x "$root/node_modules/.bin/prettier" ]; then prettier_cmd=("$root/node_modules/.bin/prettier")
+  elif has prettier; then prettier_cmd=(prettier)
+  elif has npx; then prettier_cmd=(npx --yes prettier)
   fi
 }
 
@@ -58,8 +59,8 @@ case "$f" in
     if has ruff; then quiet ruff format "$f"
     elif has black; then quiet black -q "$f"; fi ;;
   *.js|*.cjs|*.mjs|*.jsx|*.ts|*.cts|*.mts|*.tsx|*.json|*.jsonc|*.json5|*.css|*.scss|*.sass|*.less|*.html|*.vue|*.svelte|*.md|*.mdx|*.yaml|*.yml|*.graphql|*.gql)
-    p=$(prettier_bin)
-    [ -n "$p" ] && quiet $p --write --ignore-unknown "$f" ;;
+    prettier_bin
+    [ "${#prettier_cmd[@]}" -gt 0 ] && quiet "${prettier_cmd[@]}" --write --ignore-unknown "$f" ;;
 esac
 
 exit 0
