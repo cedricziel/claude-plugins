@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Cedric Ziel's Claude Code plugins",
-    "version": "1.10.0"
+    "version": "1.10.1"
   },
   "plugins": [
     {
       "name": "common",
       "source": "./plugins/common",
       "description": "Shared building blocks: the auto-format PostToolUse hook, a SessionStart hook injecting baseline working rules, the unslop writing-cleanup skill, and the code-comments skill.",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "author": {
         "name": "Cedric Ziel",
         "url": "https://github.com/cedricziel"
@@ -25,7 +25,7 @@
       "name": "toolkit",
       "source": "./plugins/toolkit",
       "description": "Everyday toolkit: git workflow skills, TDD hooks, code-review helpers, Forgejo CLI, SignalDB observability, dashboard design, and GitHub issue/PR commands.",
-      "version": "1.8.1",
+      "version": "1.8.2",
       "author": {
         "name": "Cedric Ziel",
         "url": "https://github.com/cedricziel"

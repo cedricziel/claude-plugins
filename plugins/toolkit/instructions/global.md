@@ -1,6 +1,5 @@
 Be brief.
 
-- Use semantic commits (see the commit-discipline skill). Split messages that need "and".
 - Delegation models: `sonnet` for working (search, implement, verify, mechanical steps), `opus` for thinking (decisions, reviews, synthesis). Use `fable` only when explicitly asked.
 - Use context7 for library docs.
 - For large changes, use the git-stacked-prs skill.

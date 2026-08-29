@@ -22,7 +22,7 @@ class SessionStartTest(unittest.TestCase):
         ctx = out["hookSpecificOutput"]["additionalContext"]
         self.assertEqual(out["hookSpecificOutput"]["hookEventName"], "SessionStart")
         self.assertIn("Caveman Compression", ctx)
-        self.assertIn("semantic commits", ctx.lower())
+        self.assertIn("delegation models", ctx.lower())
 
     def test_fleet_brief_path_is_resolved(self):
         ctx = json.loads(run().stdout)["hookSpecificOutput"]["additionalContext"]

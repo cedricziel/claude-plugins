@@ -1,6 +1,6 @@
 {
   "name": "common",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Shared building blocks for Cedric's plugins: the auto-format PostToolUse hook, a SessionStart hook injecting baseline working rules, the unslop writing-cleanup skill, and the code-comments skill.",
   "author": {
     "name": "Cedric Ziel",
