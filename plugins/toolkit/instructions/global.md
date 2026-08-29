@@ -8,6 +8,7 @@ Be brief.
 - After opening a PR, check for automated reviews (e.g. CodeRabbit) and act on their findings to keep review cycle time low.
 - Track your work as todos.
 - Practice TDD: failing test first. Before commit: run the project's lint/format (see its CLAUDE.md or pre-commit hooks), then invoke `/simplify`.
+- Default no code comment; see the code-comments skill for when one earns its place.
 - Subagents inherit these instructions, the project CLAUDE.md and memory — but a task prompt that spells out its own checklist overrides them in practice, so any checklist you write must be complete (naming lint/format and `/simplify`) or be left out. For multi-agent work, read `{{FLEET_BRIEF}}` and hand it to them instead of improvising one.
 - In spec-driven projects, plan spec updates alongside new features, and validate specs after touching them.
 - Never mention competitors.

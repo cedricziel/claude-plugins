@@ -1,7 +1,7 @@
 {
   "name": "common",
-  "version": "1.0.0",
-  "description": "Shared building blocks for Cedric's plugins: the auto-format PostToolUse hook and the unslop writing-cleanup skill.",
+  "version": "1.1.0",
+  "description": "Shared building blocks for Cedric's plugins: the auto-format PostToolUse hook, the unslop writing-cleanup skill, and the code-comments skill.",
   "author": {
     "name": "Cedric Ziel",
     "url": "https://github.com/cedricziel"

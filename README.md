@@ -22,6 +22,7 @@ it in automatically.
 | Skill | Purpose |
 |---|---|
 | `unslop` | Strips AI-slop tells (filler openers, false-emphasis, marketing words, decorative em dashes) from user-facing prose: docs, PR/issue descriptions, commit bodies, comments |
+| `code-comments` | When a code comment earns its place; referenced from `toolkit`'s `instructions/global.md` |
 
 **Hooks**
 
