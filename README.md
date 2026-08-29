@@ -23,13 +23,14 @@ it in automatically.
 |---|---|
 | `unslop` | Strips AI-slop tells (filler openers, false-emphasis, marketing words, decorative em dashes) from user-facing prose: docs, PR/issue descriptions, commit bodies, comments |
 | `code-comments` | When a code comment earns its place; referenced from `instructions/global.md` below |
+| `test-strategy` | What deserves a test, what kind (unit/integration/e2e), and when; referenced from `instructions/global.md` below |
 
 **Hooks**
 
 | Event | What it does |
 |---|---|
 | `PostToolUse` (Edit/Write) | Auto-formats the edited file (cargo fmt/rustfmt, goimports/gofmt, swiftformat/swift-format, dart, ruff/black, prettier) — fail-open |
-| `SessionStart` | Injects `instructions/global.md` (semantic commits, default-no-comment) as context; re-injected after compaction. Disable with `COMMON_INSTRUCTIONS_DISABLE=1` |
+| `SessionStart` | Injects `instructions/global.md` (semantic commits, default-no-comment, test-strategy pointer) as context; re-injected after compaction. Disable with `COMMON_INSTRUCTIONS_DISABLE=1` |
 
 ### toolkit
 
