@@ -21,7 +21,7 @@ it in automatically.
 
 | Skill | Purpose |
 |---|---|
-| `unslop` | Strips AI-slop tells (filler openers, false-emphasis, marketing words, decorative em dashes) from user-facing prose: docs, PR/issue descriptions, commit bodies, comments |
+| `unslop` | Strip AI tells from prose and add voice — vendored from [pstack](https://github.com/cursor/plugins/tree/main/pstack) (MIT) |
 | `code-comments` | When a code comment earns its place; referenced from `instructions/global.md` below |
 | `test-strategy` | What deserves a test, what kind (unit/integration/e2e), and when; referenced from `instructions/global.md` below |
 
@@ -49,6 +49,8 @@ Everything I use day to day, in one plugin — including my global working rules
 | `forgejo-cli` | Using `fj` against Forgejo/Codeberg instances |
 | `signaldb-observe` | Instrument an app with OpenTelemetry and ship to SignalDB |
 | `dashboarding` | Designing and reviewing operational dashboards |
+| `no-comments` | `/toolkit:no-comments` — spawns the `comment-sicko` agent to purge narration comments and suppressions, then fixes the root causes — vendored from pstack (MIT) |
+| `technical-writing` | `/toolkit:technical-writing` — Diátaxis + Google style + STE + Global English standard for docs, RFCs, READMEs, PR descriptions — vendored from pstack (MIT) |
 
 **Hooks**
 
@@ -153,4 +155,4 @@ claude --plugin-dir plugins/toolkit   # local smoke test
 
 ## License
 
-MIT
+MIT. `common`'s `skills/unslop` and `toolkit`'s `skills/no-comments`, `skills/technical-writing` and `agents/comment-sicko` are vendored from pstack (© Lauren Tan, MIT — see its `LICENSE`).
