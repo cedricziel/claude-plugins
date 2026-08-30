@@ -12,12 +12,12 @@
 #   REBASE_HOOK_NAG_INTERVAL    seconds between repeat nudges       (default 1800)
 #   REBASE_HOOK_MIN_BEHIND      commits behind before nudging       (default 1)
 # Off switches:
-#   touch ~/.claude/hooks/.rebase-state/paused   — disable everywhere
+#   touch ~/.claude/hooks/toolkit/rebase/paused   — disable everywhere
 #   touch <repo>/.no-rebase-nudge                — disable for one repo
 set -u
 
 INPUT="$(cat 2>/dev/null || true)"
-STATE_DIR="${REBASE_HOOK_STATE_DIR:-$HOME/.claude/hooks/.rebase-state}"
+STATE_DIR="${REBASE_HOOK_STATE_DIR:-$HOME/.claude/hooks/toolkit/rebase}"
 FETCH_INTERVAL="${REBASE_HOOK_FETCH_INTERVAL:-900}"
 NAG_INTERVAL="${REBASE_HOOK_NAG_INTERVAL:-1800}"
 MIN_BEHIND="${REBASE_HOOK_MIN_BEHIND:-1}"

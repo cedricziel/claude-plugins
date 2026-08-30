@@ -11,7 +11,7 @@ set -u
 
 MODE="${1:-stop-check}"
 INPUT="$(cat 2>/dev/null || true)"
-STATE_DIR="${TDD_STATE_DIR:-$HOME/.claude/hooks/.tdd-state}"
+STATE_DIR="${TDD_STATE_DIR:-$HOME/.claude/hooks/toolkit/tdd}"
 mkdir -p "$STATE_DIR"
 
 jqr() { printf '%s' "$INPUT" | jq -r "$1" 2>/dev/null; }
