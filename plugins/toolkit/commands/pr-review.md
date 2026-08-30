@@ -1,3 +1,8 @@
+---
+description: Review a GitHub pull request for correctness, quality, and risk
+argument-hint: <PR number or URL>
+---
+
 Please provide a code review for this pull request: $ARGUMENTS.
 
 Guidelines:
