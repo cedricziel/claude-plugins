@@ -1,0 +1,14 @@
+{
+  "name": "oss",
+  "version": "0.1.0",
+  "description": "Empty scaffold for open-source project conventions, to depend on from other OSS repos. Depends on common; no skills/hooks yet.",
+  "dependencies": ["common"],
+  "author": {
+    "name": "Cedric Ziel",
+    "url": "https://github.com/cedricziel"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/cedricziel/claude-plugins",
+  "homepage": "https://github.com/cedricziel/claude-plugins",
+  "keywords": ["oss", "open-source", "scaffold"]
+}

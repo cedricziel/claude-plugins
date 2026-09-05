@@ -145,6 +145,12 @@ Design rules are in `CLAUDE.md`; the evidence behind them (reproduce first, plan
 
 `/issue-create <context>`, `/pr-review <number>`. (`/issue` was replaced by `/issue-run`.)
 
+### oss
+
+Empty scaffold for open-source project conventions — depends on `common@cedricziel`
+and installs no skills or hooks yet. Meant to be the plugin other OSS repos depend
+on once it grows rules/hooks specific to running a public repo.
+
 ## Development
 
 ```
