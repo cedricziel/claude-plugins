@@ -22,6 +22,7 @@ class CommonSessionStartTest(unittest.TestCase):
         ctx = out["hookSpecificOutput"]["additionalContext"]
         self.assertEqual(out["hookSpecificOutput"]["hookEventName"], "SessionStart")
         self.assertIn("semantic commits", ctx.lower())
+        self.assertIn("delegation models", ctx.lower())
         self.assertIn("code-comments", ctx)
 
     def test_instruction_file_exists(self):

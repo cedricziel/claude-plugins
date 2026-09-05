@@ -30,7 +30,7 @@ it in automatically.
 | Event | What it does |
 |---|---|
 | `PostToolUse` (Edit/Write) | Auto-formats the edited file (cargo fmt/rustfmt, goimports/gofmt, swiftformat/swift-format, dart, ruff/black, prettier) — fail-open |
-| `SessionStart` | Injects `instructions/global.md` (output style, semantic commits, default-no-comment, test-strategy pointer) as context; re-injected after compaction. Disable with `COMMON_INSTRUCTIONS_DISABLE=1` |
+| `SessionStart` | Injects `instructions/global.md` (delegation models, output style, semantic commits, stacked PRs under 500 lines, TDD + lint + `/simplify` before commit, default-no-comment, test-strategy pointer) as context; re-injected after compaction. Disable with `COMMON_INSTRUCTIONS_DISABLE=1` |
 
 ### toolkit
 
