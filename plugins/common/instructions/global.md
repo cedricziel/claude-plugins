@@ -1,3 +1,4 @@
+- Delegation models: `sonnet` for working (search, implement, verify, mechanical steps), `opus` for thinking (decisions, reviews, synthesis). Use `fable` only when explicitly asked.
 - Output style: brief, plain language, no jargon. Talk like a person explaining something to a colleague, not a scientist writing a paper.
 - Always use semantic commits; split messages that need "and" (see the commit-discipline skill in toolkit for the full format).
 - For large changes, keep PRs under 500 lines changed and split larger work into a stack. When toolkit is installed, use its git-stacked-prs skill.
