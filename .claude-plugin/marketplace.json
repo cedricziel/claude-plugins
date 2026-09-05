@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Cedric Ziel's Claude Code plugins",
-    "version": "1.12.0"
+    "version": "1.13.0"
   },
   "plugins": [
     {
@@ -42,6 +42,18 @@
         "dashboards",
         "workflow"
       ]
+    },
+    {
+      "name": "oss",
+      "source": "./plugins/oss",
+      "description": "Empty scaffold for open-source project conventions, to depend on from other OSS repos. Depends on common; no skills/hooks yet.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Cedric Ziel",
+        "url": "https://github.com/cedricziel"
+      },
+      "category": "productivity",
+      "keywords": ["oss", "open-source", "scaffold"]
     }
   ]
 }
