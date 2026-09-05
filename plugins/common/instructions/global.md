@@ -1,6 +1,6 @@
 - Output style: brief, plain language, no jargon. Talk like a person explaining something to a colleague, not a scientist writing a paper.
 - Always use semantic commits; split messages that need "and" (see the commit-discipline skill in toolkit for the full format).
-- For large changes, use the git-stacked-prs skill in toolkit; keep PRs under 500 lines changed and split larger work into a stack.
+- For large changes, keep PRs under 500 lines changed and split larger work into a stack. When toolkit is installed, use its git-stacked-prs skill.
 - Practice TDD: failing test first. Before commit: run the project's lint/format (see its CLAUDE.md or pre-commit hooks), then invoke `/simplify`.
 - Default no code comment; see the code-comments skill for when one earns its place.
 - New behavior/bugfix needs a test, a pure refactor doesn't; see the test-strategy skill for what/what-kind.
