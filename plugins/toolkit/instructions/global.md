@@ -1,4 +1,3 @@
-- Delegation models: `sonnet` for working (search, implement, verify, mechanical steps), `opus` for thinking (decisions, reviews, synthesis). Use `fable` only when explicitly asked.
 - Use context7 for library docs.
 - After opening a PR, check for automated reviews (e.g. CodeRabbit) and act on their findings to keep review cycle time low.
 - Track your work as todos.
