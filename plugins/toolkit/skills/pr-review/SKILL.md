@@ -38,7 +38,13 @@ for the same reason.)
 1. **Resolve the PR, then switch the session into an isolated worktree — a bare `cd` does not do this.**
 
    `gh pr view --json number,url` gives the number when no argument was passed;
-   `gh repo view --json nameWithOwner` gives `owner/repo`.
+   `gh repo view --json nameWithOwner` gives `owner/repo`; and
+   `gh pr view <n> --json headRefOid -q .headRefOid` gives the head commit SHA.
+
+   Capture that SHA now, before the review runs, and pass it to step 5 as
+   `commitSha`. The review takes minutes; the author can force-push in that time.
+   The SHA pins the posted verdict to the code that was actually read, and step 5
+   refuses to post at all if the PR's head has moved since.
 
    `gh pr diff` fetches diff _text_ and nothing else — the working tree never moves,
    while every agent underneath reads files from whatever is checked out. `Workflow()`
@@ -99,9 +105,14 @@ for the same reason.)
    ```
    Workflow({ name: "toolkit:pr-review-submit",
               args: { number: <n>, repo: "<owner>/<repo>", cli: "gh",
+                      commitSha: "<head SHA from step 1>",
                       decision: <decision from step 3>, summary: <summary from step 3>,
                       comments: <comments from step 3> } })
    ```
+
+   A non-null `refused` here means nothing was posted — most often because the PR's
+   head moved while the review ran. Report the reason and stop; re-running the whole
+   review against the new head is the fix, not re-posting this one.
 
 6. Report what was posted: decision, comment count, and the review URL. If
    `droppedComments` is non-empty, GitHub rejected the inline comments and only the
