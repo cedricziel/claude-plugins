@@ -111,7 +111,7 @@ const SUGGESTION = {
     suggestion: {
       type: "string",
       description:
-        "replacement text for the flagged line(s), empty string if no safe mechanical fix exists",
+        "replacement text for the single flagged line, empty string if no safe single-line fix exists",
     },
   },
   required: ["suggestion"],
@@ -124,7 +124,8 @@ const suggestions = await parallel(
       agent(
         `A reviewer flagged ${f.file}:${f.line} (change: ${target}): "${f.title}".
 ${f.claim || f.note}
-Read the actual file. If there is a concrete, low-risk, line-local fix, return the exact replacement text for that line (or small line range) as it should read after the fix — this becomes a GitHub committable suggestion, so it must be a drop-in replacement for those exact lines, nothing else. If the fix requires judgment, touches multiple places, or you are not confident, return an empty string.`,
+Read the actual file. If there is a concrete, low-risk fix that fits entirely on line ${f.line} alone, return the exact replacement text for that ONE line as it should read after the fix. This becomes a GitHub committable suggestion anchored to that single line: GitHub replaces exactly that line with what you return, so returning more than one line duplicates the surrounding code instead of fixing it.
+Return an empty string — no suggestion — if the fix needs to touch any other line, spans a range, requires judgment, or you are not confident. A missing suggestion is fine; a wrong one is applied with one click.`,
         {
           label: `suggest:${f.file.split("/").pop()}#${i + 1}`,
           phase: "Suggest",
