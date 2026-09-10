@@ -27,7 +27,7 @@ Invoking this skill submits a real, visible GitHub review — including possibly
 ```
 
 A bare PR number only. `review-target.sh` resolves `gh pr diff <n>` against whatever
-repository the current checkout belongs to, while step 4 posts to the repo named in
+repository the current checkout belongs to, while step 5 posts to the repo named in
 the args — so a PR reference pointing somewhere else reviews one PR and posts the
 verdict onto a different, unrelated one. To review a PR in another repository, run
 this from a checkout of that repository. (`adversarial-review` takes PR numbers only
