@@ -14,7 +14,9 @@ class WorkflowSyntaxTest(unittest.TestCase):
         for js in sorted(WORKFLOWS.glob("*.js")):
             src = js.read_text()
             m = re.search(r"\n\};?\n", src)  # split after `export const meta = {...}` (tolerates optional semicolon added by prettier)
-            head, body = (src[:m.start()], src[m.end():]) if m else (src, "")
+            if not m:
+                self.fail(f"{js.name}: could not locate the end of the meta object")
+            head, body = src[:m.start()], src[m.end():]
             wrapped = head + "\n}\n" + "export default async function run(args, agent, parallel, pipeline, phase, log, budget, workflow) {\n" + body + "\n}\n"
             with tempfile.NamedTemporaryFile("w", suffix=".mjs", delete=False) as f:
                 f.write(wrapped)
