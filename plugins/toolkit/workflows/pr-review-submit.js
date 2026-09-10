@@ -75,6 +75,7 @@ const payloadComments = comments.map(
 // The whole request body is serialized here, never by the agent: `summary` is
 // LLM prose derived from an untrusted diff, and hand-assembling JSON around it
 // could both malform the request and let that prose reach the `event` field.
+//
 // commit_id pins the review to the commit that was actually reviewed. Omitting it
 // makes GitHub bind the verdict to whatever HEAD is at post time — a review takes
 // minutes, and a force-push in between would label unreviewed code approved.
@@ -137,7 +138,7 @@ ${fallbackPayload}
 
 Steps:
 1. Read the PR's current head SHA: \`gh pr view ${number} --repo ${repo} --json headRefOid -q .headRefOid\`. Return it verbatim as currentHead.
-2. Compare it to the reviewed commit, ${commitSha}. If they are not identical, STOP: post NOTHING, and return posted=false with an empty reviewUrl and an empty droppedComments. The review below was written against code that is no longer the PR's head, and posting it would label unreviewed commits.
+2. Compare it to the reviewed commit, ${commitSha}. If they are not identical, STOP: post NOTHING, and return posted=false with an empty reviewUrl and an empty droppedComments. The payload above was written against code that is no longer the PR's head, and posting it would label unreviewed commits.
 3. Otherwise write the payload to a temp file exactly as given — byte for byte. Do not re-serialize it, reformat it, reword any string in it, or add, drop or edit any field.
 4. Submit it: \`gh api repos/${repo}/pulls/${number}/reviews --method POST --input <path-to-temp-file>\`.
 5. If GitHub rejects it because of the inline comments — a 422 naming \`line\`, \`start_line\`, \`path\`, \`position\`, or saying a comment is not part of the diff — post the FALLBACK PAYLOAD the same way, exactly once. It carries the identical event and body with no comments, so the verdict survives even though the line anchors did not. Then set droppedComments to GitHub's rejection message plus the file:line of every comment in the first payload.
@@ -146,9 +147,13 @@ Steps:
   { label: "post", phase: "Post", schema: POSTED, model: WORK, effort: "low" },
 );
 
-// `posted` reports what the agent found; the comparison itself stays here so a
-// stale head is refused deterministically rather than on the agent's say-so.
-if (posted?.currentHead && posted.currentHead !== commitSha)
+// `posted` reports the head the agent read back; the comparison itself stays here
+// so a stale head is refused deterministically rather than on the agent's say-so.
+const sha = (s) =>
+  String(s ?? "")
+    .trim()
+    .toLowerCase();
+if (posted?.currentHead && sha(posted.currentHead) !== sha(commitSha))
   return {
     refused: "PR head moved since the review was generated — re-run the review",
     posted: Boolean(posted.posted),
