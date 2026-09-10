@@ -66,7 +66,8 @@ report holds everything worth keeping, so nothing is lost by leaving.
    the session into it in one step:
 
    ```
-   EnterWorktree({ name: "review-123" })
+   EnterWorktree({ name: "review-123" })          # PR target
+   EnterWorktree({ name: "review-feature-x" })    # branch target
    ```
 
    Then check the target out from inside it:
