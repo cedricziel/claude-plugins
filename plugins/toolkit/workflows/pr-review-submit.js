@@ -58,9 +58,22 @@ function fenceFor(text) {
   return "`".repeat(Math.max(3, ...runs.map((r) => r.length + 1)));
 }
 
+// GitHub's review-comment API has no severity field, so a nitpick and a critical
+// defect render identically. Encode it in the visible first line, before any
+// collapsible section, so the reader sees the weight without opening anything.
+function markerFor(severity, nitpick) {
+  const s = String(severity ?? "")
+    .trim()
+    .toLowerCase();
+  if (nitpick || s === "nitpick") return "🟢 **nitpick**";
+  const dot =
+    { critical: "🔴", high: "🔴", medium: "🟡", low: "🔵" }[s] || "⚪";
+  return `${dot} **${s ? s.toUpperCase() : "FINDING"}**`;
+}
+
 const payloadComments = comments.map(
-  ({ file, line, title, body, suggestion }) => {
-    const prose = `${title}\n\n${body}`;
+  ({ file, line, title, body, suggestion, severity, nitpick }) => {
+    const prose = `${markerFor(severity, nitpick)} — ${title}\n\n${body}`;
     if (!suggestion) return { path: file, line, side: "RIGHT", body: prose };
     const fence = fenceFor(`${prose}\n${suggestion}`);
     return {
