@@ -142,8 +142,11 @@ checkout of someone else's PR.
 6. `ExitWorktree()`, then report what was posted: decision, comment count, and the
    review URL. If `droppedComments` is non-empty, GitHub rejected the inline comments
    and only the verdict and summary were posted — show that text so the user knows
-   which findings never reached the PR. If `posted` is false, surface the failure — do
-   not retry silently.
+   which findings never reached the PR. If `decisionDowngraded` is true, say so:
+   GitHub does not let anyone approve or request changes on their own pull request,
+   so the review was posted as a plain comment instead — the findings are all there,
+   but the verdict carries no formal approval or block. If `posted` is false, surface
+   the failure — do not retry silently.
 
 ## Re-running
 
