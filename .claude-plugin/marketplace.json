@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Cedric Ziel's Claude Code plugins",
-    "version": "1.14.0"
+    "version": "1.15.0"
   },
   "plugins": [
     {
@@ -46,14 +46,14 @@
     {
       "name": "oss",
       "source": "./plugins/oss",
-      "description": "Empty scaffold for open-source project conventions, to depend on from other OSS repos. Depends on common; no skills/hooks yet.",
-      "version": "0.1.0",
+      "description": "Open-source project conventions to depend on from OSS repos: the release-notes skill. Depends on common.",
+      "version": "0.2.0",
       "author": {
         "name": "Cedric Ziel",
         "url": "https://github.com/cedricziel"
       },
       "category": "productivity",
-      "keywords": ["oss", "open-source", "scaffold"]
+      "keywords": ["oss", "open-source", "release-notes", "changelog"]
     }
   ]
 }

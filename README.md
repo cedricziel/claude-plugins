@@ -147,9 +147,14 @@ Design rules are in `CLAUDE.md`; the evidence behind them (reproduce first, plan
 
 ### oss
 
-Empty scaffold for open-source project conventions — depends on `common@cedricziel`
-and installs no skills or hooks yet. Meant to be the plugin other OSS repos depend
-on once it grows rules/hooks specific to running a public repo.
+Conventions for running a public repo, meant to be depended on from other OSS
+repos. Depends on `common@cedricziel`.
+
+**Skills** (loaded automatically when relevant)
+
+| Skill | Purpose |
+|---|---|
+| `release-notes` | Draft informative, non-bloated, user-value-focused release notes for a GitHub release: output shape, include/omit rules, input gathering with `gh`, grounding and unslop gates |
 
 ## Development
 
