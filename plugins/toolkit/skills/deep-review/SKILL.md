@@ -66,9 +66,16 @@ report holds everything worth keeping, so nothing is lost by leaving.
    the session into it in one step:
 
    ```
-   EnterWorktree({ name: "review-123" })          # PR target
-   EnterWorktree({ name: "review-feature-x" })    # branch target
+   EnterWorktree({ name: "review-123-<timestamp>" })          # PR target
+   EnterWorktree({ name: "review-feature-x-<timestamp>" })    # branch target
    ```
+
+   Generate `<timestamp>` yourself with `date +%s` and put it in the name. A fixed
+   name collides on a second review of the same PR or branch, because the worktree
+   and its backing branch may still exist from a run that ended early (a `refused`
+   result, a crash). A per-run name means each run gets its own worktree, so
+   interrupted runs leave ones behind; `git worktree list` shows them and
+   `git worktree prune` clears the stale entries whenever the user wants to tidy up.
 
    Then check the target out from inside it:
 

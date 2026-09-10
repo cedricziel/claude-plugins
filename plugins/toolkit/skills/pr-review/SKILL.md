@@ -80,8 +80,16 @@ checkout of someone else's PR.
    the session into it in one step:
 
    ```
-   EnterWorktree({ name: "pr-<n>-review" })
+   EnterWorktree({ name: "pr-<n>-review-<timestamp>" })
    ```
+
+   Generate `<timestamp>` yourself with `date +%s` and put it in the name. A fixed
+   `pr-<n>-review` collides on the second run against the same PR — exactly the
+   re-run described under "Re-running" below — because the worktree and its backing
+   branch may still exist from a run that ended early (a `refused` result, a crash).
+   A per-run name means each run gets its own worktree, so interrupted runs leave
+   ones behind; `git worktree list` shows them and `git worktree prune` clears the
+   stale entries whenever the user wants to tidy up.
 
    Then check the PR out from inside it:
 
