@@ -98,7 +98,7 @@ Line numbers must refer to the NEW side of the diff. Return at most 10 nitpicks;
 );
 const nitpicks = (nitpickResult?.nitpicks ?? []).slice(0, 10);
 const counts = countSeverities(review.confirmed, nitpicks);
-const decision = decide(review.confirmed, nitpicks, review.gaps);
+const decision = decide(review.confirmed, nitpicks);
 
 if (budget.total && budget.remaining() < BUDGET_FLOOR) {
   log("budget low; skipping suggestions and the prose summary");
@@ -202,14 +202,18 @@ function countSeverities(confirmed, nitpicks) {
   return counts;
 }
 
-function decide(confirmed, nitpicks, gaps) {
+// Gaps are deliberately excluded: the critic is prompted to always name
+// unexamined risks, so gaps are near-never empty and would make APPROVE
+// unreachable — leaving a PR that once got REQUEST_CHANGES with no way to be
+// cleared by a later clean re-review. They stay informational, in the summary.
+function decide(confirmed, nitpicks) {
   if (
     confirmed.some(
       (f) => severityOf(f) === "critical" || severityOf(f) === "high",
     )
   )
     return "REQUEST_CHANGES";
-  if (confirmed.length || nitpicks.length || gaps.length) return "COMMENT";
+  if (confirmed.length || nitpicks.length) return "COMMENT";
   return "APPROVE";
 }
 
