@@ -147,4 +147,6 @@ return {
   rejected: rejected.map((f) => ({ file: f.file, line: f.line, title: f.title, why: f.votes.filter((v) => v.refuted).map((v) => v.reason)[0] })),
   gaps: critic?.gaps ?? [],
   dropped: all.length - chosen.length,
+  lensesSucceeded: reviews.filter(Boolean).length,
+  lensesTotal: LENSES.length,
 }

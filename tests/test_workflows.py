@@ -1,3 +1,4 @@
+import re
 import shutil
 import subprocess
 import tempfile
@@ -12,7 +13,10 @@ class WorkflowSyntaxTest(unittest.TestCase):
     def test_each_workflow_parses_as_async_module_body(self):
         for js in sorted(WORKFLOWS.glob("*.js")):
             src = js.read_text()
-            head, _, body = src.partition("\n}\n")  # split after `export const meta = {...}`
+            m = re.search(r"\n\};?\n", src)  # split after `export const meta = {...}` (tolerates optional semicolon added by prettier)
+            if not m:
+                self.fail(f"{js.name}: could not locate the end of the meta object")
+            head, body = src[:m.start()], src[m.end():]
             wrapped = head + "\n}\n" + "export default async function run(args, agent, parallel, pipeline, phase, log, budget, workflow) {\n" + body + "\n}\n"
             with tempfile.NamedTemporaryFile("w", suffix=".mjs", delete=False) as f:
                 f.write(wrapped)
