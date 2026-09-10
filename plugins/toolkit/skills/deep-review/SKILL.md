@@ -1,0 +1,59 @@
+---
+name: deep-review
+description: Thorough multi-agent code review — 5 lenses, refuters, critic, plus style nitpicks and committable suggestions — for a diff, branch, or PR. Produces a categorized report only; never touches GitHub. TRIGGER ONLY on /deep-review, or an explicit ask naming "deep review" / "thorough categorized review" for a specific target. DO NOT trigger for bare "review this" / "code review" (the official code-review plugin handles that), for "adversarially review" (that's /adversarial-review directly), or for CodeRabbit follow-ups (the coderabbit skill).
+---
+
+# Deep review
+
+Runs the `code-review` workflow (which nests `adversarial-review`) shipped with this plugin. ~35-40 agent calls per run.
+
+## When this fires
+
+| Ask                                            | Action                                                 |
+| ---------------------------------------------- | ------------------------------------------------------ |
+| `/deep-review [target]`                        | run it                                                 |
+| "deep review PR 12 / this branch / my changes" | run it                                                 |
+| "review this", "code review"                   | **not this skill** — the official `code-review` plugin |
+| "adversarially review ..."                     | **not this skill** — `/adversarial-review` directly    |
+| "address the CodeRabbit comments"              | **not this skill** — `coderabbit` skill                |
+
+Invoking this skill is the user's explicit opt-in to multi-agent orchestration — do not ask again once triggered.
+
+## Usage
+
+```
+/deep-review                 # working tree (staged + unstaged + untracked)
+/deep-review 123             # GitHub PR #123 diff (read-only — nothing is posted)
+/deep-review feature/x       # branch vs its merge-base with main
+/deep-review 123 --max 12    # verify up to 12 findings (default 8)
+```
+
+## Steps
+
+1. Resolve the diff:
+
+   ```bash
+   "${CLAUDE_PLUGIN_ROOT}/scripts/review-target.sh" "<target>" "<scratchpad>/review.patch"
+   ```
+
+   It prints `kind=… base=… lines=…`. If it exits non-zero the diff is empty — tell the user and stop.
+
+2. Run the workflow, passing the absolute diff path:
+
+   ```
+   Workflow({ name: "toolkit:code-review",
+              args: { diffPath: "<abs path>", target: "<PR #123 | branch x | working tree>",
+                      maxFindings: <n> } })
+   ```
+
+3. Render the result:
+   - **Decision** — APPROVE / COMMENT / REQUEST_CHANGES, shown first.
+   - **Findings by severity** — the counts line from the result's `summary`.
+   - **Confirmed findings** — table: `file:line`, severity, title, and the suggestion diff if one exists.
+   - **Nitpicks** — listed separately, never counted toward the decision.
+   - **Risks not verified** — the critic's gaps, marked unconfirmed.
+     Every `file:line` must be a clickable reference.
+
+## Cost
+
+Inherits `adversarial-review`'s `1 + 5 + 3N + 1`, plus 1 nitpick call, plus up to `N + nitpicks` suggestion calls, plus 1 summary call. At the default `N=8` that's roughly 35-40 agent calls.
