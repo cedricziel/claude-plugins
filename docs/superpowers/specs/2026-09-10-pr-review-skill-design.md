@@ -22,11 +22,11 @@ explicitly avoiding the parts that turned out to be noise.
   branch, PR). Never touches GitHub.
 - New workflow `toolkit:pr-review-submit` — the outward gate. Takes a
   review payload and a PR reference, submits one atomic GitHub review.
-- New skill `code-review` — fronts the engine workflow only. Slash
+- New skill `deep-review` — fronts the engine workflow only. Slash
   command `/deep-review` (the name `/code-review` is already used by the
   official `code-review` plugin; picking a distinct name avoids trigger
   ambiguity between the two).
-- New skill `pull-request-review` — fronts engine + submit. Replaces the
+- New skill `pr-review` — fronts engine + submit. Replaces the
   current `commands/pr-review.md` (a crude, freeform prompt with no
   structure, no verification, no real review submission) and its
   `/pr-review` slash command.
@@ -77,23 +77,35 @@ additional agent-call phases in this same file (no further nesting).
    visible without being treated as confirmed defects.
 
 Returns `{ refused, decision, summary, comments: [{file, line, severity,
-category, title, body, suggestion?, nitpick}], gaps }`. Never calls `gh`
-for anything mutating.
+title, body, suggestion, nitpick}], gaps, counts }`. Never calls `gh` for
+anything mutating.
+
+The per-finding `category` this originally listed was dropped:
+`adversarial-review` does not record which lens produced a finding, and
+adding that would mean changing a workflow this one only reuses. Severity
+plus the `nitpick` flag carry the grouping instead.
 
 ### `toolkit:pr-review-submit` (leaf workflow)
 
-Takes the payload above plus `{ number, repo, cli }`. One agent call
-resolves owner/repo if needed and submits a single
+Takes the payload above plus `{ number, repo, cli, commitSha }`, all
+required — `repo` is never inferred, and a missing one throws rather than
+guessing which repository to post to. One agent call submits a single
 `gh api repos/{owner}/{repo}/pulls/{n}/reviews` POST bundling:
 
+- `commit_id`: the head SHA captured before the review ran, re-checked
+  against the PR's current head immediately before posting — a review
+  takes minutes, and without this the verdict would bind to whatever HEAD
+  is at post time.
 - `event`: the decision, mapped to `APPROVE` / `REQUEST_CHANGES` /
-  `COMMENT`.
+  `COMMENT`, and validated against exactly those three.
 - `body`: the summary.
 - `comments[]`: one entry per finding, `path`/`line`/`side: RIGHT`/`body`;
-  a suggestion is embedded as a single ` ```suggestion ` fence appended to
-  the body (no extra `diff` fence or nested `<details>` wrapping — one
-  clean fence renders GitHub's native "commit suggestion" button, and the
-  extra wrapping CodeRabbit uses added nothing but noise).
+  a suggestion is embedded as a single `suggestion` fence appended to the
+  body (no extra `diff` fence or nested `<details>` wrapping — one clean
+  fence renders GitHub's native "commit suggestion" button, and the extra
+  wrapping CodeRabbit uses added nothing but noise). The fence is sized to
+  the longest backtick run in the content, so a suggestion containing its
+  own fence cannot close it early.
 
 A clean diff (nothing in `comments`, decision `APPROVE`) posts a short
 "no issues found" body with an empty `comments[]`.
@@ -106,10 +118,11 @@ the skill layer, not a rewrite of the engine.
 
 ### Skills
 
-- **`code-review`** (`/deep-review [target]`) — runs `code-review` only,
-  renders the report (decision, severity breakdown, findings,
-  suggestions, gaps). No GitHub side effects regardless of target.
-- **`pull-request-review`** (`/pr-review <PR>`) — requires a PR number or
+- **`deep-review`** (`/deep-review [target]`) — runs the `code-review`
+  workflow only, renders the report (decision, severity breakdown,
+  findings, suggestions, gaps). No GitHub side effects regardless of
+  target.
+- **`pr-review`** (`/pr-review <PR>`) — requires a PR number or
   URL. Runs `code-review`, then immediately `pr-review-submit`. Renders
   what was posted (comment count, decision, link to the review) afterward.
 
@@ -164,7 +177,7 @@ rather than signal:
 plus one nitpick-lens call, plus up to `N + nitpicks` suggestion calls,
 plus one summarize call. `pr-review-submit` adds one more. At the default
 `maxFindings = 8` this is on the order of ~35-40 agent calls for
-`pull-request-review`, roughly in line with `adversarial-review`'s
+`pr-review`, roughly in line with `adversarial-review`'s
 existing ~31.
 
 ## Posting policy

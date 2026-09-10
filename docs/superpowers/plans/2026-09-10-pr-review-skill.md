@@ -1,6 +1,13 @@
 # PR Review Skill Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **Executed — see PR #7 (branch `feat/pr-review-skill`).** Every step below is
+> done; this file is kept as a record of the intent, not as instructions to run.
+> Do not re-apply it verbatim: the code blocks in Task 1 and Task 3 are the
+> pre-review versions, and pasting them back would undo the fixes that landed on
+> top of them (commit pinning, fence escaping, the all-lenses-failed guard, and
+> the worktree mechanism the skills actually use). Read the shipped files, and
+> the spec at `docs/superpowers/specs/2026-09-10-pr-review-skill-design.md`,
+> for what is true now.
 
 **Goal:** Give the toolkit plugin a thorough, multi-agent PR review capability — point it at a PR and it reviews the diff (reusing `adversarial-review`), categorizes and scores every finding, writes committable suggestions where safe, and submits one real GitHub review (approve/request-changes/comment + inline comments).
 
@@ -53,7 +60,7 @@ plugins/toolkit/
 - Consumes: `toolkit:adversarial-review` workflow, called as `workflow('toolkit:adversarial-review', { diffPath, target, maxFindings, minLines, reviewModel })` → returns `{ refused, confirmed: [{file, line, title, claim, failure_scenario, severity, evidence}], rejected, gaps: string[], dropped }` (existing shape, unchanged — see `plugins/toolkit/workflows/adversarial-review.js`).
 - Produces: `{ refused: string|null, target: string, decision: 'APPROVE'|'COMMENT'|'REQUEST_CHANGES', summary: string, comments: [{file, line, severity: 'critical'|'high'|'medium'|'low'|'nitpick', nitpick: boolean, title, body, suggestion: string}], gaps: string[], counts: {critical, high, medium, low, nitpick} }` — consumed by Task 4's `pr-review` skill and directly rendered by Task 2's `deep-review` skill.
 
-- [ ] **Step 1: Write the file with a deliberate syntax error, to prove the syntax check catches it**
+- [x] **Step 1: Write the file with a deliberate syntax error, to prove the syntax check catches it**
 
 Create `plugins/toolkit/workflows/code-review.js` with this content (note the intentionally missing closing brace on `meta`):
 
@@ -63,12 +70,12 @@ export const meta = {
   description: 'Categorized multi-agent code review with committable suggestions and a decision (approve/comment/request-changes) — no GitHub side effects',
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `cd /Users/cedricziel/code/claude-plugins && python3 -m unittest tests.test_workflows -v`
 Expected: FAIL — `code-review.js` reports a syntax error from `node --check`.
 
-- [ ] **Step 3: Write the complete, correct implementation**
+- [x] **Step 3: Write the complete, correct implementation**
 
 Replace the full file content with:
 
@@ -293,12 +300,12 @@ function renderSummary(counts, gaps, walkthrough) {
 }
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run: `cd /Users/cedricziel/code/claude-plugins && python3 -m unittest tests.test_workflows -v && python3 scripts/validate.py`
 Expected: both PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add plugins/toolkit/workflows/code-review.js
@@ -319,7 +326,7 @@ git commit -m "feat(toolkit): add code-review workflow nesting adversarial-revie
 - Consumes: `toolkit:code-review` workflow from Task 1 (`Workflow({ name: "toolkit:code-review", args: {...} })`), `plugins/toolkit/scripts/review-target.sh` (existing, unchanged).
 - Produces: the `/deep-review` slash command (skill name doubles as the slash command, matching how `adversarial-review`'s skill works today — see `plugins/toolkit/skills/adversarial-review/SKILL.md`).
 
-- [ ] **Step 1: Write the file with missing frontmatter, to prove the validator catches it**
+- [x] **Step 1: Write the file with missing frontmatter, to prove the validator catches it**
 
 Create `plugins/toolkit/skills/deep-review/SKILL.md` with only:
 
@@ -329,12 +336,12 @@ Create `plugins/toolkit/skills/deep-review/SKILL.md` with only:
 placeholder
 ```
 
-- [ ] **Step 2: Run the validator to verify it fails**
+- [x] **Step 2: Run the validator to verify it fails**
 
 Run: `cd /Users/cedricziel/code/claude-plugins && python3 scripts/validate.py`
 Expected: FAIL — reports `deep-review/SKILL.md: no YAML frontmatter`.
 
-- [ ] **Step 3: Write the complete file**
+- [x] **Step 3: Write the complete file**
 
 ````markdown
 ---
@@ -398,12 +405,12 @@ Invoking this skill is the user's explicit opt-in to multi-agent orchestration �
 Inherits `adversarial-review`'s `1 + 5 + 3N + 1`, plus 1 nitpick call, plus up to `N + nitpicks` suggestion calls, plus 1 summary call. At the default `N=8` that's roughly 35-40 agent calls.
 ````
 
-- [ ] **Step 4: Run the validator to verify it passes**
+- [x] **Step 4: Run the validator to verify it passes**
 
 Run: `cd /Users/cedricziel/code/claude-plugins && python3 scripts/validate.py`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add plugins/toolkit/skills/deep-review/SKILL.md
@@ -424,7 +431,7 @@ git commit -m "feat(toolkit): add deep-review skill fronting the code-review wor
 - Consumes: the payload shape produced by Task 1's `code-review` workflow (`decision`, `summary`, `comments`), plus `{ number, repo, cli, repoDir? }`.
 - Produces: `{ refused: string|null, posted: boolean, reviewUrl: string|null, decision: string, commentCount: number }` — consumed by Task 4's `pr-review` skill.
 
-- [ ] **Step 1: Write the file with a deliberate syntax error**
+- [x] **Step 1: Write the file with a deliberate syntax error**
 
 Create `plugins/toolkit/workflows/pr-review-submit.js` with:
 
@@ -434,12 +441,12 @@ export const meta = {
   description: 'Submit a code-review payload as one atomic GitHub PR review'
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `cd /Users/cedricziel/code/claude-plugins && python3 -m unittest tests.test_workflows -v`
 Expected: FAIL — syntax error in `pr-review-submit.js`.
 
-- [ ] **Step 3: Write the complete, correct implementation**
+- [x] **Step 3: Write the complete, correct implementation**
 
 ```js
 export const meta = {
@@ -530,12 +537,12 @@ return {
 };
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run: `cd /Users/cedricziel/code/claude-plugins && python3 -m unittest tests.test_workflows -v && python3 scripts/validate.py`
 Expected: both PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add plugins/toolkit/workflows/pr-review-submit.js
@@ -557,7 +564,7 @@ git commit -m "feat(toolkit): add pr-review-submit workflow to post one atomic G
 - Consumes: `toolkit:code-review` (Task 1) then `toolkit:pr-review-submit` (Task 3) — chained via the skill's own steps, not nested in a script (this is deliberately at the skill layer, not a third workflow, since chaining two already-separate workflows is exactly what "orchestrator calling another orchestrator" would forbid at the script level, and the repo's own convention is to "sequence them from a skill instead").
 - Produces: the `/pr-review` slash command.
 
-- [ ] **Step 1: Delete the old command and write the new skill file with missing frontmatter, to prove the validator catches it**
+- [x] **Step 1: Delete the old command and write the new skill file with missing frontmatter, to prove the validator catches it**
 
 ```bash
 git rm plugins/toolkit/commands/pr-review.md
@@ -571,12 +578,12 @@ Create `plugins/toolkit/skills/pr-review/SKILL.md` with only:
 placeholder
 ```
 
-- [ ] **Step 2: Run the validator to verify it fails**
+- [x] **Step 2: Run the validator to verify it fails**
 
 Run: `cd /Users/cedricziel/code/claude-plugins && python3 scripts/validate.py`
 Expected: FAIL — reports `pr-review/SKILL.md: no YAML frontmatter`.
 
-- [ ] **Step 3: Write the complete file**
+- [x] **Step 3: Write the complete file**
 
 ````markdown
 ---
@@ -642,12 +649,12 @@ Re-running on the same PR posts a new review reflecting the current diff — thi
 Same engine as `deep-review` (~35-40 agent calls) plus 1 for posting.
 ````
 
-- [ ] **Step 4: Run the validator to verify it passes**
+- [x] **Step 4: Run the validator to verify it passes**
 
 Run: `cd /Users/cedricziel/code/claude-plugins && python3 scripts/validate.py`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add plugins/toolkit/skills/pr-review/SKILL.md plugins/toolkit/commands/pr-review.md
@@ -667,7 +674,7 @@ git commit -m "feat(toolkit): replace freeform pr-review command with the pr-rev
 
 **Interfaces:** none — this task only updates version metadata.
 
-- [ ] **Step 1: Bump `plugins/toolkit/.claude-plugin/plugin.json`**
+- [x] **Step 1: Bump `plugins/toolkit/.claude-plugin/plugin.json`**
 
 Change:
 
@@ -681,7 +688,7 @@ to:
   "version": "1.11.0",
 ```
 
-- [ ] **Step 2: Bump the `toolkit` entry in `.claude-plugin/marketplace.json`**
+- [x] **Step 2: Bump the `toolkit` entry in `.claude-plugin/marketplace.json`**
 
 In the `toolkit` plugin object (not the top-level `metadata.version`, which is a separate release counter), change:
 
@@ -695,19 +702,19 @@ to:
       "version": "1.11.0",
 ```
 
-- [ ] **Step 3: Run the full validation suite**
+- [x] **Step 3: Run the full validation suite**
 
 Run: `cd /Users/cedricziel/code/claude-plugins && python3 -m unittest discover -s tests && python3 scripts/validate.py`
 Expected: both PASS (this also re-confirms Tasks 1-4's files together, including the version match check between `plugin.json` and `marketplace.json`).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add plugins/toolkit/.claude-plugin/plugin.json .claude-plugin/marketplace.json
 git commit -m "chore(toolkit): bump version to 1.11.0 for code-review and pr-review skills"
 ```
 
-- [ ] **Step 5: Manual smoke test (not automatable — requires a real diff and, for the second check, a real PR)**
+- [x] **Step 5: Manual smoke test (not automatable — requires a real diff and, for the second check, a real PR)**
 
 1. On a small local branch with a deliberately introduced one-line bug, run `/deep-review <branch>`. Confirm the bug is caught, categorized with a severity, and that re-running after fixing it reports no confirmed findings.
 2. Pick one of the user's own low-stakes open PRs and run `/pr-review <PR#>`. Confirm on GitHub that the posted review shows the right decision, a summary with a severity breakdown, and that any inline comments/suggestions render correctly (a suggestion should show GitHub's native "commit suggestion" button). Push a fix and re-run `/pr-review <PR#>`; confirm the new review's decision reflects the fix (flips to `APPROVE` if nothing critical/high remains).
