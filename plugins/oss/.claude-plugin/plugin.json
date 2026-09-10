@@ -1,7 +1,7 @@
 {
   "name": "oss",
-  "version": "0.1.0",
-  "description": "Empty scaffold for open-source project conventions, to depend on from other OSS repos. Depends on common; no skills/hooks yet.",
+  "version": "0.2.0",
+  "description": "Open-source project conventions to depend on from OSS repos: the release-notes skill. Depends on common.",
   "dependencies": ["common"],
   "author": {
     "name": "Cedric Ziel",
@@ -10,5 +10,5 @@
   "license": "MIT",
   "repository": "https://github.com/cedricziel/claude-plugins",
   "homepage": "https://github.com/cedricziel/claude-plugins",
-  "keywords": ["oss", "open-source", "scaffold"]
+  "keywords": ["oss", "open-source", "release-notes", "changelog"]
 }
