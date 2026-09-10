@@ -30,7 +30,32 @@ Invoking this skill is the user's explicit opt-in to multi-agent orchestration �
 
 ## Steps
 
-1. Resolve the diff:
+1. **PR and branch targets: check the code out into an isolated worktree first, and run everything below from there.**
+
+   `review-target.sh` only produces diff _text_ — `gh pr diff` never moves the working
+   tree. Every agent underneath reads files from whatever is checked out: the nitpick
+   lens, the suggestion writers, and `adversarial-review`'s own reviewers and refuters
+   all "open surrounding files in the repository". Run `/deep-review 123` from a `main`
+   checkout without this step and they review `main` instead of the PR. So make the
+   ambient checkout _be_ the code under review — in a scratch worktree, never by moving
+   the user's own checkout:
+
+   ```bash
+   git worktree add --detach "<scratchpad>/review-wt"          # PR target
+   cd "<scratchpad>/review-wt" && gh pr checkout 123 --detach
+
+   git worktree add --detach "<scratchpad>/review-wt" feature/x   # branch target
+   cd "<scratchpad>/review-wt"
+   ```
+
+   If this session has a native worktree tool (`EnterWorktree`, `/worktree`), use it
+   instead — see the `using-git-worktrees` skill. Remove the worktree once the report is
+   rendered (`git worktree remove --force "<scratchpad>/review-wt"`): the report holds
+   everything, so nothing is lost by cleaning up.
+
+   A working-tree target skips this — the code under review is already checked out.
+
+2. Resolve the diff (from the worktree, if you made one):
 
    ```bash
    "${CLAUDE_PLUGIN_ROOT}/scripts/review-target.sh" "<target>" "<scratchpad>/review.patch"
@@ -38,7 +63,7 @@ Invoking this skill is the user's explicit opt-in to multi-agent orchestration �
 
    It prints `kind=… base=… lines=…`. If it exits non-zero the diff is empty — tell the user and stop.
 
-2. Run the workflow, passing the absolute diff path:
+3. Run the workflow, passing the absolute diff path:
 
    ```
    Workflow({ name: "toolkit:code-review",
@@ -46,7 +71,7 @@ Invoking this skill is the user's explicit opt-in to multi-agent orchestration �
                       maxFindings: <n> } })
    ```
 
-3. Render the result:
+4. Render the result:
    - **Decision** — APPROVE / COMMENT / REQUEST_CHANGES, shown first.
    - **Findings by severity** — the counts line from the result's `summary`.
    - **Confirmed findings** — table: `file:line`, severity, title, and the suggestion diff if one exists.

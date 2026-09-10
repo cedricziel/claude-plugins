@@ -11,7 +11,7 @@ Runs `toolkit:code-review` then `toolkit:pr-review-submit` — posts one real Gi
 
 | Ask                                            | Action                                  |
 | ---------------------------------------------- | --------------------------------------- |
-| `/pr-review <PR#\|URL>`                        | run it                                  |
+| `/pr-review <PR#>`                             | run it                                  |
 | "review PR 123 and leave your verdict"         | run it                                  |
 | "review this", "code review" (no PR named)     | **not this skill**                      |
 | "deep review PR 123" (report only, no posting) | **not this skill** — `deep-review`      |
@@ -22,35 +22,64 @@ Invoking this skill submits a real, visible GitHub review — including possibly
 ## Usage
 
 ```
-/pr-review 123
-/pr-review https://github.com/owner/repo/pull/123
+/pr-review 123      # a PR in the current checkout's repository
+/pr-review          # the current branch's own PR
 ```
+
+A bare PR number only. `review-target.sh` resolves `gh pr diff <n>` against whatever
+repository the current checkout belongs to, while step 4 posts to the repo named in
+the args — so a PR reference pointing somewhere else reviews one PR and posts the
+verdict onto a different, unrelated one. To review a PR in another repository, run
+this from a checkout of that repository. (`adversarial-review` takes PR numbers only
+for the same reason.)
 
 ## Steps
 
-1. Resolve the PR number and `owner/repo` (from the arg, or `gh pr view --json number,url` in the current checkout), then resolve its diff:
+1. **Resolve the PR, then check it out into an isolated worktree.**
+
+   `gh pr view --json number,url` gives the number when no argument was passed;
+   `gh repo view --json nameWithOwner` gives `owner/repo`.
+
+   `gh pr diff` fetches diff _text_ and nothing else — the working tree never moves,
+   while every agent underneath reads files from whatever is checked out. Skip this and
+   a review launched from `main` reviews `main`, and the committable suggestions it
+   posts — one click to apply, with no confirmation gate — can propose reverting the
+   author's real changes. So make the ambient checkout _be_ the PR's head, in a scratch
+   worktree, never by moving the user's own checkout:
+
+   ```bash
+   git worktree add --detach "<scratchpad>/review-wt"
+   cd "<scratchpad>/review-wt" && gh pr checkout <n> --detach
+   ```
+
+   If this session has a native worktree tool (`EnterWorktree`, `/worktree`), use it
+   instead — see the `using-git-worktrees` skill. Run every step below from that
+   directory, and remove it once the review is posted:
+   `git worktree remove --force "<scratchpad>/review-wt"`.
+
+2. Resolve the diff, from the worktree:
 
    ```bash
    "${CLAUDE_PLUGIN_ROOT}/scripts/review-target.sh" "<PR#>" "<scratchpad>/review.patch"
    ```
 
-2. Run the review engine:
+3. Run the review engine:
 
    ```
    Workflow({ name: "toolkit:code-review",
               args: { diffPath: "<abs path>", target: "PR #<n>" } })
    ```
 
-3. Submit it:
+4. Submit it:
 
    ```
    Workflow({ name: "toolkit:pr-review-submit",
               args: { number: <n>, repo: "<owner>/<repo>", cli: "gh",
-                      decision: <decision from step 2>, summary: <summary from step 2>,
-                      comments: <comments from step 2> } })
+                      decision: <decision from step 3>, summary: <summary from step 3>,
+                      comments: <comments from step 3> } })
    ```
 
-4. Report what was posted: decision, comment count, and the review URL. If `posted` is false, surface the failure — do not retry silently.
+5. Report what was posted: decision, comment count, and the review URL. If `posted` is false, surface the failure — do not retry silently.
 
 ## Re-running
 
