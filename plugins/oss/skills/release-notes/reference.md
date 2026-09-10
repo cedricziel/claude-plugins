@@ -30,8 +30,8 @@ an issue number, which settles it.
 
 ```bash
 for n in $(cat numbers.txt); do
-  gh pr view "$n" --json number,title,body,labels,closingIssuesReferences
-done > prs.json
+  gh pr view "$n" --json number,title,body,labels,closingIssuesReferences --jq -c .
+done > prs.jsonl   # one JSON object per line
 ```
 
 When the range has no usable first-parent line, a date window is the

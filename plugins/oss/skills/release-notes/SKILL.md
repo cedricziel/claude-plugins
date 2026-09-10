@@ -116,7 +116,7 @@ A ledger (below) is what makes an omission deliberate instead of accidental.
 
 Before, from a generated body:
 
-```
+```text
 * feat: one signaldb binary with the services as subcommands (#1204)
 * fix(compactor)!: re-validate unconditionally before deleting orphans (#1020)
 * refactor(logging): forbid log:: macros in favor of tracing:: (#1006)
@@ -124,7 +124,7 @@ Before, from a generated body:
 
 After:
 
-```
+```markdown
 > [!WARNING]
 > **The per-service binaries are gone.** `acceptor`, `router`, `writer`,
 > `querier` and `compactor` are subcommands of one `signaldb` binary. Update
