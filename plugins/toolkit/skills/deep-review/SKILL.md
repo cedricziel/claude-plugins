@@ -30,28 +30,46 @@ Invoking this skill is the user's explicit opt-in to multi-agent orchestration �
 
 ## Steps
 
-1. **PR and branch targets: check the code out into an isolated worktree first, and run everything below from there.**
+1. **PR and branch targets: switch the session into an isolated worktree before running anything below — a bare `cd` does not do this.**
 
    `review-target.sh` only produces diff _text_ — `gh pr diff` never moves the working
    tree. Every agent underneath reads files from whatever is checked out: the nitpick
    lens, the suggestion writers, and `adversarial-review`'s own reviewers and refuters
-   all "open surrounding files in the repository". Run `/deep-review 123` from a `main`
-   checkout without this step and they review `main` instead of the PR. So make the
-   ambient checkout _be_ the code under review — in a scratch worktree, never by moving
-   the user's own checkout:
+   all "open surrounding files in the repository". `Workflow()` spawns those agents as
+   separate processes — they inherit the session's actual working directory, not a `cd`
+   run inside one Bash call, which only changes that one shell and is invisible to
+   anything spawned afterward. Run `/deep-review 123` from a `main` checkout using `cd`
+   for this and the spawned agents still review `main`, not the PR.
+
+   The native worktree-switching tool (`EnterWorktree`, or `/worktree` — see the
+   `using-git-worktrees` skill) is the primary, required mechanism: only a
+   session-level switch actually relocates what spawned agents see. Create the
+   worktree first:
 
    ```bash
-   git worktree add --detach "<scratchpad>/review-wt"          # PR target
-   cd "<scratchpad>/review-wt" && gh pr checkout 123 --detach
+   git worktree add --detach "<scratchpad>/review-wt"          # PR target: create it
+   cd "<scratchpad>/review-wt" && gh pr checkout 123 --detach  # ... and check the PR out
 
    git worktree add --detach "<scratchpad>/review-wt" feature/x   # branch target
-   cd "<scratchpad>/review-wt"
    ```
 
-   If this session has a native worktree tool (`EnterWorktree`, `/worktree`), use it
-   instead — see the `using-git-worktrees` skill. Remove the worktree once the report is
-   rendered (`git worktree remove --force "<scratchpad>/review-wt"`): the report holds
-   everything, so nothing is lost by cleaning up.
+   then switch the session into it:
+
+   ```
+   EnterWorktree({ path: "<scratchpad>/review-wt" })
+   ```
+
+   (`EnterWorktree` requires the path to already appear in `git worktree list`, which
+   is why `git worktree add` runs first — it switches the session, it doesn't create
+   the worktree on its own here.) If this session has no native worktree-switching
+   tool, there is no way to guarantee the spawned agents see the right code — say so
+   plainly to the user rather than running the `git worktree add` / `cd` recipe alone
+   and assuming it worked.
+
+   Remove the worktree once the report is rendered — `ExitWorktree({ action: "keep" })`
+   to return to the original directory (it will not delete a worktree entered via
+   `path`), then `git worktree remove --force "<scratchpad>/review-wt"`: the report
+   holds everything, so nothing is lost by cleaning up.
 
    A working-tree target skips this — the code under review is already checked out.
 

@@ -35,27 +35,46 @@ for the same reason.)
 
 ## Steps
 
-1. **Resolve the PR, then check it out into an isolated worktree.**
+1. **Resolve the PR, then switch the session into an isolated worktree — a bare `cd` does not do this.**
 
    `gh pr view --json number,url` gives the number when no argument was passed;
    `gh repo view --json nameWithOwner` gives `owner/repo`.
 
    `gh pr diff` fetches diff _text_ and nothing else — the working tree never moves,
-   while every agent underneath reads files from whatever is checked out. Skip this and
-   a review launched from `main` reviews `main`, and the committable suggestions it
-   posts — one click to apply, with no confirmation gate — can propose reverting the
-   author's real changes. So make the ambient checkout _be_ the PR's head, in a scratch
-   worktree, never by moving the user's own checkout:
+   while every agent underneath reads files from whatever is checked out. `Workflow()`
+   spawns those agents as separate processes: they inherit the session's actual working
+   directory, not a `cd` run inside one Bash call, which only changes that shell and is
+   invisible to anything spawned afterward. Skip a real switch and a review launched
+   from `main` reviews `main`, and the committable suggestions it posts — one click to
+   apply, with no confirmation gate — can propose reverting the author's real changes.
+
+   The native worktree-switching tool (`EnterWorktree`, or `/worktree` — see the
+   `using-git-worktrees` skill) is the primary, required mechanism, because only a
+   session-level switch actually relocates what spawned agents see. Create the worktree
+   and check the PR out into it:
 
    ```bash
    git worktree add --detach "<scratchpad>/review-wt"
    cd "<scratchpad>/review-wt" && gh pr checkout <n> --detach
    ```
 
-   If this session has a native worktree tool (`EnterWorktree`, `/worktree`), use it
-   instead — see the `using-git-worktrees` skill. Run every step below from that
-   directory, and remove it once the review is posted:
-   `git worktree remove --force "<scratchpad>/review-wt"`.
+   then switch the session into it:
+
+   ```
+   EnterWorktree({ path: "<scratchpad>/review-wt" })
+   ```
+
+   (`EnterWorktree` requires the path to already appear in `git worktree list`, which
+   is why `git worktree add` runs first — it switches the session, it doesn't create
+   the worktree.) Run every step below from that worktree. If this session has no
+   native worktree-switching tool, there is no way to guarantee the spawned agents see
+   the PR's code rather than `main` — say so plainly to the user before proceeding,
+   rather than running the `git worktree add` / `cd` recipe alone and assuming it
+   worked.
+
+   Remove the worktree once the review is posted — `ExitWorktree({ action: "keep" })`
+   to return to the original directory (it will not delete a worktree entered via
+   `path`), then `git worktree remove --force "<scratchpad>/review-wt"`.
 
 2. Resolve the diff, from the worktree:
 
