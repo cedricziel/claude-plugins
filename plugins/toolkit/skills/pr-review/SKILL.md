@@ -70,7 +70,12 @@ for the same reason.)
               args: { diffPath: "<abs path>", target: "PR #<n>" } })
    ```
 
-4. Submit it:
+4. If step 3's `refused` is non-null, report that reason to the user and stop. Do not
+   call `pr-review-submit`: a refused run carries `decision: null`, which it rejects,
+   and there is no verdict to post. Every workflow in this plugin returns
+   `refused: null` on success or a reason string on any early exit.
+
+5. Submit it:
 
    ```
    Workflow({ name: "toolkit:pr-review-submit",
@@ -79,7 +84,11 @@ for the same reason.)
                       comments: <comments from step 3> } })
    ```
 
-5. Report what was posted: decision, comment count, and the review URL. If `posted` is false, surface the failure — do not retry silently.
+6. Report what was posted: decision, comment count, and the review URL. If
+   `droppedComments` is non-empty, GitHub rejected the inline comments and only the
+   verdict and summary were posted — show that text so the user knows which findings
+   never reached the PR. If `posted` is false, surface the failure — do not retry
+   silently.
 
 ## Re-running
 

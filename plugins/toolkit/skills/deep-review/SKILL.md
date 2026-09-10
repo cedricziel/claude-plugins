@@ -71,7 +71,12 @@ Invoking this skill is the user's explicit opt-in to multi-agent orchestration �
                       maxFindings: <n> } })
    ```
 
-4. Render the result:
+4. If the result's `refused` is non-null, report that reason to the user and stop — the
+   nested `adversarial-review` bailed out (its own budget floor, an empty diff) and
+   there is nothing to render. Every workflow in this plugin returns `refused: null`
+   on success or a reason string on any early exit.
+
+5. Render the result:
    - **Decision** — APPROVE / COMMENT / REQUEST_CHANGES, shown first.
    - **Findings by severity** — the counts line from the result's `summary`.
    - **Confirmed findings** — table: `file:line`, severity, title, and the suggestion diff if one exists.
