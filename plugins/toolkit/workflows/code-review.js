@@ -89,8 +89,15 @@ const decision = decide(review.confirmed, nitpicks, review.gaps);
 
 if (budget.total && budget.remaining() < BUDGET_FLOOR) {
   log("budget low; skipping suggestions and the prose summary");
-  // prettier-ignore
-  return { refused: null, target, decision, summary: renderSummary(counts, review.gaps, null), comments: toComments(review.confirmed, nitpicks, []), gaps: review.gaps, counts }
+  return {
+    refused: null,
+    target,
+    decision,
+    summary: renderSummary(counts, review.gaps, null),
+    comments: toComments(review.confirmed, nitpicks, []),
+    gaps: review.gaps,
+    counts,
+  };
 }
 
 const candidates = [
