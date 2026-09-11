@@ -75,7 +75,10 @@ report holds everything worth keeping, so nothing is lost by leaving.
    and its backing branch may still exist from a run that ended early (a `refused`
    result, a crash). A per-run name means each run gets its own worktree, so
    interrupted runs leave ones behind; `git worktree list` shows them and
-   `git worktree prune` clears the stale entries whenever the user wants to tidy up.
+   `git worktree remove --force <path>` clears an actual leftover worktree still on
+   disk whenever the user wants to tidy up (`git worktree prune` only clears stale
+   administrative records for a worktree directory that was already deleted by hand
+   — it does not remove one that still exists).
 
    Then check the target out from inside it:
 

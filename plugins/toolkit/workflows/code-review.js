@@ -60,7 +60,13 @@ if (review.lensesSucceeded === 0)
     comments: [],
     gaps: [],
     counts: {},
+    lensesSucceeded: review.lensesSucceeded,
+    lensesTotal: review.lensesTotal,
   };
+// Some lenses died but not all: confirmed/gaps reflect only the angles that
+// were actually checked, so a clean result here means "nothing found in the
+// coverage we got", not "nothing wrong" — never let that read as APPROVE.
+const partialCoverage = review.lensesSucceeded < review.lensesTotal;
 
 const NITPICKS = {
   type: "object",
@@ -98,7 +104,7 @@ Line numbers must refer to the NEW side of the diff. Return at most 10 nitpicks;
 );
 const nitpicks = (nitpickResult?.nitpicks ?? []).slice(0, 10);
 const counts = countSeverities(review.confirmed, nitpicks);
-const decision = decide(review.confirmed, nitpicks);
+const decision = decide(review.confirmed, nitpicks, partialCoverage);
 
 if (budget.total && budget.remaining() < BUDGET_FLOOR) {
   log("budget low; skipping suggestions and the prose summary");
@@ -110,6 +116,8 @@ if (budget.total && budget.remaining() < BUDGET_FLOOR) {
     comments: toComments(review.confirmed, nitpicks, []),
     gaps: review.gaps,
     counts,
+    lensesSucceeded: review.lensesSucceeded,
+    lensesTotal: review.lensesTotal,
   };
 }
 
@@ -196,6 +204,8 @@ return {
   comments: toComments(review.confirmed, nitpicks, withSuggestions),
   gaps: review.gaps,
   counts,
+  lensesSucceeded: review.lensesSucceeded,
+  lensesTotal: review.lensesTotal,
 };
 
 // ---- plain helpers below, no agent calls; hoisted so they can be used above ----
@@ -227,40 +237,49 @@ function countSeverities(confirmed, nitpicks) {
 // unexamined risks, so gaps are near-never empty and would make APPROVE
 // unreachable — leaving a PR that once got REQUEST_CHANGES with no way to be
 // cleared by a later clean re-review. They stay informational, in the summary.
-function decide(confirmed, nitpicks) {
+//
+// Nitpicks never gate the decision — only confirmed findings do. A PR with
+// zero confirmed findings still gets APPROVE even if nitpicks were raised;
+// toComments() still includes them in the payload as informational comments.
+function decide(confirmed, nitpicks, partialCoverage) {
   if (
     confirmed.some(
       (f) => severityOf(f) === "critical" || severityOf(f) === "high",
     )
   )
     return "REQUEST_CHANGES";
-  if (confirmed.length || nitpicks.length) return "COMMENT";
+  if (confirmed.length) return "COMMENT";
+  // Some lenses failed: a clean result only means nothing was found in the
+  // coverage that succeeded, not that the change is clean — never APPROVE that.
+  if (partialCoverage) return "COMMENT";
   return "APPROVE";
 }
 
+// `withSuggestions` is `candidates` (confirmed findings, then nitpicks, in that
+// order) with a `.suggestion` appended at the same index — associate by that
+// position, not a derived key, so a confirmed finding and a nitpick that
+// happen to share file/line/title can never swap suggestions.
 function toComments(confirmed, nitpicks, withSuggestions) {
-  const key = (f) => `${f.file}:${f.line}:${f.title}`;
-  const bySuggestion = new Map(
-    withSuggestions.map((f) => [key(f), f.suggestion]),
-  );
+  const confirmedSuggestions = withSuggestions.slice(0, confirmed.length);
+  const nitpickSuggestions = withSuggestions.slice(confirmed.length);
   return [
-    ...confirmed.map((f) => ({
+    ...confirmed.map((f, i) => ({
       file: f.file,
       line: f.line,
       severity: f.severity,
       nitpick: false,
       title: f.title,
       body: `${f.claim}\n\nFailure scenario: ${f.failure_scenario}`,
-      suggestion: bySuggestion.get(key(f)) || "",
+      suggestion: confirmedSuggestions[i]?.suggestion || "",
     })),
-    ...nitpicks.map((n) => ({
+    ...nitpicks.map((n, i) => ({
       file: n.file,
       line: n.line,
       severity: "nitpick",
       nitpick: true,
       title: n.title,
       body: n.note,
-      suggestion: bySuggestion.get(key(n)) || "",
+      suggestion: nitpickSuggestions[i]?.suggestion || "",
     })),
   ];
 }
