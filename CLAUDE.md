@@ -1,6 +1,14 @@
 # claude-plugins
 
-Marketplace `cedricziel`; single plugin `plugins/toolkit`.
+Marketplace `cedricziel`; three plugins layered by audience: `common` (universal
+hygiene, no repo/tool assumptions) → `oss` (generic engineering practice, reusable
+in any repo, OSS or not) → `toolkit` (Cedric's personal layer: instructions,
+tool-specific integrations, the GitHub issue/PR orchestration engine). `toolkit`
+depends on both `common` and `oss`; `oss` depends on `common` only. A skill or
+workflow belongs in `oss`, not `toolkit`, unless it's personal-instruction content
+or tied to a specific tool Cedric uses (Forgejo, SignalDB, CodeRabbit) or is part
+of the orchestration engine (`workflows/`, `issue-run`, `pr-review`, `deep-review`,
+`adversarial-review`, `code-review`).
 
 ## Workflows are composable
 
@@ -31,8 +39,10 @@ Marketplace `cedricziel`; single plugin `plugins/toolkit`.
 - Every `agent()` call names its model: `WORK` (sonnet) for mechanical steps, `THINK`
   (opus) for judgment. Never inherit the session model — that silently means fable.
 
-- Bump `version` in both `plugins/toolkit/.claude-plugin/plugin.json` and
-  `.claude-plugin/marketplace.json` on every change; breaking removals bump minor.
+- Bump `version` in both the plugin's own `.claude-plugin/plugin.json` and its
+  entry in `.claude-plugin/marketplace.json` on every change; breaking removals
+  bump minor. Moving a skill between plugins changes its namespace (`toolkit:x`
+  → `oss:x`), so bump minor on both the plugin losing it and the plugin gaining it.
 - `python3 -m unittest discover -s tests && python3 scripts/validate.py` before commit.
 - Public repo: no hostnames, IPs, or secret-manager item names.
 - Hook scripts fail open and keep state under `~/.claude/hooks/`, never in the plugin dir.
