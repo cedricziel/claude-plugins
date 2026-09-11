@@ -1,14 +1,19 @@
 # claude-plugins
 
-Marketplace `cedricziel`; three plugins layered by audience: `common` (universal
+Marketplace `cedricziel`; four plugins layered by audience: `common` (universal
 hygiene, no repo/tool assumptions) → `oss` (generic engineering practice, reusable
-in any repo, OSS or not) → `toolkit` (Cedric's personal layer: instructions,
-tool-specific integrations, the GitHub issue/PR orchestration engine). `toolkit`
-depends on both `common` and `oss`; `oss` depends on `common` only. A skill or
-workflow belongs in `oss`, not `toolkit`, unless it's personal-instruction content
-or tied to a specific tool Cedric uses (Forgejo, SignalDB, CodeRabbit) or is part
-of the orchestration engine (`workflows/`, `issue-run`, `pr-review`, `deep-review`,
-`adversarial-review`, `code-review`).
+in any repo, OSS or not) and `skills` (generic tool-integration skills — CodeRabbit,
+Forgejo, dashboards — reusable by anyone who uses that tool, not just Cedric) →
+`toolkit` (Cedric's personal layer: instructions, SignalDB integration, the GitHub
+issue/PR orchestration engine). `toolkit` depends on `common`, `oss`, and `skills`;
+`oss` and `skills` each depend on `common` and `coderabbit@claude-plugins-official`.
+A skill or workflow belongs in
+`oss` or `skills`, not `toolkit`, unless it's personal-instruction content, tied to
+Cedric's own infrastructure (SignalDB), or part of the orchestration engine
+(`workflows/`, `issue-run`, `pr-review`, `deep-review`, `adversarial-review`,
+`code-review`). Between `oss` and `skills`: `oss` is engineering practice with no
+tool dependency; `skills` is a how-to-use-this-tool guide (CodeRabbit, Forgejo,
+dashboards) that anyone using that tool could reuse.
 
 ## Workflows are composable
 

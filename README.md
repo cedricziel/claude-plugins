@@ -8,21 +8,23 @@ Cedric Ziel's [Claude Code](https://docs.claude.com/en/docs/claude-code) plugin 
 /plugin marketplace add cedricziel/claude-plugins
 /plugin install toolkit@cedricziel   # everything, personal use
 /plugin install oss@cedricziel       # generic practice only, for any repo (day job, OSS, ...)
+/plugin install skills@cedricziel    # generic tool-integration skills only (CodeRabbit, Forgejo, dashboards)
 ```
 
 ## Plugins
 
-Three plugins, layered by audience — `common` → `oss` → `toolkit` — each depending
-on the one before it, so installing a later plugin pulls in the earlier ones
-automatically:
+Four plugins, layered by audience — `common` → (`oss` and `skills`) → `toolkit` —
+each depending on the ones before it, so installing a later plugin pulls in the
+earlier ones automatically:
 
 - **`common`** — universal hygiene with no assumptions about the repo, host, or
   employer.
 - **`oss`** — generic engineering practice reusable in any repo, whether it's an
   OSS project or a private one (day job included).
-- **`toolkit`** — my personal layer: global working instructions, tool-specific
-  integrations (Forgejo, SignalDB, CodeRabbit), and the GitHub issue/PR
-  orchestration engine.
+- **`skills`** — generic tool-integration skills reusable by anyone who uses that
+  tool: CodeRabbit, the Forgejo CLI, and dashboard design/review.
+- **`toolkit`** — my personal layer: global working instructions, SignalDB
+  observability, and the GitHub issue/PR orchestration engine.
 
 ### common
 
@@ -68,13 +70,28 @@ other repos' own plugins, not just installed by me.
 | `oss:coder`   | Scoped implementation engineer for any repo/language — failing test first, targeted builds, `/simplify` pass, semantic commit; delegate a planned task to it directly |
 | `oss:comment-sicko` | Purges narration comments and suppressions; spawned by `no-comments` above — vendored from pstack (MIT)                                               |
 
+### skills
+
+Generic tool-integration skills, reusable by anyone who uses that tool —
+not personal, not part of the orchestration engine. Depends on
+`common@cedricziel` and `coderabbit@claude-plugins-official`.
+
+**Skills** (loaded automatically when relevant)
+
+| Skill          | Purpose                                                     |
+| -------------- | ------------------------------------------------------------ |
+| `coderabbit`   | Working with CodeRabbit reviews on PRs                       |
+| `forgejo-cli`  | Using `fj` against Forgejo/Codeberg instances                |
+| `dashboarding` | Designing and reviewing operational dashboards                |
+
 ### toolkit
 
-My personal layer on top of `oss`: global working instructions, tool-specific
-integrations, and the GitHub issue/PR orchestration engine — so a fresh machine
-only needs this plugin, not a synced `~/.claude/CLAUDE.md`.
+My personal layer on top of `oss` and `skills`: global working instructions,
+SignalDB observability, and the GitHub issue/PR orchestration engine — so a
+fresh machine only needs this plugin, not a synced `~/.claude/CLAUDE.md`.
 `instructions/fleet-brief.md` is the checklist handed to code-committing
-subagents. Depends on `common@cedricziel` and `oss@cedricziel`.
+subagents. Depends on `common@cedricziel`, `oss@cedricziel`, and
+`skills@cedricziel`.
 
 **Skills** (loaded automatically when relevant)
 
@@ -84,10 +101,7 @@ subagents. Depends on `common@cedricziel` and `oss@cedricziel`.
 | `deep-review`        | `/deep-review [PR\|branch]` — categorized review with severities, nitpicks and committable suggestions; report only, never touches GitHub                                  |
 | `pr-review`          | `/pr-review <PR>` — the same engine, then submits one real GitHub review (decision, summary, inline suggestions)                                                            |
 | `issue-run`          | `/issue-run <ref> [--review] [--no-watch] [--yes]` — sequences the issue workflows below with human gates between them                                                     |
-| `coderabbit`         | Working with CodeRabbit reviews on PRs                                                                                                                                      |
-| `forgejo-cli`        | Using `fj` against Forgejo/Codeberg instances                                                                                                                               |
 | `signaldb-observe`   | Instrument an app with OpenTelemetry and ship to SignalDB                                                                                                                   |
-| `dashboarding`       | Designing and reviewing operational dashboards                                                                                                                              |
 
 **Hooks**
 
