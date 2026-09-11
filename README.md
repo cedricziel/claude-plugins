@@ -43,6 +43,7 @@ Everything I use day to day, in one plugin — including my global working rules
 | `commit-discipline`  | Atomic semantic commits, small always-shippable PRs                                                                                                             |
 | `git-stacked-prs`    | Split large changes into a stack of reviewable PRs                                                                                                              |
 | `writing-tests`      | Test-writing principles from the TDD canon                                                                                                                      |
+| `issue-create`       | `/issue-create <context>` — draft and file a well-structured GitHub issue from context                                                                          |
 | `adversarial-review` | `/adversarial-review [PR\|branch]` — runs the multi-agent workflow below                                                                                        |
 | `deep-review`        | `/deep-review [PR\|branch]` — categorized review with severities, nitpicks and committable suggestions; report only, never touches GitHub                       |
 | `pr-review`          | `/pr-review <PR>` — the same engine, then submits one real GitHub review (decision, summary, inline suggestions)                                                |
@@ -145,10 +146,9 @@ flowchart LR
 
 Design rules are in `CLAUDE.md`; the evidence behind them (reproduce first, plan on the strong model, refute findings, independent verification, bounded rounds, draft-first PRs) is summarised in `docs/superpowers/specs/2026-08-28-issue-workflow-research.md`.
 
-**Commands**
-
-`/issue-create <context>`. (`/issue` was replaced by `/issue-run`; the freeform
-`/pr-review` command by the `pr-review` skill above.)
+toolkit no longer has any freeform commands — `/issue` was replaced by `/issue-run`,
+and the freeform `/pr-review` and `/issue-create` commands by the `pr-review` and
+`issue-create` skills above.
 
 ### oss
 
