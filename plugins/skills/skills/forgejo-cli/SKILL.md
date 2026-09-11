@@ -28,9 +28,10 @@ fj whoami       -H <host>          # verify: "currently signed into <user>@<host
 
 - **Many self-hosted instances don't support `fj auth login`** (no OAuth app). It falls back with: *"your installation doesn't support login… create a token at `https://<host>/user/settings/applications`"*. Use `fj auth add-token` instead.
 - Create the token at `https://<host>/user/settings/applications`. Scopes: for general CLI use `read:repository`, `write:repository`, `read:user` (or `all`).
-- Feed the token via stdin so it doesn't linger in shell history/args:
+- Feed the token via a hidden prompt (or a secret manager) so it never appears in a
+  command or shell history:
   ```bash
-  echo -n '<TOKEN>' | fj auth add-token -H <host>
+  read -rs TOKEN && printf '%s' "$TOKEN" | fj auth add-token -H <host>; unset TOKEN
   ```
 - Credentials are stored in `~/Library/Application Support/forgejo-cli.forgejo-cli/keys.json` (macOS), mode `0600`. Rotate a leaked token in the instance's Applications settings, then re-run `add-token`.
 

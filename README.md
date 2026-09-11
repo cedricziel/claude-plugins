@@ -74,7 +74,7 @@ other repos' own plugins, not just installed by me.
 
 Generic tool-integration skills, reusable by anyone who uses that tool —
 not personal, not part of the orchestration engine. Depends on
-`common@cedricziel`.
+`common@cedricziel` and `coderabbit@claude-plugins-official`.
 
 **Skills** (loaded automatically when relevant)
 

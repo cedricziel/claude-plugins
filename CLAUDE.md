@@ -6,7 +6,8 @@ in any repo, OSS or not) and `skills` (generic tool-integration skills — CodeR
 Forgejo, dashboards — reusable by anyone who uses that tool, not just Cedric) →
 `toolkit` (Cedric's personal layer: instructions, SignalDB integration, the GitHub
 issue/PR orchestration engine). `toolkit` depends on `common`, `oss`, and `skills`;
-`oss` and `skills` each depend on `common` only. A skill or workflow belongs in
+`oss` and `skills` each depend on `common` and `coderabbit@claude-plugins-official`.
+A skill or workflow belongs in
 `oss` or `skills`, not `toolkit`, unless it's personal-instruction content, tied to
 Cedric's own infrastructure (SignalDB), or part of the orchestration engine
 (`workflows/`, `issue-run`, `pr-review`, `deep-review`, `adversarial-review`,
