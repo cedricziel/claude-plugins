@@ -1,7 +1,7 @@
 {
   "name": "oss",
-  "version": "0.2.0",
-  "description": "Open-source project conventions to depend on from OSS repos: the release-notes skill. Depends on common.",
+  "version": "0.3.0",
+  "description": "Generic engineering practice, reusable in any repo (OSS or not): commit discipline, stacked PRs, writing tests, technical writing, no-comments, GitHub issue creation, and release notes. Depends on common.",
   "dependencies": ["common"],
   "author": {
     "name": "Cedric Ziel",
@@ -10,5 +10,15 @@
   "license": "MIT",
   "repository": "https://github.com/cedricziel/claude-plugins",
   "homepage": "https://github.com/cedricziel/claude-plugins",
-  "keywords": ["oss", "open-source", "release-notes", "changelog"]
+  "keywords": [
+    "oss",
+    "open-source",
+    "commit-discipline",
+    "stacked-prs",
+    "testing",
+    "technical-writing",
+    "issue-create",
+    "release-notes",
+    "changelog"
+  ]
 }

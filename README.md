@@ -6,16 +6,27 @@ Cedric Ziel's [Claude Code](https://docs.claude.com/en/docs/claude-code) plugin 
 
 ```
 /plugin marketplace add cedricziel/claude-plugins
-/plugin install toolkit@cedricziel
+/plugin install toolkit@cedricziel   # everything, personal use
+/plugin install oss@cedricziel       # generic practice only, for any repo (day job, OSS, ...)
 ```
 
 ## Plugins
 
+Three plugins, layered by audience — `common` → `oss` → `toolkit` — each depending
+on the one before it, so installing a later plugin pulls in the earlier ones
+automatically:
+
+- **`common`** — universal hygiene with no assumptions about the repo, host, or
+  employer.
+- **`oss`** — generic engineering practice reusable in any repo, whether it's an
+  OSS project or a private one (day job included).
+- **`toolkit`** — my personal layer: global working instructions, tool-specific
+  integrations (Forgejo, SignalDB, CodeRabbit), and the GitHub issue/PR
+  orchestration engine.
+
 ### common
 
-Shared building blocks used by `toolkit` (and installable on its own). `toolkit`
-declares it as a plugin dependency, so `/plugin install toolkit@cedricziel` pulls
-it in automatically.
+Shared building blocks used by `oss` and `toolkit` (and installable on its own).
 
 **Skills** (loaded automatically when relevant)
 
@@ -32,28 +43,44 @@ it in automatically.
 | `PostToolUse` (Edit/Write) | Auto-formats the edited file (cargo fmt/rustfmt, goimports/gofmt, swiftformat/swift-format, dart, ruff/black, prettier) — fail-open                                                                                                                                                         |
 | `SessionStart`             | Injects `instructions/global.md` (delegation models, output style, semantic commits, stacked PRs under 500 lines, TDD + lint + `/simplify` before commit, default-no-comment, test-strategy pointer) as context; re-injected after compaction. Disable with `COMMON_INSTRUCTIONS_DISABLE=1` |
 
-### toolkit
+### oss
 
-Everything I use day to day, in one plugin — including my global working rules, so a fresh machine only needs the plugin, not a synced `~/.claude/CLAUDE.md`. `instructions/fleet-brief.md` is the checklist handed to code-committing subagents. Depends on `common@cedricziel`.
+Generic engineering practice, reusable in any repo — OSS or private, day job
+included. Depends on `common@cedricziel`. Meant to be depended on directly by
+other repos' own plugins, not just installed by me.
 
 **Skills** (loaded automatically when relevant)
 
-| Skill                | Purpose                                                                                                                                                         |
+| Skill               | Purpose                                                                                                                                                        |
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `commit-discipline`  | Atomic semantic commits, small always-shippable PRs                                                                                                             |
 | `git-stacked-prs`    | Split large changes into a stack of reviewable PRs                                                                                                              |
 | `writing-tests`      | Test-writing principles from the TDD canon                                                                                                                      |
 | `issue-create`       | `/issue-create <context>` — draft and file a well-structured GitHub issue from context                                                                          |
-| `adversarial-review` | `/adversarial-review [PR\|branch]` — runs the multi-agent workflow below                                                                                        |
-| `deep-review`        | `/deep-review [PR\|branch]` — categorized review with severities, nitpicks and committable suggestions; report only, never touches GitHub                       |
-| `pr-review`          | `/pr-review <PR>` — the same engine, then submits one real GitHub review (decision, summary, inline suggestions)                                                |
-| `issue-run`          | `/issue-run <ref> [--review] [--no-watch] [--yes]` — sequences the issue workflows below with human gates between them                                          |
-| `coderabbit`         | Working with CodeRabbit reviews on PRs                                                                                                                          |
-| `forgejo-cli`        | Using `fj` against Forgejo/Codeberg instances                                                                                                                   |
-| `signaldb-observe`   | Instrument an app with OpenTelemetry and ship to SignalDB                                                                                                       |
-| `dashboarding`       | Designing and reviewing operational dashboards                                                                                                                  |
-| `no-comments`        | `/toolkit:no-comments` — spawns the `comment-sicko` agent to purge narration comments and suppressions, then fixes the root causes — vendored from pstack (MIT) |
-| `technical-writing`  | `/toolkit:technical-writing` — Diátaxis + Google style + STE + Global English standard for docs, RFCs, READMEs, PR descriptions — vendored from pstack (MIT)    |
+| `no-comments`        | `/oss:no-comments` — spawns the `comment-sicko` agent to purge narration comments and suppressions, then fixes the root causes — vendored from pstack (MIT)     |
+| `technical-writing`  | `/oss:technical-writing` — Diátaxis + Google style + STE + Global English standard for docs, RFCs, READMEs, PR descriptions — vendored from pstack (MIT)        |
+| `release-notes`      | Draft informative, non-bloated, user-value-focused release notes for a GitHub release: output shape, include/omit rules, input gathering with `gh`, grounding and unslop gates |
+
+### toolkit
+
+My personal layer on top of `oss`: global working instructions, tool-specific
+integrations, and the GitHub issue/PR orchestration engine — so a fresh machine
+only needs this plugin, not a synced `~/.claude/CLAUDE.md`.
+`instructions/fleet-brief.md` is the checklist handed to code-committing
+subagents. Depends on `common@cedricziel` and `oss@cedricziel`.
+
+**Skills** (loaded automatically when relevant)
+
+| Skill                | Purpose                                                                                                                                                                     |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `adversarial-review` | `/adversarial-review [PR\|branch]` — runs the multi-agent workflow below                                                                                                    |
+| `deep-review`        | `/deep-review [PR\|branch]` — categorized review with severities, nitpicks and committable suggestions; report only, never touches GitHub                                  |
+| `pr-review`          | `/pr-review <PR>` — the same engine, then submits one real GitHub review (decision, summary, inline suggestions)                                                            |
+| `issue-run`          | `/issue-run <ref> [--review] [--no-watch] [--yes]` — sequences the issue workflows below with human gates between them                                                     |
+| `coderabbit`         | Working with CodeRabbit reviews on PRs                                                                                                                                      |
+| `forgejo-cli`        | Using `fj` against Forgejo/Codeberg instances                                                                                                                               |
+| `signaldb-observe`   | Instrument an app with OpenTelemetry and ship to SignalDB                                                                                                                   |
+| `dashboarding`       | Designing and reviewing operational dashboards                                                                                                                              |
 
 **Hooks**
 
@@ -147,19 +174,8 @@ flowchart LR
 Design rules are in `CLAUDE.md`; the evidence behind them (reproduce first, plan on the strong model, refute findings, independent verification, bounded rounds, draft-first PRs) is summarised in `docs/superpowers/specs/2026-08-28-issue-workflow-research.md`.
 
 toolkit no longer has any freeform commands — `/issue` was replaced by `/issue-run`,
-and the freeform `/pr-review` and `/issue-create` commands by the `pr-review` and
-`issue-create` skills above.
-
-### oss
-
-Conventions for running a public repo, meant to be depended on from other OSS
-repos. Depends on `common@cedricziel`.
-
-**Skills** (loaded automatically when relevant)
-
-| Skill           | Purpose                                                                                                                                                                        |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `release-notes` | Draft informative, non-bloated, user-value-focused release notes for a GitHub release: output shape, include/omit rules, input gathering with `gh`, grounding and unslop gates |
+and the freeform `/pr-review` and `/issue-create` commands by the `pr-review`
+(toolkit) and `issue-create` (oss) skills above.
 
 ## Development
 
@@ -171,4 +187,4 @@ claude --plugin-dir plugins/toolkit   # local smoke test
 
 ## License
 
-MIT. `common`'s `skills/unslop` and `toolkit`'s `skills/no-comments`, `skills/technical-writing` and `agents/comment-sicko` are vendored from pstack (© Lauren Tan, MIT — see its `LICENSE`).
+MIT. `common`'s `skills/unslop` and `oss`'s `skills/no-comments`, `skills/technical-writing` and `agents/comment-sicko` are vendored from pstack (© Lauren Tan, MIT — see its `LICENSE`).
