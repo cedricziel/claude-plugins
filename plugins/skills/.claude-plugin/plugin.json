@@ -1,8 +1,11 @@
 {
   "name": "skills",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Generic tool-integration skills, reusable in any repo regardless of who you are: CodeRabbit reviews, the Forgejo CLI, and dashboard design/review. Depends on common and coderabbit.",
-  "dependencies": ["common", "coderabbit@claude-plugins-official"],
+  "dependencies": [
+    "common",
+    { "name": "coderabbit", "marketplace": "claude-plugins-official" }
+  ],
   "author": {
     "name": "Cedric Ziel",
     "url": "https://github.com/cedricziel"
