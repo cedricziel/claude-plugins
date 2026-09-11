@@ -18,7 +18,9 @@ jobs:
           fetch-depth: 1
       - uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Or, billing against the API instead of the subscription:
+          # anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           # Anthropic's code-review plugin runs the actual review below; our own
           # toolkit@cedricziel is installed alongside it so its skills (e.g.
           # commit-discipline conventions surfaced via oss) are available too.
