@@ -1,8 +1,8 @@
 {
   "name": "toolkit",
-  "version": "1.12.1",
+  "version": "1.12.2",
   "description": "Cedric's personal layer on top of oss: global working instructions and fleet brief, TDD hooks, the GitHub issue/PR orchestration engine, code-review helpers, Forgejo CLI, SignalDB observability, and dashboard design.",
-  "dependencies": ["common", "oss", "coderabbit"],
+  "dependencies": ["common", "oss", "coderabbit@claude-plugins-official"],
   "author": {
     "name": "Cedric Ziel",
     "url": "https://github.com/cedricziel"
