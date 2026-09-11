@@ -1,8 +1,8 @@
 {
   "name": "oss",
-  "version": "0.4.0",
+  "version": "0.4.2",
   "description": "Generic engineering practice, reusable in any repo (OSS or not): commit discipline, stacked PRs, writing tests, technical writing, no-comments, GitHub issue creation, release notes, and a scoped implementation agent. Depends on common.",
-  "dependencies": ["common"],
+  "dependencies": ["common", "coderabbit@claude-plugins-official"],
   "author": {
     "name": "Cedric Ziel",
     "url": "https://github.com/cedricziel"
