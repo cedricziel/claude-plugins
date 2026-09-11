@@ -65,8 +65,8 @@ other repos' own plugins, not just installed by me.
 
 | Agent     | Purpose                                                                                                                                                            |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `coder`   | Scoped implementation engineer for any repo/language — failing test first, targeted builds, `/simplify` pass, semantic commit; delegate a planned task to it directly |
-| `comment-sicko` | Purges narration comments and suppressions; spawned by `no-comments` above — vendored from pstack (MIT)                                                    |
+| `oss:coder`   | Scoped implementation engineer for any repo/language — failing test first, targeted builds, `/simplify` pass, semantic commit; delegate a planned task to it directly |
+| `oss:comment-sicko` | Purges narration comments and suppressions; spawned by `no-comments` above — vendored from pstack (MIT)                                               |
 
 ### toolkit
 
