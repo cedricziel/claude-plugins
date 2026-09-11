@@ -6,8 +6,9 @@
   },
   "metadata": {
     "description": "Cedric Ziel's Claude Code plugins",
-    "version": "1.18.0"
+    "version": "1.18.1"
   },
+  "allowCrossMarketplaceDependenciesOn": ["claude-plugins-official"],
   "plugins": [
     {
       "name": "common",
@@ -45,7 +46,7 @@
       "name": "oss",
       "source": "./plugins/oss",
       "description": "Generic engineering practice, reusable in any repo: commit discipline, stacked PRs, writing tests, technical writing, no-comments, GitHub issue creation, release notes, and a scoped implementation agent. Depends on common.",
-      "version": "0.4.2",
+      "version": "0.4.3",
       "author": {
         "name": "Cedric Ziel",
         "url": "https://github.com/cedricziel"
@@ -67,13 +68,19 @@
       "name": "skills",
       "source": "./plugins/skills",
       "description": "Generic tool-integration skills, reusable in any repo regardless of who you are: CodeRabbit reviews, the Forgejo CLI, and dashboard design/review. Depends on common and coderabbit.",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "author": {
         "name": "Cedric Ziel",
         "url": "https://github.com/cedricziel"
       },
       "category": "productivity",
-      "keywords": ["coderabbit", "forgejo", "codeberg", "dashboards", "code-review"]
+      "keywords": [
+        "coderabbit",
+        "forgejo",
+        "codeberg",
+        "dashboards",
+        "code-review"
+      ]
     }
   ]
 }
