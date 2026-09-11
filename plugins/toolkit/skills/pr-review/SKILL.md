@@ -88,8 +88,11 @@ checkout of someone else's PR.
    re-run described under "Re-running" below — because the worktree and its backing
    branch may still exist from a run that ended early (a `refused` result, a crash).
    A per-run name means each run gets its own worktree, so interrupted runs leave
-   ones behind; `git worktree list` shows them and `git worktree prune` clears the
-   stale entries whenever the user wants to tidy up.
+   ones behind; `git worktree list` shows them and `git worktree remove --force <path>`
+   clears an actual leftover worktree still on disk whenever the user wants to tidy up
+   (`git worktree prune` only clears stale administrative records for a worktree
+   directory that was already deleted by hand — it does not remove one that still
+   exists).
 
    Then check the PR out from inside it:
 
@@ -146,7 +149,11 @@ checkout of someone else's PR.
    GitHub does not let anyone approve or request changes on their own pull request,
    so the review was posted as a plain comment instead — the findings are all there,
    but the verdict carries no formal approval or block. If `posted` is false, surface
-   the failure — do not retry silently.
+   the failure — do not retry silently. If `staleAfterPost` is true, say so plainly:
+   the PR's head moved in the narrow window between the pre-post head check and the
+   POST itself, so the review that landed may not match the code now on the PR —
+   this is detected, not prevented, and the fix is to re-run the review against the
+   new head.
 
 ## Re-running
 

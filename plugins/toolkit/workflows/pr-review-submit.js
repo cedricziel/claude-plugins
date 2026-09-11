@@ -119,6 +119,15 @@ const downgradedPayload = JSON.stringify({
   body: summary,
   comments: payloadComments,
 });
+// If the downgraded payload ALSO hits a bad comment anchor, there is no
+// combined "downgraded AND comment-free" payload without this — a narrow
+// double-failure would otherwise lose the whole review a second time.
+const downgradedFallbackPayload = JSON.stringify({
+  commit_id: commitSha,
+  event: "COMMENT",
+  body: summary,
+  comments: [],
+});
 const DOWNGRADE =
   decision === "COMMENT"
     ? "" // already a COMMENT: GitHub never refuses that one for self-review
@@ -126,12 +135,17 @@ const DOWNGRADE =
 
 --- BEGIN DOWNGRADED PAYLOAD ---
 ${downgradedPayload}
---- END DOWNGRADED PAYLOAD ---`;
+--- END DOWNGRADED PAYLOAD ---
+
+--- BEGIN DOWNGRADED FALLBACK PAYLOAD ---
+${downgradedFallbackPayload}
+--- END DOWNGRADED FALLBACK PAYLOAD ---`;
 const DOWNGRADE_STEP =
   decision === "COMMENT"
     ? ""
     : `
-- If GitHub rejects it with a 422 saying the reviewer cannot ${decision === "APPROVE" ? "approve" : "request changes on"} their own pull request — match case-insensitively on "your own pull request" — post the DOWNGRADED PAYLOAD instead, exactly once, the same way. It is the identical review with the event downgraded to COMMENT, which GitHub does accept from the author. Set decisionDowngraded to true when you post it. This is a different failure from the one above and does not consume the comment-anchor fallback.`;
+- If GitHub rejects it with a 422 saying the reviewer cannot ${decision === "APPROVE" ? "approve" : "request changes on"} their own pull request — match case-insensitively on "your own pull request" — post the DOWNGRADED PAYLOAD instead, exactly once, the same way. It is the identical review with the event downgraded to COMMENT, which GitHub does accept from the author. Set decisionDowngraded to true when you post it. This is a different failure from the one above and does not consume the comment-anchor fallback.
+- If THAT downgraded post is then also rejected because of the inline comments (a 422 naming \`line\`, \`start_line\`, \`path\`, \`position\`, or saying a comment is not part of the diff), post the DOWNGRADED FALLBACK PAYLOAD instead, exactly once — same event, no comments. Set decisionDowngraded to true and droppedComments to GitHub's rejection message plus the file:line of every comment in the downgraded payload.`;
 
 const POSTED = {
   type: "object",
@@ -154,6 +168,11 @@ const POSTED = {
       description:
         "empty if the first attempt succeeded; otherwise GitHub's rejection message and the file:line of every comment that was dropped",
     },
+    postHead: {
+      type: "string",
+      description:
+        "the PR's head SHA read back again immediately after a successful post, verbatim — empty if nothing was posted or that re-read failed",
+    },
   },
   required: [
     "posted",
@@ -162,6 +181,7 @@ const POSTED = {
     "commentCount",
     "decisionDowngraded",
     "droppedComments",
+    "postHead",
   ],
 };
 
@@ -187,7 +207,8 @@ Steps:
 5. Submit it: \`gh api repos/${repo}/pulls/${number}/reviews --method POST --input <path-to-temp-file>\`.
 6. If GitHub rejects it because of the inline comments — a 422 naming \`line\`, \`start_line\`, \`path\`, \`position\`, or saying a comment is not part of the diff — post the FALLBACK PAYLOAD the same way, exactly once. It carries the identical event and body with no comments, so the verdict survives even though the line anchors did not. Then set droppedComments to GitHub's rejection message plus the file:line of every comment in the first payload.${DOWNGRADE_STEP}
 7. Those are the only retries allowed, one of each at most. Any other failure, or a failing retry: report posted=false with an empty reviewUrl. Never retry with any other event, and never edit a comment's line to make it fit.
-8. Return whether it posted, the response's html_url, how many comments the posted review actually contains (0 if the fallback was used, 0 if you stopped at step 2), and decisionDowngraded (false unless you posted the downgraded payload).`,
+8. If any post above succeeded, immediately re-read the PR's head SHA the same way as step 1 and return it verbatim as postHead — GitHub's REST API has no atomic precondition for this POST, so a force-push landing in the exact window between step 1 and the POST cannot be prevented, only detected after the fact by comparing heads. Leave postHead empty if nothing was posted or that re-read fails.
+9. Return whether it posted, the response's html_url, how many comments the posted review actually contains (0 if the fallback was used, 0 if you stopped at step 2), decisionDowngraded (false unless you posted a downgraded payload), and postHead.`,
   { label: "post", phase: "Post", schema: POSTED, model: WORK, effort: "low" },
 );
 
@@ -211,7 +232,17 @@ if (!posted?.currentHead || sha(posted.currentHead) !== sha(commitSha))
     commentCount: 0,
     decisionDowngraded: Boolean(posted?.decisionDowngraded),
     droppedComments: "",
+    staleAfterPost: false,
   };
+
+// GitHub's review API has no atomic precondition for the POST itself, so a
+// force-push landing in the window between the pre-POST head check and the
+// POST can still bind a review to code that was never reviewed. This cannot
+// be prevented via this API — only detected after the fact by comparing the
+// head read back right after posting against the commit that was reviewed.
+const staleAfterPost = Boolean(
+  posted?.posted && posted?.postHead && sha(posted.postHead) !== sha(commitSha),
+);
 
 return {
   refused: posted?.posted
@@ -227,4 +258,6 @@ return {
   commentCount: posted?.posted ? (posted.commentCount ?? comments.length) : 0,
   decisionDowngraded: Boolean(posted?.decisionDowngraded),
   droppedComments: posted?.droppedComments || "",
+  // Detects, but cannot prevent, a force-push that raced the POST itself.
+  staleAfterPost,
 };
