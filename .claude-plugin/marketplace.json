@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Cedric Ziel's Claude Code plugins",
-    "version": "1.16.0"
+    "version": "1.17.0"
   },
   "plugins": [
     {
@@ -25,7 +25,7 @@
       "name": "toolkit",
       "source": "./plugins/toolkit",
       "description": "Cedric's personal layer on top of oss: TDD hooks, the GitHub issue/PR orchestration engine, code-review helpers, Forgejo CLI, SignalDB observability, and dashboard design.",
-      "version": "1.13.0",
+      "version": "1.12.0",
       "author": {
         "name": "Cedric Ziel",
         "url": "https://github.com/cedricziel"
@@ -46,8 +46,8 @@
     {
       "name": "oss",
       "source": "./plugins/oss",
-      "description": "Generic engineering practice, reusable in any repo: commit discipline, stacked PRs, writing tests, technical writing, no-comments, GitHub issue creation, and release notes. Depends on common.",
-      "version": "0.3.0",
+      "description": "Generic engineering practice, reusable in any repo: commit discipline, stacked PRs, writing tests, technical writing, no-comments, GitHub issue creation, release notes, and a scoped implementation agent. Depends on common.",
+      "version": "0.4.0",
       "author": {
         "name": "Cedric Ziel",
         "url": "https://github.com/cedricziel"

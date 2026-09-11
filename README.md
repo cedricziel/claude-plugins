@@ -61,6 +61,13 @@ other repos' own plugins, not just installed by me.
 | `technical-writing`  | `/oss:technical-writing` — Diátaxis + Google style + STE + Global English standard for docs, RFCs, READMEs, PR descriptions — vendored from pstack (MIT)        |
 | `release-notes`      | Draft informative, non-bloated, user-value-focused release notes for a GitHub release: output shape, include/omit rules, input gathering with `gh`, grounding and unslop gates |
 
+**Agents**
+
+| Agent     | Purpose                                                                                                                                                            |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `coder`   | Scoped implementation engineer for any repo/language — failing test first, targeted builds, `/simplify` pass, semantic commit; delegate a planned task to it directly |
+| `comment-sicko` | Purges narration comments and suppressions; spawned by `no-comments` above — vendored from pstack (MIT)                                                    |
+
 ### toolkit
 
 My personal layer on top of `oss`: global working instructions, tool-specific
@@ -81,12 +88,6 @@ subagents. Depends on `common@cedricziel` and `oss@cedricziel`.
 | `forgejo-cli`        | Using `fj` against Forgejo/Codeberg instances                                                                                                                               |
 | `signaldb-observe`   | Instrument an app with OpenTelemetry and ship to SignalDB                                                                                                                   |
 | `dashboarding`       | Designing and reviewing operational dashboards                                                                                                                              |
-
-**Agents**
-
-| Agent            | Purpose                                                                                                                                             |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `signaldb-coder`  | Scoped implementation engineer for the `cedricziel/signaldb` Rust/TypeScript codebase — TDD, targeted builds, `/simplify`, semantic commit; mirrored from that repo's own `.claude/agents/coder.md` |
 
 **Hooks**
 
