@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Cedric Ziel's Claude Code plugins",
-    "version": "1.17.0"
+    "version": "1.18.0"
   },
   "plugins": [
     {
@@ -24,8 +24,8 @@
     {
       "name": "toolkit",
       "source": "./plugins/toolkit",
-      "description": "Cedric's personal layer on top of oss: TDD hooks, the GitHub issue/PR orchestration engine, code-review helpers, Forgejo CLI, SignalDB observability, and dashboard design.",
-      "version": "1.12.2",
+      "description": "Cedric's personal layer on top of oss and skills: TDD hooks, the GitHub issue/PR orchestration engine, code-review helpers, and SignalDB observability.",
+      "version": "1.13.0",
       "author": {
         "name": "Cedric Ziel",
         "url": "https://github.com/cedricziel"
@@ -36,10 +36,8 @@
         "tdd",
         "hooks",
         "code-review",
-        "forgejo",
         "signaldb",
         "opentelemetry",
-        "dashboards",
         "workflow"
       ]
     },
@@ -64,6 +62,18 @@
         "release-notes",
         "changelog"
       ]
+    },
+    {
+      "name": "skills",
+      "source": "./plugins/skills",
+      "description": "Generic tool-integration skills, reusable in any repo regardless of who you are: CodeRabbit reviews, the Forgejo CLI, and dashboard design/review. Depends on common and coderabbit.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Cedric Ziel",
+        "url": "https://github.com/cedricziel"
+      },
+      "category": "productivity",
+      "keywords": ["coderabbit", "forgejo", "codeberg", "dashboards", "code-review"]
     }
   ]
 }
