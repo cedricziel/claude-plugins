@@ -82,6 +82,12 @@ subagents. Depends on `common@cedricziel` and `oss@cedricziel`.
 | `signaldb-observe`   | Instrument an app with OpenTelemetry and ship to SignalDB                                                                                                                   |
 | `dashboarding`       | Designing and reviewing operational dashboards                                                                                                                              |
 
+**Agents**
+
+| Agent            | Purpose                                                                                                                                             |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `signaldb-coder`  | Scoped implementation engineer for the `cedricziel/signaldb` Rust/TypeScript codebase — TDD, targeted builds, `/simplify`, semantic commit; mirrored from that repo's own `.claude/agents/coder.md` |
+
 **Hooks**
 
 | Event                      | What it does                                                                                                                                                   |

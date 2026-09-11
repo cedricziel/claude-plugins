@@ -25,7 +25,7 @@
       "name": "toolkit",
       "source": "./plugins/toolkit",
       "description": "Cedric's personal layer on top of oss: TDD hooks, the GitHub issue/PR orchestration engine, code-review helpers, Forgejo CLI, SignalDB observability, and dashboard design.",
-      "version": "1.12.0",
+      "version": "1.13.0",
       "author": {
         "name": "Cedric Ziel",
         "url": "https://github.com/cedricziel"
