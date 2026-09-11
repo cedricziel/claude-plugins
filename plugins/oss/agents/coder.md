@@ -22,7 +22,7 @@ description: |
   user: "Requests randomly time out under load."
   assistant: "This needs investigation first, not implementation — I'll debug it myself and delegate to coder once the fix is scoped."
   </example>
-tools: Read, Edit, Write, Bash, Glob, Grep, TodoWrite, Skill, mcp__context7__resolve-library-id, mcp__context7__query-docs
+tools: Read, Edit, Write, Bash, Glob, Grep, TodoWrite, Skill, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
 model: sonnet
 color: blue
 ---
