@@ -11,6 +11,17 @@
             "statusMessage": "Checking subagent model"
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/fable-delegate-guard.sh\"",
+            "timeout": 5,
+            "statusMessage": "Checking session model"
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -59,6 +70,24 @@
             "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/session-start.sh\"",
             "timeout": 10,
             "statusMessage": "Loading global instructions"
+          },
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/fable-track.sh\"",
+            "timeout": 5,
+            "statusMessage": "Tracking session model"
+          }
+        ]
+      }
+    ],
+    "PostModelSwitch": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/fable-track.sh\"",
+            "timeout": 5,
+            "statusMessage": "Tracking session model"
           }
         ]
       }
