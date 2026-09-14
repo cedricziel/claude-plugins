@@ -1,7 +1,7 @@
 {
   "name": "oss",
-  "version": "0.4.3",
-  "description": "Generic engineering practice, reusable in any repo (OSS or not): commit discipline, stacked PRs, writing tests, technical writing, no-comments, GitHub issue creation, release notes, and a scoped implementation agent. Depends on common.",
+  "version": "0.4.4",
+  "description": "Generic engineering practice, reusable in any repo (OSS or not): commit discipline, pull requests, stacked PRs, writing tests, technical writing, no-comments, GitHub issue creation, release notes, and a scoped implementation agent. Depends on common.",
   "dependencies": [
     "common",
     { "name": "coderabbit", "marketplace": "claude-plugins-official" }
@@ -17,6 +17,7 @@
     "oss",
     "open-source",
     "commit-discipline",
+    "pull-request",
     "stacked-prs",
     "testing",
     "technical-writing",

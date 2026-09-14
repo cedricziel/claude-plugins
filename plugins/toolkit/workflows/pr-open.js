@@ -43,6 +43,8 @@ ${summary.problem}
 ${summary.approach}
 ## Tests
 ${summary.tests}
+## Security Impact
+${summary.securityImpact || 'None: no auth, input-handling, or dependency surface touched.'}
 ## Risk
 ${summary.risk || 'Low: scoped to the files named above; no behaviour outside the issue changes.'}
 ## Where to look

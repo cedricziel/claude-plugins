@@ -85,6 +85,9 @@ fully understand in a single sitting and that ships value independently.
 - "Drive-by" changes mixed into unrelated PRs
 - Blocking a reviewable unit because the full feature isn't done yet
 
+Title and description format lives in the `pull-request` skill — always use it once
+the PR is ready to open.
+
 ## Staying Shippable
 
 - Feature flags over long-lived feature branches
