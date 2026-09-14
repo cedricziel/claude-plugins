@@ -8,7 +8,8 @@
 #   .swift               swift-format if the repo has .swift-format, else swiftformat
 #   .dart                dart format
 #   .py                  ruff format or black
-#   web/config/markdown  prettier (node_modules/.bin > PATH > npx --yes)
+#   .js/.ts/.json(c)     biome (if biome.json[c] present) else prettier
+#   other web/markdown   prettier (node_modules/.bin > PATH > npx --yes)
 #
 # Off switches:
 #   FORMAT_HOOK_DISABLE=1          — disable everywhere
@@ -35,6 +36,19 @@ prettier_bin() {
   fi
 }
 
+biome_cmd=()
+biome_bin() {
+  if [ -x "$root/node_modules/.bin/biome" ]; then biome_cmd=("$root/node_modules/.bin/biome")
+  elif has biome; then biome_cmd=(biome)
+  elif has npx; then biome_cmd=(npx --yes @biomejs/biome)
+  fi
+}
+
+run_prettier() {
+  prettier_bin
+  [ "${#prettier_cmd[@]}" -gt 0 ] && quiet "${prettier_cmd[@]}" --write --ignore-unknown "$f"
+}
+
 case "$f" in
   *.rs)
     if [ -f "$root/Cargo.toml" ] && has cargo; then
@@ -58,9 +72,15 @@ case "$f" in
   *.py)
     if has ruff; then quiet ruff format "$f"
     elif has black; then quiet black -q "$f"; fi ;;
-  *.js|*.cjs|*.mjs|*.jsx|*.ts|*.cts|*.mts|*.tsx|*.json|*.jsonc|*.json5|*.css|*.scss|*.sass|*.less|*.html|*.vue|*.svelte|*.md|*.mdx|*.yaml|*.yml|*.graphql|*.gql)
-    prettier_bin
-    [ "${#prettier_cmd[@]}" -gt 0 ] && quiet "${prettier_cmd[@]}" --write --ignore-unknown "$f" ;;
+  *.js|*.cjs|*.mjs|*.jsx|*.ts|*.cts|*.mts|*.tsx|*.json|*.jsonc)
+    if [ -f "$root/biome.json" ] || [ -f "$root/biome.jsonc" ]; then
+      biome_bin
+      [ "${#biome_cmd[@]}" -gt 0 ] && quiet "${biome_cmd[@]}" format --write "$f"
+    else
+      run_prettier
+    fi ;;
+  *.json5|*.css|*.scss|*.sass|*.less|*.html|*.vue|*.svelte|*.md|*.mdx|*.yaml|*.yml|*.graphql|*.gql)
+    run_prettier ;;
 esac
 
 exit 0

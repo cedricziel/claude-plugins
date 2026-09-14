@@ -101,6 +101,24 @@ class FormatHookTest(unittest.TestCase):
         # local stub logs the same name; ensure PATH one wasn't the runner by checking cwd-relative path use
         self.assertIn(str(f), out)
 
+    def test_typescript_prefers_biome_when_configured(self):
+        self.stub("biome")
+        self.stub("prettier")
+        self.touch("biome.json", "{}")
+        f = self.touch("a.ts")
+        out = self.run_hook(f)
+        self.assertIn(f"biome format --write {f}", out)
+        self.assertNotIn("prettier", out)
+
+    def test_typescript_prefers_local_biome_over_path(self):
+        self.stub("biome")
+        self.stub("biome", self.repo / "node_modules" / ".bin")
+        self.touch("biome.jsonc", "{}")
+        f = self.touch("a.ts")
+        out = self.run_hook(f)
+        self.assertIn(str(f), out)
+        self.assertEqual(out.count("biome"), 1)
+
     def test_markdown_uses_prettier(self):
         self.stub("prettier")
         f = self.touch("README.md")
