@@ -86,7 +86,8 @@ const reviews = await parallel(LENSES.map((lens) => () =>
     `You are reviewing a code change (${target}) through ONE lens only: ${lens}.
 Read the unified diff at ${diffPath}. Open the surrounding files in the repository when the diff alone is not enough to judge.
 Report only defects that have a concrete failure scenario. Do not report style, naming, or hypothetical concerns.
-Line numbers must refer to the NEW side of the diff.`,
+Line numbers must refer to the NEW side of the diff.
+Write title/claim/failure_scenario like a very senior engineer: kind, not nice — direct and concrete, no hedging, no padding, no unearned praise.`,
     { label: `review:${lens.split(' ')[0]}`, phase: 'Review', schema: FINDINGS, model: THINK },
   ),
 ))
