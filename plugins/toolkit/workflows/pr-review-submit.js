@@ -6,6 +6,11 @@ export const meta = {
     "After toolkit:code-review, when the caller has decided to post — the outward, hard-to-reverse step kept separate from the review engine",
   phases: [
     {
+      title: "Prune",
+      detail:
+        "delete this workflow's own tagged comments from an earlier round that got no reply",
+    },
+    {
       title: "Post",
       detail:
         "check the PR head still matches what was reviewed, then one gh api call: decision + summary + inline comments",
@@ -38,7 +43,7 @@ const AT = args.repoDir
   ? `Work in the repository checkout at ${args.repoDir} (cd there first; git and CLI commands run against that repo). `
   : "";
 const WORK = args?.workModel ?? "sonnet"; // mechanical: build and submit one API payload
-const BUDGET_FLOOR = 15_000; // one agent call
+const BUDGET_FLOOR = 25_000; // prune call + post call
 
 if (budget.total && budget.remaining() < BUDGET_FLOOR) {
   return {
@@ -71,9 +76,16 @@ function markerFor(severity, nitpick) {
   return `${dot} **${s ? s.toUpperCase() : "FINDING"}**`;
 }
 
+// `cli` here runs as the caller's own personal account, not a dedicated bot
+// identity — so a later re-review cannot tell "our own stale finding" apart
+// from "a comment the human happened to post themselves" by author alone.
+// Tag every comment this workflow posts, the same way CodeRabbit tags its
+// own; the Prune step below only ever deletes comments carrying this tag.
+const BOT_TAG = "<!-- toolkit:code-review -->";
+
 const payloadComments = comments.map(
   ({ file, line, title, body, suggestion, severity, nitpick }) => {
-    const prose = `${markerFor(severity, nitpick)} — ${title}\n\n${body}`;
+    const prose = `${markerFor(severity, nitpick)} — ${title}\n\n${body}\n\n${BOT_TAG}`;
     if (!suggestion) return { path: file, line, side: "RIGHT", body: prose };
     const fence = fenceFor(`${prose}\n${suggestion}`);
     return {
@@ -185,6 +197,27 @@ const POSTED = {
   ],
 };
 
+const PRUNED = {
+  type: "object",
+  properties: {
+    deleted: { type: "integer" },
+    ids: { type: "array", items: { type: "string" } },
+  },
+  required: ["deleted", "ids"],
+};
+
+phase("Prune");
+const pruned = await agent(
+  `${AT}On PR #${number} (${repo}), clean up this workflow's own stale comments from an earlier round before a new review is posted.
+
+1. List every review comment on the PR: \`gh api repos/${repo}/pulls/${number}/comments --paginate\`.
+2. A comment qualifies for deletion ONLY if its body contains the exact text \`${BOT_TAG}\` AND no other comment in the list has \`in_reply_to_id\` equal to its \`id\` (i.e. nobody replied to it).
+3. Delete every qualifying comment: \`gh api -X DELETE repos/${repo}/pulls/comments/{id}\`.
+4. Never delete a comment that lacks the exact tag above, and never delete one that has a reply from anyone — human or bot. When in doubt, leave it.
+5. Post nothing, resolve nothing. Return how many were deleted and their ids (empty array, 0, if none qualified).`,
+  { label: "prune", phase: "Prune", schema: PRUNED, model: WORK, effort: "low" },
+);
+
 phase("Post");
 const posted = await agent(
   `${AT}Submit ONE GitHub review on PR #${number} (${repo}) using ${cli}.
@@ -233,6 +266,7 @@ if (!posted?.currentHead || sha(posted.currentHead) !== sha(commitSha))
     decisionDowngraded: Boolean(posted?.decisionDowngraded),
     droppedComments: "",
     staleAfterPost: false,
+    prunedComments: pruned?.deleted ?? 0,
   };
 
 // GitHub's review API has no atomic precondition for the POST itself, so a
@@ -260,4 +294,5 @@ return {
   droppedComments: posted?.droppedComments || "",
   // Detects, but cannot prevent, a force-push that raced the POST itself.
   staleAfterPost,
+  prunedComments: pruned?.deleted ?? 0,
 };
