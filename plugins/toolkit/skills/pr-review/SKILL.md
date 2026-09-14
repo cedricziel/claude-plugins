@@ -142,23 +142,31 @@ checkout of someone else's PR.
    head moved while the review ran. Report the reason and stop; re-running the whole
    review against the new head is the fix, not re-posting this one.
 
-6. `ExitWorktree()`, then report what was posted: decision, comment count, and the
-   review URL. If `droppedComments` is non-empty, GitHub rejected the inline comments
-   and only the verdict and summary were posted — show that text so the user knows
-   which findings never reached the PR. If `decisionDowngraded` is true, say so:
-   GitHub does not let anyone approve or request changes on their own pull request,
-   so the review was posted as a plain comment instead — the findings are all there,
-   but the verdict carries no formal approval or block. If `posted` is false, surface
-   the failure — do not retry silently. If `staleAfterPost` is true, say so plainly:
-   the PR's head moved in the narrow window between the pre-post head check and the
-   POST itself, so the review that landed may not match the code now on the PR —
-   this is detected, not prevented, and the fix is to re-run the review against the
-   new head.
+6. `ExitWorktree()`, then report what was posted: decision, comment count, the
+   review URL, and `resolvedComments` if non-zero. If `droppedComments` is non-empty,
+   GitHub rejected the inline comments and only the verdict and summary were posted —
+   show that text so the user knows which findings never reached the PR. If
+   `decisionDowngraded` is true, say so: GitHub does not let anyone approve or request
+   changes on their own pull request, so the review was posted as a plain comment
+   instead — the findings are all there, but the verdict carries no formal approval or
+   block. If `posted` is false, surface the failure — do not retry silently. If
+   `staleAfterPost` is true, say so plainly: the PR's head moved in the narrow window
+   between the pre-post head check and the POST itself, so the review that landed may
+   not match the code now on the PR — this is detected, not prevented, and the fix is
+   to re-run the review against the new head.
 
 ## Re-running
 
-Re-running on the same PR posts a new review reflecting the current diff — this is how a PR that had `REQUEST_CHANGES` flips to `APPROVE` once fixes land, matching CodeRabbit's own `request_changes_workflow` behavior. There is no incremental "what changed since last review" mode.
+Re-running on the same PR posts a new review reflecting the current diff — this is how a PR that had `REQUEST_CHANGES` flips to `APPROVE` once fixes land, matching CodeRabbit's own `request_changes_workflow` behavior. There is no incremental "what changed since last review" mode: the engine re-reviews the whole diff every time.
+
+What does carry over is this workflow's own review threads (tagged with a hidden `<!-- toolkit:code-review -->` marker), via `toolkit:pr-review-submit`'s Collect/Resolve phases, before the new review posts:
+
+- A tagged thread whose finding no longer appears this round is **resolved** — with a short "looks addressed, resolving" reply — whether or not anyone ever replied to it. This is how a followup review resolves comments for findings that got fixed.
+- A tagged thread whose finding still recurs and never got a reply is also **resolved**, but as "superseded by a fresh comment", to avoid leaving a stale duplicate open next to the new one.
+- A tagged thread whose finding still recurs and got a reply (from anyone) is left untouched — a human is engaged with it, so it's not this workflow's call to close it.
+
+Nothing is ever deleted. `resolvedComments` in the result reports how many threads got resolved this round.
 
 ## Cost
 
-Same engine as `deep-review` (~35-40 agent calls) plus 1 for posting.
+Same engine as `deep-review` (~35-40 agent calls) plus 2-3 for `pr-review-submit`: one to collect existing review threads, one to post, and one more only on a followup run that has threads to resolve.

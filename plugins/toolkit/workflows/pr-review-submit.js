@@ -6,9 +6,13 @@ export const meta = {
     "After toolkit:code-review, when the caller has decided to post — the outward, hard-to-reverse step kept separate from the review engine",
   phases: [
     {
-      title: "Prune",
+      title: "Collect",
+      detail: "repo root + this workflow's own open review threads",
+    },
+    {
+      title: "Resolve",
       detail:
-        "delete this workflow's own tagged comments from an earlier round that got no reply",
+        "resolve tagged threads whose finding is fixed, or superseded by a fresh comment this round — never deletes",
     },
     {
       title: "Post",
@@ -43,7 +47,7 @@ const AT = args.repoDir
   ? `Work in the repository checkout at ${args.repoDir} (cd there first; git and CLI commands run against that repo). `
   : "";
 const WORK = args?.workModel ?? "sonnet"; // mechanical: build and submit one API payload
-const BUDGET_FLOOR = 25_000; // prune call + post call
+const BUDGET_FLOOR = 35_000; // collect call + resolve call + post call
 
 if (budget.total && budget.remaining() < BUDGET_FLOOR) {
   return {
@@ -80,7 +84,7 @@ function markerFor(severity, nitpick) {
 // identity — so a later re-review cannot tell "our own stale finding" apart
 // from "a comment the human happened to post themselves" by author alone.
 // Tag every comment this workflow posts, the same way CodeRabbit tags its
-// own; the Prune step below only ever deletes comments carrying this tag.
+// own; the Resolve step below only ever acts on threads carrying this tag.
 const BOT_TAG = "<!-- toolkit:code-review -->";
 
 const payloadComments = comments.map(
@@ -197,26 +201,144 @@ const POSTED = {
   ],
 };
 
-const PRUNED = {
+const COLLECTED = {
   type: "object",
   properties: {
-    deleted: { type: "integer" },
-    ids: { type: "array", items: { type: "string" } },
+    repoRoot: { type: "string" },
+    threads: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          threadId: { type: "string" },
+          path: { type: "string" },
+          line: { type: "integer" },
+          isResolved: { type: "boolean" },
+          taggedCommentDatabaseId: {
+            type: "integer",
+            description:
+              "databaseId of the thread's first comment if its body contains the exact BOT_TAG, else 0",
+          },
+          replyCount: {
+            type: "integer",
+            description: "comments in the thread besides the first one",
+          },
+        },
+        required: [
+          "threadId",
+          "path",
+          "line",
+          "isResolved",
+          "taggedCommentDatabaseId",
+          "replyCount",
+        ],
+      },
+    },
   },
-  required: ["deleted", "ids"],
+  required: ["repoRoot", "threads"],
 };
 
-phase("Prune");
-const pruned = await agent(
-  `${AT}On PR #${number} (${repo}), clean up this workflow's own stale comments from an earlier round before a new review is posted.
+const RESOLVED = {
+  type: "object",
+  properties: {
+    resolved: { type: "integer" },
+    resolvedIds: { type: "array", items: { type: "string" } },
+  },
+  required: ["resolved", "resolvedIds"],
+};
 
-1. List every review comment on the PR: \`gh api repos/${repo}/pulls/${number}/comments --paginate\`.
-2. A comment qualifies for deletion ONLY if its body contains the exact text \`${BOT_TAG}\` AND no other comment in the list has \`in_reply_to_id\` equal to its \`id\` (i.e. nobody replied to it).
-3. Delete every qualifying comment: \`gh api -X DELETE repos/${repo}/pulls/comments/{id}\`.
-4. Never delete a comment that lacks the exact tag above, and never delete one that has a reply from anyone — human or bot. When in doubt, leave it.
-5. Post nothing, resolve nothing. Return how many were deleted and their ids (empty array, 0, if none qualified).`,
-  { label: "prune", phase: "Prune", schema: PRUNED, model: WORK, effort: "low" },
+phase("Collect");
+const [owner, repoName] = repo.split("/");
+const collected = await agent(
+  `${AT}Two read-only facts about PR #${number} on ${repo} — do not post, reply, delete, or resolve anything here.
+
+1. The repository root: \`git rev-parse --show-toplevel\`.
+2. Every review thread on the PR via GraphQL (first 100 threads, first 50 comments per thread — this workflow never creates more than that many):
+\`gh api graphql -f query='query($owner:String!,$name:String!,$number:Int!){repository(owner:$owner,name:$name){pullRequest(number:$number){reviewThreads(first:100){nodes{id isResolved path line comments(first:50){nodes{databaseId body}}}}}}}' -F owner=${owner} -F name=${repoName} -F number=${number}\`
+
+For each thread node report threadId (its \`id\`), path, line, isResolved, taggedCommentDatabaseId (the \`databaseId\` of the FIRST comment in \`comments.nodes\` if that comment's body contains the exact text \`${BOT_TAG}\`, else 0), and replyCount (\`comments.nodes.length - 1\`). Do not classify by any other signal.`,
+  {
+    label: "collect",
+    phase: "Collect",
+    schema: COLLECTED,
+    model: WORK,
+    effort: "low",
+  },
 );
+
+// Mirrors the path-relativization the Post phase applies to the payload below,
+// so a thread reported with an absolute worktree path still matches a
+// repo-relative one when checking whether its finding recurs this round.
+const stripRoot = (p) => {
+  const root = String(collected?.repoRoot || "").replace(/\/+$/, "");
+  let s = String(p ?? "");
+  if (root && s.startsWith(root)) s = s.slice(root.length);
+  return s.replace(/^\/+/, "");
+};
+const threadKey = (path, line) => `${stripRoot(path)}:${line}`;
+const stillFlagged = new Set(
+  payloadComments.map((c) => threadKey(c.path, c.line)),
+);
+// This workflow's own open threads — the only candidates the Resolve step
+// below may touch. It never deletes a comment, only resolves its thread.
+const openTagged = (collected?.threads || []).filter(
+  (t) => !t.isResolved && t.taggedCommentDatabaseId,
+);
+// Still flagged this round and nobody replied: a fresh comment for the same
+// finding is about to post, so the stale thread is resolved as superseded
+// rather than left open to duplicate it.
+const superseded = openTagged
+  .filter(
+    (t) => stillFlagged.has(threadKey(t.path, t.line)) && t.replyCount === 0,
+  )
+  .map((t) => ({
+    threadId: t.threadId,
+    taggedCommentDatabaseId: t.taggedCommentDatabaseId,
+    reason: "superseded",
+  }));
+// No longer flagged this round: the finding is gone, so resolve it as fixed —
+// whether or not anyone ever replied. This is the "review comments resolve
+// once the finding is addressed" behavior a followup /pr-review should produce.
+const fixed = openTagged
+  .filter((t) => !stillFlagged.has(threadKey(t.path, t.line)))
+  .map((t) => ({
+    threadId: t.threadId,
+    taggedCommentDatabaseId: t.taggedCommentDatabaseId,
+    reason: "fixed",
+  }));
+const toResolve = [...superseded, ...fixed];
+
+phase("Resolve");
+const SUPERSEDED_REPLY = `Superseded by a fresh comment in this review — resolving to avoid a duplicate.\n\n${BOT_TAG}`;
+const FIXED_REPLY = `Looks addressed in this review — resolving.\n\n${BOT_TAG}`;
+const resolved =
+  toResolve.length === 0
+    ? { resolved: 0, resolvedIds: [] }
+    : await agent(
+        `${AT}On PR #${number} (${repo}), resolve exactly these pre-decided threads before a new review is posted. This workflow never deletes a review comment, only resolves its thread — do not touch any thread or comment not named below.
+
+Threads to resolve, each tagged with why: ${JSON.stringify(toResolve)}
+
+For each, in order:
+1. Write the reply text matching its \`reason\` to a temp file, byte for byte, nothing added or reworded:
+--- BEGIN SUPERSEDED REPLY (reason: "superseded") ---
+${SUPERSEDED_REPLY}
+--- END SUPERSEDED REPLY ---
+--- BEGIN FIXED REPLY (reason: "fixed") ---
+${FIXED_REPLY}
+--- END FIXED REPLY ---
+2. Reply to its \`taggedCommentDatabaseId\` with that file's contents: \`gh api repos/${repo}/pulls/${number}/comments -F body=@<tempfile> -F in_reply_to={taggedCommentDatabaseId}\`.
+3. Resolve its \`threadId\`: \`gh api graphql -f query='mutation($id:ID!){resolveReviewThread(input:{threadId:$id}){thread{id}}}' -F id={threadId}\`.
+
+Never resolve a thread not in the list above, never delete anything, and never resolve a thread without first posting its reply. Return how many were resolved and their thread ids (0 and an empty array if none).`,
+        {
+          label: "resolve",
+          phase: "Resolve",
+          schema: RESOLVED,
+          model: WORK,
+          effort: "low",
+        },
+      );
 
 phase("Post");
 const posted = await agent(
@@ -266,7 +388,7 @@ if (!posted?.currentHead || sha(posted.currentHead) !== sha(commitSha))
     decisionDowngraded: Boolean(posted?.decisionDowngraded),
     droppedComments: "",
     staleAfterPost: false,
-    prunedComments: pruned?.deleted ?? 0,
+    resolvedComments: resolved?.resolved ?? 0,
   };
 
 // GitHub's review API has no atomic precondition for the POST itself, so a
@@ -294,5 +416,5 @@ return {
   droppedComments: posted?.droppedComments || "",
   // Detects, but cannot prevent, a force-push that raced the POST itself.
   staleAfterPost,
-  prunedComments: pruned?.deleted ?? 0,
+  resolvedComments: resolved?.resolved ?? 0,
 };
