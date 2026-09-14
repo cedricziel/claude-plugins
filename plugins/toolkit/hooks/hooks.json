@@ -79,18 +79,6 @@
           }
         ]
       }
-    ],
-    "PostModelSwitch": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/fable-track.sh\"",
-            "timeout": 5,
-            "statusMessage": "Tracking session model"
-          }
-        ]
-      }
     ]
   }
 }

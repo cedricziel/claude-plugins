@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
-# Track the current session's own model (SessionStart, PostModelSwitch).
-# Hooks have no field reporting the main session's live model on most
-# events — only SessionStart (sometimes) and PostModelSwitch (to_model)
-# carry it. Record it per session_id so fable-delegate-guard.sh (PreToolUse:
-# Edit|Write) can tell whether the orchestrating session itself is on fable.
+# Track the current session's own model (SessionStart only).
+# SessionStart's `model` field is the only place the harness reports the
+# main session's live model, and it's not always present. PostModelSwitch
+# would catch a mid-session /model change too, but isn't a valid hook event
+# on this harness version (rejected at load time), so a switch mid-session
+# goes untracked until the next SessionStart. Record it per session_id so
+# fable-delegate-guard.sh (PreToolUse: Edit|Write) can tell whether the
+# orchestrating session itself is on fable.
 #
 # State lives outside the plugin dir since it must survive plugin updates
 # and is per-session, not per-repo.
