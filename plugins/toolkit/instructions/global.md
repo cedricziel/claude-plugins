@@ -4,6 +4,7 @@
 - Subagents inherit these instructions, the project CLAUDE.md and memory — but a task prompt that spells out its own checklist overrides them in practice, so any checklist you write must be complete (naming lint/format and `/simplify`) or be left out. For multi-agent work, read `{{FLEET_BRIEF}}` and hand it to them instead of improvising one.
 - In spec-driven projects, plan spec updates alongside new features, and validate specs after touching them.
 - Never mention competitors.
+- Use micro-commits: commit small, coherent chunks of work rather than batching unrelated changes into one commit.
 
 ## Caveman Compression
 
