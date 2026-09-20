@@ -228,7 +228,10 @@ jobs:
 Auto-merge needs "Allow auto-merge" in the repo settings and at least one required
 check on the base branch. PRs opened with the default `GITHUB_TOKEN` don't trigger
 other workflows, so if checks are required, pass a PAT or GitHub App token as `token`.
-Inputs: `marketplace`, `repo`, `plugins`, `ref`, `settings-file`, `merge-method`, `base`.
+It also adds `.claude/hooks/install-claude-plugins.sh` and registers it as a `SessionStart`
+hook: in remote (cloud) sessions it installs the enabled plugins, since `settings.json`
+alone doesn't do that there. Set `session-hook: "false"` to skip it; an existing script is never overwritten.
+Inputs: `marketplace`, `repo`, `plugins`, `ref`, `settings-file`, `session-hook`, `merge-method`, `base`.
 
 ## Development
 
