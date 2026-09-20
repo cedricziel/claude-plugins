@@ -15,13 +15,18 @@ inputs:
     description: >
       Comma-separated plugins to enable when the config is bootstrapped. Existing
       enabledPlugins entries are never touched.
-    default: toolkit
+    default: oss
   ref:
     description: Branch or tag to track. Kept from the existing entry if one is set.
     default: main
   settings-file:
     description: Settings file to create or update.
     default: .claude/settings.json
+  session-hook:
+    description: >
+      "true" adds a SessionStart hook that installs the plugins in remote (cloud) sessions,
+      where settings.json alone does not install them. Existing hook scripts are never overwritten.
+    default: "true"
   token:
     description: >
       Token used to push, open the PR, and enable auto-merge. Use a PAT or GitHub App
@@ -59,7 +64,8 @@ runs:
           --marketplace "${{ inputs.marketplace }}" \
           --repo "${{ inputs.repo }}" \
           --plugins "${{ inputs.plugins }}" \
-          --ref "${{ inputs.ref }}" | tee -a "$GITHUB_OUTPUT"
+          --ref "${{ inputs.ref }}" \
+          ${{ inputs.session-hook == 'true' && '--session-hook' || '' }} | tee -a "$GITHUB_OUTPUT"
 
     - id: pr
       if: steps.update.outputs.changed == 'true'
@@ -69,6 +75,7 @@ runs:
         SETTINGS: ${{ inputs.settings-file }}
         MARKETPLACE: ${{ inputs.marketplace }}
         SHA: ${{ steps.update.outputs.sha }}
+        HOOK: ${{ steps.update.outputs.hook }}
         BOOTSTRAPPED: ${{ steps.update.outputs.bootstrapped }}
         BASE: ${{ inputs.base }}
         METHOD: ${{ inputs.merge-method }}
@@ -86,7 +93,7 @@ runs:
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git checkout -B "$branch"
-        git add "$SETTINGS"
+        git add "$SETTINGS" ${HOOK:+"$HOOK"}
         git commit -m "$title"
         git push --force-with-lease -u origin "$branch" ||
           git push --force -u origin "$branch"
