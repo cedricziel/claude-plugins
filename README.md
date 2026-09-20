@@ -101,6 +101,7 @@ subagents. Depends on `common@cedricziel`, `oss@cedricziel`, and
 | `deep-review`        | `/deep-review [PR\|branch]` — categorized review with severities, nitpicks and committable suggestions; report only, never touches GitHub                                  |
 | `pr-review`          | `/pr-review <PR>` — the same engine, then submits one real GitHub review (decision, summary, inline suggestions)                                                            |
 | `issue-run`          | `/issue-run <ref> [--review] [--no-watch] [--yes]` — sequences the issue workflows below with human gates between them                                                     |
+| `new-repository`     | `/new-repository <name> [--private] [--adopt]` — repo settings, CI, semantic PR titles, release-please, Dependabot, CLAUDE.md, and the plugin pin with its auto-update workflow |
 | `signaldb-observe`   | Instrument an app with OpenTelemetry and ship to SignalDB                                                                                                                   |
 
 **Hooks**
