@@ -198,6 +198,38 @@ toolkit no longer has any freeform commands — `/issue` was replaced by `/issue
 and the freeform `/pr-review` and `/issue-create` commands by the `pr-review`
 (toolkit) and `issue-create` (oss) skills above.
 
+## Keep plugins up to date in other repos
+
+`actions/update-plugin` pins the marketplace in a repo's `.claude/settings.json` to
+the latest commit, opens a PR, and enables auto-merge. If the config or the
+marketplace entry doesn't exist yet, it creates them and enables `plugins`.
+Drop this into `.github/workflows/update-claude-plugins.yml` in any repo:
+
+```yaml
+name: Update Claude plugins
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cedricziel/claude-plugins/actions/update-plugin@main
+        with:
+          plugins: toolkit # enabled only when bootstrapping
+          # token: ${{ secrets.PLUGIN_UPDATE_TOKEN }}
+```
+
+Auto-merge needs "Allow auto-merge" in the repo settings and at least one required
+check on the base branch. PRs opened with the default `GITHUB_TOKEN` don't trigger
+other workflows, so if checks are required, pass a PAT or GitHub App token as `token`.
+Inputs: `marketplace`, `repo`, `plugins`, `ref`, `settings-file`, `merge-method`, `base`.
+
 ## Development
 
 ```

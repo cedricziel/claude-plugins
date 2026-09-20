@@ -1,0 +1,103 @@
+name: Update Claude Code plugin
+description: >
+  Pin a Claude Code plugin marketplace to its latest commit in .claude/settings.json
+  (creating the config if it does not exist), open a PR, and enable auto-merge.
+author: Cedric Ziel
+
+inputs:
+  marketplace:
+    description: Marketplace name as used in enabledPlugins (`plugin@marketplace`).
+    default: cedricziel
+  repo:
+    description: GitHub repo (owner/name) that hosts the marketplace.
+    default: cedricziel/claude-plugins
+  plugins:
+    description: >
+      Comma-separated plugins to enable when the config is bootstrapped. Existing
+      enabledPlugins entries are never touched.
+    default: toolkit
+  ref:
+    description: Branch or tag to track. Kept from the existing entry if one is set.
+    default: main
+  settings-file:
+    description: Settings file to create or update.
+    default: .claude/settings.json
+  token:
+    description: >
+      Token used to push, open the PR, and enable auto-merge. Use a PAT or GitHub App
+      token if the PR must trigger required checks; PRs opened with GITHUB_TOKEN do not.
+    default: ${{ github.token }}
+  merge-method:
+    description: squash, merge, or rebase.
+    default: squash
+  base:
+    description: Branch the PR targets.
+    default: ${{ github.event.repository.default_branch }}
+
+outputs:
+  changed:
+    description: "true if the settings file changed."
+    value: ${{ steps.update.outputs.changed }}
+  bootstrapped:
+    description: "true if the config did not exist and was created."
+    value: ${{ steps.update.outputs.bootstrapped }}
+  sha:
+    description: Commit the marketplace is now pinned to.
+    value: ${{ steps.update.outputs.sha }}
+  pull-request:
+    description: URL of the PR, empty when nothing changed.
+    value: ${{ steps.pr.outputs.url }}
+
+runs:
+  using: composite
+  steps:
+    - id: update
+      shell: bash
+      run: |
+        python3 "${{ github.action_path }}/update_settings.py" \
+          --settings "${{ inputs.settings-file }}" \
+          --marketplace "${{ inputs.marketplace }}" \
+          --repo "${{ inputs.repo }}" \
+          --plugins "${{ inputs.plugins }}" \
+          --ref "${{ inputs.ref }}" | tee -a "$GITHUB_OUTPUT"
+
+    - id: pr
+      if: steps.update.outputs.changed == 'true'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        SETTINGS: ${{ inputs.settings-file }}
+        MARKETPLACE: ${{ inputs.marketplace }}
+        SHA: ${{ steps.update.outputs.sha }}
+        BOOTSTRAPPED: ${{ steps.update.outputs.bootstrapped }}
+        BASE: ${{ inputs.base }}
+        METHOD: ${{ inputs.merge-method }}
+      run: |
+        set -euo pipefail
+        branch="claude-plugins/update-${MARKETPLACE}"
+        short="${SHA:0:7}"
+        if [ "$BOOTSTRAPPED" = "true" ]; then
+          title="chore(claude): add ${MARKETPLACE} plugins at ${short}"
+        else
+          title="chore(claude): update ${MARKETPLACE} plugins to ${short}"
+        fi
+        body="Pins the \`${MARKETPLACE}\` marketplace in \`${SETTINGS}\` to \`${SHA}\`."
+
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git checkout -B "$branch"
+        git add "$SETTINGS"
+        git commit -m "$title"
+        git push --force-with-lease -u origin "$branch" ||
+          git push --force -u origin "$branch"
+
+        url=$(gh pr list --head "$branch" --base "$BASE" --state open --json url --jq '.[0].url')
+        if [ -n "$url" ]; then
+          gh pr edit "$url" --title "$title" --body "$body"
+        else
+          url=$(gh pr create --head "$branch" --base "$BASE" --title "$title" --body "$body")
+        fi
+        echo "url=$url" >> "$GITHUB_OUTPUT"
+
+        gh pr merge "$url" --auto "--${METHOD}" ||
+          echo "::warning::Could not enable auto-merge. Enable 'Allow auto-merge' in repo settings and require at least one status check on ${BASE}."
