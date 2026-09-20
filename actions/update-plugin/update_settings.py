@@ -5,8 +5,9 @@ Creates the settings file, the marketplace entry, and the enabledPlugins entries
 when they are missing; otherwise only moves the pinned sha forward.
 
 Usage: update_settings.py --settings PATH --marketplace NAME --repo OWNER/REPO
-           [--plugins a,b] [--ref REF] [--sha SHA]
-Prints `changed=true|false`, `bootstrapped=true|false` and `sha=<sha>` on stdout.
+           [--plugins a,b] [--ref REF] [--sha SHA] [--session-hook]
+Prints `changed=true|false`, `bootstrapped=true|false` and `sha=<sha>` on stdout,
+plus `hook=<path>` when a session-start hook script was written.
 """
 import argparse
 import json
@@ -60,6 +61,43 @@ def update(settings, marketplace, repo, plugins, ref, sha):
     return changed, bootstrapped
 
 
+def hook_script(marketplace, repo, plugins):
+    installs = "".join(f"claude plugin install {p}@{marketplace} >/dev/null 2>&1\n" for p in plugins)
+    return (
+        "#!/bin/bash\n"
+        'if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then\n  exit 0\nfi\n\n'
+        f"claude plugin marketplace add {repo} >/dev/null 2>&1\n"
+        f"{installs}"
+        "exit 0\n"
+    )
+
+
+def add_session_hook(settings, settings_path, marketplace, repo):
+    """Write the install script if absent and register it under SessionStart.
+
+    Returns the script path when anything was added, else None.
+    """
+    script = settings_path.parent / "hooks" / "install-claude-plugins.sh"
+    command = f"$CLAUDE_PROJECT_DIR/{script}"
+    added = False
+
+    if not script.exists():
+        suffix = f"@{marketplace}"
+        plugins = [k[: -len(suffix)] for k, v in settings.get("enabledPlugins", {}).items()
+                   if v and k.endswith(suffix)]
+        script.parent.mkdir(parents=True, exist_ok=True)
+        script.write_text(hook_script(marketplace, repo, plugins))
+        script.chmod(0o755)
+        added = True
+
+    groups = settings.setdefault("hooks", {}).setdefault("SessionStart", [])
+    if not any(h.get("command") == command for g in groups for h in g.get("hooks", [])):
+        groups.append({"hooks": [{"type": "command", "command": command}]})
+        added = True
+
+    return script if added else None
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--settings", default=".claude/settings.json")
@@ -68,6 +106,7 @@ def main():
     p.add_argument("--plugins", default="")
     p.add_argument("--ref", default="main")
     p.add_argument("--sha", default="")
+    p.add_argument("--session-hook", action="store_true")
     args = p.parse_args()
 
     path = Path(args.settings)
@@ -76,6 +115,8 @@ def main():
     plugins = [x.strip() for x in args.plugins.split(",") if x.strip()]
 
     changed, bootstrapped = update(settings, args.marketplace, args.repo, plugins, args.ref, sha)
+    hook = add_session_hook(settings, path, args.marketplace, args.repo) if args.session_hook else None
+    changed = changed or hook is not None
     if changed:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(settings, indent=2) + "\n")
@@ -83,6 +124,8 @@ def main():
     print(f"changed={str(changed).lower()}")
     print(f"bootstrapped={str(bootstrapped).lower()}")
     print(f"sha={sha}")
+    if hook:
+        print(f"hook={hook}")
     return 0
 
 
