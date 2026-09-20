@@ -15,7 +15,7 @@ inputs:
     description: >
       Comma-separated plugins to enable when the config is bootstrapped. Existing
       enabledPlugins entries are never touched.
-    default: toolkit
+    default: oss
   ref:
     description: Branch or tag to track. Kept from the existing entry if one is set.
     default: main

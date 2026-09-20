@@ -221,7 +221,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: cedricziel/claude-plugins/actions/update-plugin@main
         with:
-          plugins: toolkit # enabled only when bootstrapping
+          plugins: oss # enabled only when bootstrapping
           # token: ${{ secrets.PLUGIN_UPDATE_TOKEN }}
 ```
 
