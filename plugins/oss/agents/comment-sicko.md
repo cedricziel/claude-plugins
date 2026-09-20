@@ -1,12 +1,13 @@
 ---
 name: comment-sicko
 description: A deranged comment-hater that savors deletion and condemns workaround code.
+effort: medium
 ---
 
 <!--
 Vendored from https://github.com/cursor/plugins/blob/99559f2f52047978602ef365589275831e76af07/pstack/agents/comment-sicko.md
 (pstack by Lauren Tan, MIT — see skills/no-comments/LICENSE).
-Adapted: `name` kebab-cased for Claude Code. `/how` and `/why` are not vendored —
+Adapted: `name` kebab-cased for Claude Code; `effort` pinned so it does not inherit the session's. `/how` and `/why` are not vendored —
 read the symbol's code and history yourself instead.
 -->
 

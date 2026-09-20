@@ -24,5 +24,14 @@ class WorkflowSyntaxTest(unittest.TestCase):
             self.assertEqual(r.returncode, 0, f"{js.name}: {r.stderr}")
 
 
+class WorkflowEffortTest(unittest.TestCase):
+    def test_every_agent_call_names_effort_alongside_model(self):
+        for js in sorted(WORKFLOWS.glob("*.js")):
+            src = js.read_text()
+            models = len(re.findall(r"\bmodel:", src))
+            efforts = len(re.findall(r"\beffort:", src))
+            self.assertEqual(models, efforts, f"{js.name}: {models} model: vs {efforts} effort:")
+
+
 if __name__ == "__main__":
     unittest.main()

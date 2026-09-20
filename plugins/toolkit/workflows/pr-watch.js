@@ -117,7 +117,7 @@ For each thread decide exactly one action:
 - push-back: you can show with file:line evidence that the comment is wrong, out of scope for this PR, or already handled. Give the evidence; this reply is posted ONCE and never argued further.
 - escalate: it asks for a design decision, changes scope, contradicts the issue, or you are not confident. Name the decision the human must make.
 Reviewers reject more than half of bot suggestions for being invalid or out of scope; do not apply to please the reviewer. Read the code before deciding.`,
-    { label: `classify#${round}`, phase: 'Classify', schema: DECISIONS, model: THINK },
+    { label: `classify#${round}`, phase: 'Classify', schema: DECISIONS, model: THINK, effort: 'low' },
   )) || { decisions: [] }
 
   phase('Apply')
@@ -134,7 +134,7 @@ ${state.ci === 'red' ? 'CI is red: if the newest run fails only on formatting/li
 4. For each 'escalate' thread: reply "Needs a maintainer decision: <the decision>". Do not resolve.
 5. If anything was pushed, re-request review from every human reviewer who had requested changes.
 Never force-push, never delete branches, never merge, never mark ready for review.`,
-    { label: `apply#${round}`, phase: 'Apply', schema: APPLIED, model: WORK, isolation: 'worktree' },
+    { label: `apply#${round}`, phase: 'Apply', schema: APPLIED, model: WORK, isolation: 'worktree', effort: 'medium' },
   )
   rounds.push({ round, fresh: fresh.length, decisions, applied })
   if (!applied?.pushed) break   // nothing changed → a further round would only re-read the same state

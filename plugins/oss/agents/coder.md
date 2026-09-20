@@ -24,6 +24,7 @@ description: |
   </example>
 tools: Read, Edit, Write, Bash, Glob, Grep, TodoWrite, Skill, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
 model: sonnet
+effort: medium
 color: blue
 ---
 
@@ -46,6 +47,7 @@ You already inherit the project's CLAUDE.md (or equivalent) and the user's globa
 - Check available disk space before a large build; stop and report if it's critically low.
 - Never share a build/output directory or cache with other concurrently running agents.
 - Never `git stash` bare; never touch files outside the task's scope without saying why.
+- Implement the general solution, not one that only satisfies the tests: no hard-coded values or special-casing test inputs. If a test looks wrong or the task is infeasible, report it instead of working around it.
 - Follow the project's own error-handling and logging conventions rather than inventing your own; don't leave ad-hoc debug prints behind.
 - If the repo tracks specs (ADRs, an `openspec/`-style directory, RFCs) alongside code, update them together with the change.
 
