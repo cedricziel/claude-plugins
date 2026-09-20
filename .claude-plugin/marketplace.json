@@ -14,7 +14,7 @@
       "name": "common",
       "source": "./plugins/common",
       "description": "Shared building blocks: the auto-format PostToolUse hook, a SessionStart hook injecting baseline working rules, the unslop writing-cleanup skill, the code-comments skill, and the test-strategy skill.",
-      "version": "1.5.3",
+      "version": "1.5.4",
       "author": {
         "name": "Cedric Ziel",
         "url": "https://github.com/cedricziel"
