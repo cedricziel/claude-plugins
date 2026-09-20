@@ -53,7 +53,7 @@ let plan = await agent(
 Write the plan for a single PR that fixes exactly this issue. Read the code; do not plan from the issue text alone.
 Aim for about ${TARGET} changed lines; if an honest plan needs more than ${MAX}, say tooBig=true and explain — do not shrink the fix to fit.
 Name the adjacent things you are deliberately not touching.`,
-  { label: 'plan', phase: 'Plan', schema: PLAN, model: THINK },
+  { label: 'plan', phase: 'Plan', schema: PLAN, model: THINK, effort: 'low' },
 )
 if (!plan) throw new Error('no plan produced')
 
@@ -64,7 +64,7 @@ const critique = await agent(
 Proposed plan: ${JSON.stringify(plan)}
 
 You are the planning critic. Find what is wrong with this plan: a case the issue implies that the plan misses, a file the change must touch that is absent, a step that makes the reproducing test pass without fixing the reported behaviour, hidden scope, a risk not named. Read the code to check. ok=true only if you found nothing material.`,
-  { label: 'critic', phase: 'Critique', schema: CRITIQUE, model: THINK },
+  { label: 'critic', phase: 'Critique', schema: CRITIQUE, model: THINK, effort: 'high' },
 )
 if (critique && !critique.ok) {
   log(`critic found ${critique.problems.length} problem(s); revising once`)
@@ -74,7 +74,7 @@ if (critique && !critique.ok) {
 Your previous plan: ${JSON.stringify(plan)}
 A critic objected:\n${critique.problems.map((p) => `- ${p}`).join('\n')}
 Revise the plan to address each objection (or state in risks why an objection is wrong).`,
-    { label: 'revise', phase: 'Plan', schema: PLAN, model: THINK },
+    { label: 'revise', phase: 'Plan', schema: PLAN, model: THINK, effort: 'low' },
   )
   if (revised) plan = revised
 }

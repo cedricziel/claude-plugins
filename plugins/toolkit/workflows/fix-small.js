@@ -64,7 +64,7 @@ Rules: minimal change for this issue only; TDD; run the project's lint/format; a
 Push the branch to origin when done.`
 
 phase('Implement')
-let impl = await agent(implementPrompt(''), { label: 'implement', phase: 'Implement', schema: IMPL, isolation: 'worktree', model: args.implementModel ?? WORK })
+let impl = await agent(implementPrompt(''), { label: 'implement', phase: 'Implement', schema: IMPL, isolation: 'worktree', model: args.implementModel ?? WORK, effort: 'medium' })
 if (!impl || impl.blocked) return { branch, base, impl, verify: null, ok: false, refused: impl?.blocked || 'implementer returned nothing' }
 
 if (budget.total && budget.remaining() < BUDGET_FLOOR) return { branch, base, impl, verify: null, ok: false, refused: 'budget exhausted before verification' }
@@ -75,15 +75,15 @@ Check, with commands, not by reading the report: the tests named below pass; eve
 Then, WITHOUT reading the implementer's tests first, write one additional test from the issue text alone ("${issue.expected}") and run it — a fix that only satisfies the tests its author wrote is the most common way agent patches are wrong. Keep the test in the worktree (do not commit) and report its path and result.
 Finally look for test-gaming: inputs special-cased to match the test, assertions weakened or removed, tests skipped or marked expected-failure. Any of these is a problem regardless of green tests.
 Implementer's report: ${JSON.stringify(impl)}`
-let verify = await agent(verifyPrompt(), { label: 'verify', phase: 'Verify', schema: VERIFY, isolation: 'worktree', model: WORK })
+let verify = await agent(verifyPrompt(), { label: 'verify', phase: 'Verify', schema: VERIFY, isolation: 'worktree', model: WORK, effort: 'medium' })
 
 if (verify && !verify.ok) {
   log(`verifier found ${verify.problems.length} problem(s); one repair round`)
   const repaired = await agent(implementPrompt(verify.problems.map((p) => `- ${p}`).join('\n')),
-    { label: 'repair', phase: 'Implement', schema: IMPL, isolation: 'worktree', model: args.implementModel ?? WORK })
+    { label: 'repair', phase: 'Implement', schema: IMPL, isolation: 'worktree', model: args.implementModel ?? WORK, effort: 'medium' })
   if (repaired && !repaired.blocked) {
     impl = repaired
-    verify = await agent(verifyPrompt(), { label: 'verify#2', phase: 'Verify', schema: VERIFY, isolation: 'worktree', model: WORK })
+    verify = await agent(verifyPrompt(), { label: 'verify#2', phase: 'Verify', schema: VERIFY, isolation: 'worktree', model: WORK, effort: 'medium' })
   }
 }
 

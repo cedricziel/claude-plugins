@@ -105,7 +105,7 @@ const nitpickResult = await agent(
 Do NOT report anything with a concrete failure scenario — those are defects, handled elsewhere. Report opinions a reviewer might leave as a "nitpick", nothing that blocks merging.
 Line numbers must refer to the NEW side of the diff. Return at most 10 nitpicks; prefer the most valuable ones.
 Write title/note like a very senior engineer: kind, not nice — direct and concrete, no hedging, no padding, no unearned praise.`,
-  { label: "nitpicks", phase: "Nitpicks", schema: NITPICKS, model: THINK },
+  { label: "nitpicks", phase: "Nitpicks", schema: NITPICKS, model: THINK, effort: "low" },
 );
 const nitpicks = (nitpickResult?.nitpicks ?? []).slice(0, 10);
 const counts = countSeverities(review.confirmed, nitpicks);

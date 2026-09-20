@@ -88,7 +88,7 @@ Read the unified diff at ${diffPath}. Open the surrounding files in the reposito
 Report only defects that have a concrete failure scenario. Do not report style, naming, or hypothetical concerns.
 Line numbers must refer to the NEW side of the diff.
 Write title/claim/failure_scenario like a very senior engineer: kind, not nice — direct and concrete, no hedging, no padding, no unearned praise.`,
-    { label: `review:${lens.split(' ')[0]}`, phase: 'Review', schema: FINDINGS, model: THINK },
+    { label: `review:${lens.split(' ')[0]}`, phase: 'Review', schema: FINDINGS, model: THINK, effort: 'high' },
   ),
 ))
 
@@ -119,7 +119,7 @@ Failure scenario: ${f.failure_scenario}
 Your job is to REFUTE this claim. Approach: ${angle}.
 Read the actual code in the repository; do not reason from the diff alone.
 If you cannot find solid evidence either way, answer refuted=true — the burden of proof is on the claim.`,
-      { label: `refute:${f.file.split('/').pop()}#${i + 1}`, phase: 'Verify', schema: VERDICT, model: THINK },
+      { label: `refute:${f.file.split('/').pop()}#${i + 1}`, phase: 'Verify', schema: VERDICT, model: THINK, effort: 'high' },
     ),
   )).then((votes) => {
     const v = votes.filter(Boolean)
@@ -138,7 +138,7 @@ const critic = await agent(
 ${confirmed.map((f) => `- ${f.file}:${f.line} ${f.title}`).join('\n') || '- none'}
 
 What did the reviewers miss? Read the diff and the touched files. Name only concrete, unexamined risks — behaviours, inputs, or interactions the findings above do not cover. If nothing is missing, return an empty list.`,
-  { label: 'critic', phase: 'Critic', schema: GAPS, model: THINK },
+  { label: 'critic', phase: 'Critic', schema: GAPS, model: THINK, effort: 'high' },
 )
 
 return {
