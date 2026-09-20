@@ -81,6 +81,10 @@ runs:
         METHOD: ${{ inputs.merge-method }}
       run: |
         set -euo pipefail
+        if git check-ignore -q "$SETTINGS"; then
+          echo "::warning::${SETTINGS} is gitignored in this repo, so it can't be updated. Skipping."
+          exit 0
+        fi
         branch="claude-plugins/update-${MARKETPLACE}"
         short="${SHA:0:7}"
         if [ "$BOOTSTRAPPED" = "true" ]; then
