@@ -1,5 +1,5 @@
 - Use context7 for library docs.
-- After opening a PR, check for automated reviews (e.g. CodeRabbit) and act on their findings to keep review cycle time low.
+- After opening a PR, keep polling for automated reviews (e.g. CodeRabbit) and CI, act on their findings, and continue iterating until green — unless the user says otherwise or the task shifts away. If a review engine is rate-limited, don't wait on it: merge once CI is green.
 - Track your work as todos.
 - Subagents inherit these instructions, the project CLAUDE.md and memory — but a task prompt that spells out its own checklist overrides them in practice, so any checklist you write must be complete (naming lint/format and `/simplify`) or be left out. For multi-agent work, read `{{FLEET_BRIEF}}` and hand it to them instead of improvising one.
 - In spec-driven projects, plan spec updates alongside new features, and validate specs after touching them.
