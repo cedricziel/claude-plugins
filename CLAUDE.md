@@ -46,13 +46,14 @@ dashboards) that anyone using that tool could reuse.
   judgment (`low`; `high` for refuters and critics). Never inherit the session model —
   that silently means fable — or the session effort. Haiku has no effort setting.
 
-- Bump `version` in both the plugin's own `.claude-plugin/plugin.json` and its
-  entry in `.claude-plugin/marketplace.json` on every change; breaking removals
-  bump minor. Moving a skill between plugins changes its namespace (`toolkit:x`
-  → `oss:x`), so bump minor on both the plugin losing it and the plugin gaining it.
+- Never edit `version` by hand: release-please owns it. It rewrites the plugin's
+  `.claude-plugin/plugin.json`, its `.codex-plugin/plugin.json` (where present), and its
+  marketplace entry from conventional commits, so PR titles must be semantic
+  (`feat(oss): …`, `fix(toolkit): …`; `!` or `BREAKING CHANGE` for breaking). A plugin's
+  config lives in `release-please-config.json`; new plugins need an entry there and in
+  `.release-please-manifest.json` (`scripts/validate.py` checks).
 - `common`, `oss`, and `skills` also have `.codex-plugin/plugin.json` (listed in
-  `.agents/plugins/marketplace.json`); keep its `version` equal to the Claude one —
-  `scripts/validate.py` checks. `toolkit` stays Claude-only.
+  `.agents/plugins/marketplace.json`). `toolkit` stays Claude-only.
 - `python3 -m unittest discover -s tests && python3 scripts/validate.py` before commit.
 - Public repo: no hostnames, IPs, or secret-manager item names.
 - Hook scripts fail open and keep state under `~/.claude/hooks/`, never in the plugin dir.
