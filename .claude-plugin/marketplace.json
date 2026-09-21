@@ -7,25 +7,32 @@
   "metadata": {
     "description": "Cedric Ziel's Claude Code plugins"
   },
-  "allowCrossMarketplaceDependenciesOn": ["claude-plugins-official"],
+  "allowCrossMarketplaceDependenciesOn": [
+    "claude-plugins-official"
+  ],
   "plugins": [
     {
       "name": "common",
       "source": "./plugins/common",
       "description": "Shared building blocks: the auto-format PostToolUse hook, a SessionStart hook injecting baseline working rules, the unslop writing-cleanup skill, the code-comments skill, and the test-strategy skill.",
-      "version": "1.5.4",
+      "version": "1.6.0",
       "author": {
         "name": "Cedric Ziel",
         "url": "https://github.com/cedricziel"
       },
       "category": "productivity",
-      "keywords": ["hooks", "formatting", "writing", "shared"]
+      "keywords": [
+        "hooks",
+        "formatting",
+        "writing",
+        "shared"
+      ]
     },
     {
       "name": "toolkit",
       "source": "./plugins/toolkit",
       "description": "Cedric's personal layer on top of oss and skills: TDD hooks, hooks blocking fable-model subagents and forcing a fable session to delegate edits to a subagent, the GitHub issue/PR orchestration engine, code-review helpers, and SignalDB observability.",
-      "version": "1.16.2",
+      "version": "1.17.0",
       "author": {
         "name": "Cedric Ziel",
         "url": "https://github.com/cedricziel"
@@ -45,7 +52,7 @@
       "name": "oss",
       "source": "./plugins/oss",
       "description": "Generic engineering practice, reusable in any repo: commit discipline, pull requests, stacked PRs, writing tests, technical writing, no-comments, GitHub issue creation, release notes, and a scoped implementation agent. Depends on common.",
-      "version": "0.4.6",
+      "version": "0.5.0",
       "author": {
         "name": "Cedric Ziel",
         "url": "https://github.com/cedricziel"
@@ -68,7 +75,7 @@
       "name": "skills",
       "source": "./plugins/skills",
       "description": "Generic tool-integration skills, reusable in any repo regardless of who you are: CodeRabbit reviews, the Forgejo CLI, and dashboard design/review. Depends on common and coderabbit.",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "author": {
         "name": "Cedric Ziel",
         "url": "https://github.com/cedricziel"
