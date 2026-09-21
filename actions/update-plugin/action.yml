@@ -58,14 +58,28 @@ runs:
   steps:
     - id: update
       shell: bash
+      env:
+        ACTION_PATH: ${{ github.action_path }}
+        SETTINGS: ${{ inputs.settings-file }}
+        MARKETPLACE: ${{ inputs.marketplace }}
+        REPO: ${{ inputs.repo }}
+        PLUGINS: ${{ inputs.plugins }}
+        REF: ${{ inputs.ref }}
+        SESSION_HOOK: ${{ inputs.session-hook }}
       run: |
-        python3 "${{ github.action_path }}/update_settings.py" \
-          --settings "${{ inputs.settings-file }}" \
-          --marketplace "${{ inputs.marketplace }}" \
-          --repo "${{ inputs.repo }}" \
-          --plugins "${{ inputs.plugins }}" \
-          --ref "${{ inputs.ref }}" \
-          ${{ inputs.session-hook == 'true' && '--session-hook' || '' }} | tee -a "$GITHUB_OUTPUT"
+        set -euo pipefail
+        case "$SETTINGS" in
+          /* | *..*) echo "::error::settings-file must be a relative path inside the repo"; exit 1 ;;
+        esac
+        args=()
+        if [ "$SESSION_HOOK" = "true" ]; then args+=(--session-hook); fi
+        python3 "$ACTION_PATH/update_settings.py" \
+          --settings "$SETTINGS" \
+          --marketplace "$MARKETPLACE" \
+          --repo "$REPO" \
+          --plugins "$PLUGINS" \
+          --ref "$REF" \
+          ${args[@]+"${args[@]}"} | tee -a "$GITHUB_OUTPUT"
 
     - id: pr
       if: steps.update.outputs.changed == 'true'
