@@ -11,9 +11,21 @@ plus `hook=<path>` when a session-start hook script was written.
 """
 import argparse
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
+
+NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
+REPO = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*/[A-Za-z0-9._-]+")
+REF = re.compile(r"[A-Za-z0-9][A-Za-z0-9._/-]*")
+SHA = re.compile(r"[0-9a-f]{40}")
+
+
+def check(label, value, pattern):
+    """Inputs end up in a committed shell script and in $GITHUB_OUTPUT, so allowlist them."""
+    if not pattern.fullmatch(value):
+        raise SystemExit(f"invalid {label}: {value!r}")
 
 
 def resolve_sha(repo, ref):
@@ -109,10 +121,18 @@ def main():
     p.add_argument("--session-hook", action="store_true")
     args = p.parse_args()
 
+    plugins = [x.strip() for x in args.plugins.split(",") if x.strip()]
+    check("marketplace", args.marketplace, NAME)
+    check("repo", args.repo, REPO)
+    check("ref", args.ref, REF)
+    if args.sha:
+        check("sha", args.sha, SHA)
+    for plugin in plugins:
+        check("plugin", plugin, NAME)
+
     path = Path(args.settings)
     settings = json.loads(path.read_text()) if path.is_file() else {}
     sha = args.sha or resolve_sha(args.repo, args.ref)
-    plugins = [x.strip() for x in args.plugins.split(",") if x.strip()]
 
     changed, bootstrapped = update(settings, args.marketplace, args.repo, plugins, args.ref, sha)
     hook = add_session_hook(settings, path, args.marketplace, args.repo) if args.session_hook else None
