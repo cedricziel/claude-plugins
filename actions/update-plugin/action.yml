@@ -79,7 +79,7 @@ runs:
           --repo "$REPO" \
           --plugins "$PLUGINS" \
           --ref "$REF" \
-          "${args[@]}" | tee -a "$GITHUB_OUTPUT"
+          ${args[@]+"${args[@]}"} | tee -a "$GITHUB_OUTPUT"
 
     - id: pr
       if: steps.update.outputs.changed == 'true'
