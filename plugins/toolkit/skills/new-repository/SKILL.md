@@ -36,6 +36,8 @@ The second call lets Actions open PRs, which the plugin-update workflow needs. T
 
 Adapt each to the repo's language; keep them minimal.
 
+**Pin every third-party action to a full commit SHA**, with the release as a trailing comment (`uses: actions/checkout@<40-char sha> # v7.0.1`). Tags and branches can be retargeted, and these workflows run with write tokens. Resolve the SHA with `gh api repos/<owner>/<action>/git/ref/tags/<tag> --jq .object.sha` (dereference again if the object type is `tag`). The `github-actions` entry in Dependabot keeps the pins current. The one exception is `cedricziel/claude-plugins/actions/update-plugin@main`: it's first-party and tracks `main` on purpose.
+
 | File | What |
 | --- | --- |
 | `.github/workflows/ci.yml` | Build, lint, test for the stack. This is the required check. |
@@ -63,7 +65,7 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: cedricziel/claude-plugins/actions/update-plugin@main
         with:
           plugins: oss
