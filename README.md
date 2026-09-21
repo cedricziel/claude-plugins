@@ -232,7 +232,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: cedricziel/claude-plugins/actions/update-plugin@main
+      - uses: cedricziel/claude-plugins/actions/update-plugin@7d5e56c1a0f1f689b982ebdb15aa11fa97710d81 # main
         with:
           plugins: oss # enabled only when bootstrapping
           # token: ${{ secrets.PLUGIN_UPDATE_TOKEN }}
