@@ -144,6 +144,37 @@ def check_codex(root, claude_plugins):
             err(f"{where}: version mismatch claude={claude_entry.get('version')} codex={manifest.get('version')}")
 
 
+def check_release_please(root, claude_plugins):
+    config_path = root / "release-please-config.json"
+    if not config_path.exists():
+        return
+    config = load_json(config_path)
+    manifest = load_json(root / ".release-please-manifest.json")
+    if config is None or manifest is None:
+        return
+    packages = config.get("packages", {})
+    for name, entry in claude_plugins.items():
+        pkg = entry["source"].removeprefix("./")
+        where = f"release-please plugin '{name}' ({pkg})"
+        if pkg not in packages:
+            err(f"{where}: missing from release-please-config.json")
+            continue
+        if manifest.get(pkg) != entry.get("version"):
+            err(f"{where}: .release-please-manifest.json has {manifest.get(pkg)}, plugin has {entry.get('version')}")
+        targets = {
+            (f.get("path"), f.get("jsonpath")) for f in packages[pkg].get("extra-files", [])
+        }
+        wanted = [
+            (".claude-plugin/plugin.json", "$.version"),
+            ("/.claude-plugin/marketplace.json", f"$.plugins[?(@.name=='{name}')].version"),
+        ]
+        if (root / pkg / ".codex-plugin" / "plugin.json").exists():
+            wanted.append((".codex-plugin/plugin.json", "$.version"))
+        for path, jsonpath in wanted:
+            if (path, jsonpath) not in targets:
+                err(f"{where}: extra-files missing {path} {jsonpath}")
+
+
 def main():
     root = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else Path(__file__).resolve().parent.parent
     marketplace = load_json(root / ".claude-plugin" / "marketplace.json")
@@ -152,7 +183,9 @@ def main():
         for entry in marketplace.get("plugins", []):
             require(entry, ("name", "source", "description", "version"), f"marketplace.json plugin '{entry.get('name', '?')}'")
             check_plugin(root, entry)
-        check_codex(root, {e.get("name"): e for e in marketplace.get("plugins", [])})
+        claude_plugins = {e.get("name"): e for e in marketplace.get("plugins", [])}
+        check_codex(root, claude_plugins)
+        check_release_please(root, claude_plugins)
 
     if problems:
         print("\n".join(problems))
