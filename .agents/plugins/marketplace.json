@@ -1,0 +1,44 @@
+{
+  "name": "cedricziel",
+  "interface": {
+    "displayName": "Cedric Ziel's plugins"
+  },
+  "plugins": [
+    {
+      "name": "common",
+      "source": {
+        "source": "local",
+        "path": "./plugins/common"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "oss",
+      "source": {
+        "source": "local",
+        "path": "./plugins/oss"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "skills",
+      "source": {
+        "source": "local",
+        "path": "./plugins/skills"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

@@ -9,5 +9,11 @@
   "license": "MIT",
   "repository": "https://github.com/cedricziel/claude-plugins",
   "homepage": "https://github.com/cedricziel/claude-plugins",
-  "keywords": ["hooks", "formatting", "writing", "shared"]
+  "keywords": [
+    "hooks",
+    "formatting",
+    "writing",
+    "shared"
+  ],
+  "skills": "./skills/"
 }
