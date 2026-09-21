@@ -5,8 +5,7 @@
     "email": "cedric@cedric-ziel.com"
   },
   "metadata": {
-    "description": "Cedric Ziel's Claude Code plugins",
-    "version": "1.18.1"
+    "description": "Cedric Ziel's Claude Code plugins"
   },
   "allowCrossMarketplaceDependenciesOn": ["claude-plugins-official"],
   "plugins": [

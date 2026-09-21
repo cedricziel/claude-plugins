@@ -105,5 +105,123 @@ class ValidateTest(unittest.TestCase):
         self.assertIn("name", r.stdout)
 
 
+def add_codex(tmp, plugin, version="1.0.0"):
+    (plugin / ".codex-plugin").mkdir()
+    (plugin / ".codex-plugin" / "plugin.json").write_text(json.dumps({"name": "p", "version": version, "description": "d"}))
+    (tmp / ".agents" / "plugins").mkdir(parents=True)
+    (tmp / ".agents" / "plugins" / "marketplace.json").write_text(json.dumps({
+        "name": "t",
+        "plugins": [{"name": "p", "source": {"source": "local", "path": "./plugins/p"}}],
+    }))
+
+
+class CodexValidateTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.plugin = make_repo(self.tmp)
+        add_codex(self.tmp, self.plugin)
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def test_valid_codex_marketplace_passes(self):
+        r = run(self.tmp)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
+    def test_missing_codex_manifest_fails(self):
+        shutil.rmtree(self.plugin / ".codex-plugin")
+        r = run(self.tmp)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn(".codex-plugin", r.stdout)
+
+    def test_codex_version_must_match_claude_manifest(self):
+        add_codex_manifest = self.plugin / ".codex-plugin" / "plugin.json"
+        add_codex_manifest.write_text(json.dumps({"name": "p", "version": "9.9.9", "description": "d"}))
+        r = run(self.tmp)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("version", r.stdout)
+
+    def test_codex_source_must_be_relative_and_exist(self):
+        path = self.tmp / ".agents" / "plugins" / "marketplace.json"
+        path.write_text(json.dumps({"name": "t", "plugins": [{"name": "p", "source": {"source": "local", "path": "./plugins/nope"}}]}))
+        r = run(self.tmp)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("nope", r.stdout)
+
+    def test_codex_plugin_must_exist_in_claude_marketplace(self):
+        path = self.tmp / ".agents" / "plugins" / "marketplace.json"
+        path.write_text(json.dumps({"name": "t", "plugins": [{"name": "ghost", "source": {"source": "local", "path": "./plugins/p"}}]}))
+        r = run(self.tmp)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("ghost", r.stdout)
+
+
+def add_release_please(tmp, version="1.0.0", codex=False):
+    extra = [
+        {"type": "json", "path": ".claude-plugin/plugin.json", "jsonpath": "$.version"},
+        {"type": "json", "path": "/.claude-plugin/marketplace.json", "jsonpath": "$.plugins[?(@.name=='p')].version"},
+    ]
+    if codex:
+        extra.append({"type": "json", "path": ".codex-plugin/plugin.json", "jsonpath": "$.version"})
+    (tmp / "release-please-config.json").write_text(json.dumps({
+        "packages": {"plugins/p": {"release-type": "simple", "extra-files": extra}},
+    }))
+    (tmp / ".release-please-manifest.json").write_text(json.dumps({"plugins/p": version}))
+
+
+class ReleasePleaseValidateTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.plugin = make_repo(self.tmp)
+        add_release_please(self.tmp)
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def config(self):
+        return json.loads((self.tmp / "release-please-config.json").read_text())
+
+    def write_config(self, cfg):
+        (self.tmp / "release-please-config.json").write_text(json.dumps(cfg))
+
+    def test_valid_config_passes(self):
+        r = run(self.tmp)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
+    def test_plugin_missing_from_config_fails(self):
+        cfg = self.config()
+        cfg["packages"] = {}
+        self.write_config(cfg)
+        r = run(self.tmp)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("plugins/p", r.stdout)
+
+    def test_missing_marketplace_extra_file_fails(self):
+        cfg = self.config()
+        cfg["packages"]["plugins/p"]["extra-files"].pop()
+        self.write_config(cfg)
+        r = run(self.tmp)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("marketplace.json", r.stdout)
+
+    def test_codex_manifest_must_be_an_extra_file(self):
+        add_codex(self.tmp, self.plugin)
+        r = run(self.tmp)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn(".codex-plugin", r.stdout)
+
+    def test_codex_manifest_extra_file_passes(self):
+        add_codex(self.tmp, self.plugin)
+        add_release_please(self.tmp, codex=True)
+        r = run(self.tmp)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
+    def test_manifest_version_must_match_plugin_json(self):
+        (self.tmp / ".release-please-manifest.json").write_text(json.dumps({"plugins/p": "2.0.0"}))
+        r = run(self.tmp)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("2.0.0", r.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()

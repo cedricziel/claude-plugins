@@ -1,0 +1,25 @@
+{
+  "name": "oss",
+  "version": "0.4.6",
+  "description": "Generic engineering practice, reusable in any repo (OSS or not): commit discipline, pull requests, stacked PRs, writing tests, technical writing, no-comments, GitHub issue creation, release notes, and a scoped implementation agent. Depends on common.",
+  "author": {
+    "name": "Cedric Ziel",
+    "url": "https://github.com/cedricziel"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/cedricziel/claude-plugins",
+  "homepage": "https://github.com/cedricziel/claude-plugins",
+  "keywords": [
+    "oss",
+    "open-source",
+    "commit-discipline",
+    "pull-request",
+    "stacked-prs",
+    "testing",
+    "technical-writing",
+    "issue-create",
+    "release-notes",
+    "changelog"
+  ],
+  "skills": "./skills/"
+}

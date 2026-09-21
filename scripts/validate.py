@@ -112,6 +112,69 @@ def check_plugin(root, entry):
     check_hooks(plugin_dir)
 
 
+def check_codex(root, claude_plugins):
+    path = root / ".agents" / "plugins" / "marketplace.json"
+    marketplace = load_json(path) if path.exists() else None
+    if marketplace is None:
+        return
+    require(marketplace, ("name", "plugins"), "codex marketplace.json")
+    for entry in marketplace.get("plugins", []):
+        name = entry.get("name", "?")
+        where = f"codex marketplace.json plugin '{name}'"
+        require(entry, ("name", "source"), where)
+        claude_entry = claude_plugins.get(name)
+        if claude_entry is None:
+            err(f"{where}: not in .claude-plugin/marketplace.json")
+        source = entry.get("source") or {}
+        src = source.get("path", "") if isinstance(source, dict) else ""
+        if not src.startswith("./"):
+            err(f"{where}: source.path '{src}' must start with ./")
+            continue
+        plugin_dir = (root / src).resolve()
+        if not plugin_dir.is_dir():
+            err(f"{where}: source directory {src} does not exist")
+            continue
+        manifest = load_json(plugin_dir / ".codex-plugin" / "plugin.json")
+        if manifest is None:
+            continue
+        require(manifest, ("name", "version"), f"{plugin_dir}/.codex-plugin/plugin.json")
+        if manifest.get("name") != name:
+            err(f"{where}: .codex-plugin/plugin.json name '{manifest.get('name')}' does not match")
+        if claude_entry and manifest.get("version") != claude_entry.get("version"):
+            err(f"{where}: version mismatch claude={claude_entry.get('version')} codex={manifest.get('version')}")
+
+
+def check_release_please(root, claude_plugins):
+    config_path = root / "release-please-config.json"
+    if not config_path.exists():
+        return
+    config = load_json(config_path)
+    manifest = load_json(root / ".release-please-manifest.json")
+    if config is None or manifest is None:
+        return
+    packages = config.get("packages", {})
+    for name, entry in claude_plugins.items():
+        pkg = entry["source"].removeprefix("./")
+        where = f"release-please plugin '{name}' ({pkg})"
+        if pkg not in packages:
+            err(f"{where}: missing from release-please-config.json")
+            continue
+        if manifest.get(pkg) != entry.get("version"):
+            err(f"{where}: .release-please-manifest.json has {manifest.get(pkg)}, plugin has {entry.get('version')}")
+        targets = {
+            (f.get("path"), f.get("jsonpath")) for f in packages[pkg].get("extra-files", [])
+        }
+        wanted = [
+            (".claude-plugin/plugin.json", "$.version"),
+            ("/.claude-plugin/marketplace.json", f"$.plugins[?(@.name=='{name}')].version"),
+        ]
+        if (root / pkg / ".codex-plugin" / "plugin.json").exists():
+            wanted.append((".codex-plugin/plugin.json", "$.version"))
+        for path, jsonpath in wanted:
+            if (path, jsonpath) not in targets:
+                err(f"{where}: extra-files missing {path} {jsonpath}")
+
+
 def main():
     root = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else Path(__file__).resolve().parent.parent
     marketplace = load_json(root / ".claude-plugin" / "marketplace.json")
@@ -120,6 +183,9 @@ def main():
         for entry in marketplace.get("plugins", []):
             require(entry, ("name", "source", "description", "version"), f"marketplace.json plugin '{entry.get('name', '?')}'")
             check_plugin(root, entry)
+        claude_plugins = {e.get("name"): e for e in marketplace.get("plugins", [])}
+        check_codex(root, claude_plugins)
+        check_release_please(root, claude_plugins)
 
     if problems:
         print("\n".join(problems))

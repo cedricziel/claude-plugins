@@ -11,6 +11,18 @@ Cedric Ziel's [Claude Code](https://docs.claude.com/en/docs/claude-code) plugin 
 /plugin install skills@cedricziel    # generic tool-integration skills only (CodeRabbit, Forgejo, dashboards)
 ```
 
+### Codex
+
+`common`, `oss`, and `skills` also ship a `.codex-plugin/plugin.json`, and
+`.agents/plugins/marketplace.json` lists them, so the skills install in Codex too:
+
+```
+codex plugin marketplace add cedricziel/claude-plugins
+```
+
+Only the skills carry over. Hooks, agents, and `toolkit` (workflows, hooks,
+SignalDB integration) are Claude Code only.
+
 ## Plugins
 
 Four plugins, layered by audience — `common` → (`oss` and `skills`) → `toolkit` —
