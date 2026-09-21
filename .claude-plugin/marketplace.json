@@ -26,7 +26,7 @@
       "name": "toolkit",
       "source": "./plugins/toolkit",
       "description": "Cedric's personal layer on top of oss and skills: TDD hooks, hooks blocking fable-model subagents and forcing a fable session to delegate edits to a subagent, the GitHub issue/PR orchestration engine, code-review helpers, and SignalDB observability.",
-      "version": "1.16.0",
+      "version": "1.16.1",
       "author": {
         "name": "Cedric Ziel",
         "url": "https://github.com/cedricziel"
