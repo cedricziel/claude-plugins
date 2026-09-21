@@ -50,6 +50,9 @@ dashboards) that anyone using that tool could reuse.
   entry in `.claude-plugin/marketplace.json` on every change; breaking removals
   bump minor. Moving a skill between plugins changes its namespace (`toolkit:x`
   → `oss:x`), so bump minor on both the plugin losing it and the plugin gaining it.
+- `common`, `oss`, and `skills` also have `.codex-plugin/plugin.json` (listed in
+  `.agents/plugins/marketplace.json`); keep its `version` equal to the Claude one —
+  `scripts/validate.py` checks. `toolkit` stays Claude-only.
 - `python3 -m unittest discover -s tests && python3 scripts/validate.py` before commit.
 - Public repo: no hostnames, IPs, or secret-manager item names.
 - Hook scripts fail open and keep state under `~/.claude/hooks/`, never in the plugin dir.
