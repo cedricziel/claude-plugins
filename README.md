@@ -80,6 +80,7 @@ other repos' own plugins, not just installed by me.
 | Agent     | Purpose                                                                                                                                                            |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `oss:coder`   | Scoped implementation engineer for any repo/language — failing test first, targeted builds, `/simplify` pass, semantic commit; delegate a planned task to it directly |
+| `oss:technical-writer` | Writes or rewrites user-facing prose — readme, guide, reference page, RFC, release notes — applying the `technical-writing` standard and `unslop`; grounds every claim in the code |
 | `oss:comment-sicko` | Purges narration comments and suppressions; spawned by `no-comments` above — vendored from pstack (MIT)                                               |
 
 ### skills
