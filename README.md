@@ -63,6 +63,10 @@ Generic engineering practice, reusable in any repo — OSS or private, day job
 included. Depends on `common@cedricziel`. Meant to be depended on directly by
 other repos' own plugins, not just installed by me.
 
+A SessionStart hook injects `instructions/global.md`: delegate documentation to
+the `oss:technical-writer` agent, and call the `technical-writing` skill when
+writing docs inline. Off switch: `OSS_INSTRUCTIONS_DISABLE=1`.
+
 **Skills** (loaded automatically when relevant)
 
 | Skill               | Purpose                                                                                                                                                        |
