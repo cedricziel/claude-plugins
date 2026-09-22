@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 # Force direct coding out of a fable-model main session (PreToolUse: Edit|Write).
-# Fable is a poor fit for hands-on coding. When fable-track.sh has recorded
-# the current session's model as fable, deny direct Edit/Write calls and
-# push the work onto a subagent instead — model-guard.sh keeps that
-# subagent off fable in turn, so the actual edit lands on sonnet/haiku.
+# Not because fable codes badly — it is the strongest model on offer — but
+# because applying an edit is mechanical work billed at the most expensive
+# tokens in the lineup. When fable-track.sh has recorded the current
+# session's model as fable, deny direct Edit/Write calls and push the work
+# onto a subagent instead — model-guard.sh keeps that subagent off fable in
+# turn, so the actual edit lands on sonnet/haiku. The judgment stays in the
+# fable session; only the typing moves.
 #
 # Unknown/missing tracked state fails open (allow): we'd rather miss a
 # fable edit than block normal editing when we can't tell the model.

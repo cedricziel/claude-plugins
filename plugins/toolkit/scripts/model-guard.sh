@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Deny subagent spawns pinned to the Fable model (PreToolUse: Task|Agent).
-# Fable is Claude Code's fast interactive model; it's too weak for
-# unsupervised subagent work. This only rejects a call that names an
+# Fable sits at the top of the lineup and is priced like it — 2.5x opus per
+# token — so putting it on a subagent buys capability the task rarely needs.
+# Keep it for the main session, where a human chose to pay for it. This is
+# about cost, not capability. This only rejects a call that names an
 # explicit fable-family model id. A call with no `model` field is left
 # alone — that's the normal way to invoke a subagent_type whose own
 # frontmatter already sets `model:` (Explore, Plan, general-purpose, most
