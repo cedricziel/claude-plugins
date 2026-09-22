@@ -1,0 +1,3 @@
+- Documentation is a delegated task: hand any user-facing prose — readme, guide, reference page, RFC, release notes, a docs page for a change you just made — to the `oss:technical-writer` agent, with the files and facts it needs. Write it yourself only when it is a line or two.
+- Writing docs inline anyway? Invoke the `technical-writing` skill first and apply all four of its layers. It never triggers on its own — you have to call it.
+- Code comments and docstrings are not technical writing: they follow the `code-comments` skill, whose default is no comment.
