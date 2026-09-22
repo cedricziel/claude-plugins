@@ -52,7 +52,7 @@
       "name": "oss",
       "source": "./plugins/oss",
       "description": "Generic engineering practice, reusable in any repo: commit discipline, pull requests, stacked PRs, writing tests, technical writing, no-comments, GitHub issue creation, release notes, and scoped implementation and technical-writer agents. Depends on common.",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "author": {
         "name": "Cedric Ziel",
         "url": "https://github.com/cedricziel"
