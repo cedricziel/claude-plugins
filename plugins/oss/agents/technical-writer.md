@@ -22,7 +22,7 @@ description: |
   user: "What should the retry defaults be?"
   assistant: "That's a design decision, not a writing task — I'll work it out here and hand the writer the outcome."
   </example>
-tools: Read, Edit, Write, Bash, Glob, Grep, TodoWrite, Skill, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
+tools: Read, Edit, Write, Bash, Glob, Grep, TodoWrite, Skill, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__context7__get-library-docs
 model: opus
 effort: low
 color: purple
