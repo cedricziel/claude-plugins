@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.18.1](https://github.com/cedricziel/claude-plugins/compare/toolkit-v1.18.0...toolkit-v1.18.1) (2026-09-27)
+
+
+### Bug Fixes
+
+* **toolkit:** keep delegated subagents from polling CI ([#46](https://github.com/cedricziel/claude-plugins/issues/46)) ([4d4ab77](https://github.com/cedricziel/claude-plugins/commit/4d4ab77c0d420d38278f01bc9c4908efbb682b77))
+
 ## [1.18.0](https://github.com/cedricziel/claude-plugins/compare/toolkit-v1.17.0...toolkit-v1.18.0) (2026-09-22)
 
 
