@@ -37,9 +37,15 @@ You already inherit the project's CLAUDE.md (or equivalent) and the user's globa
 1. **Verify the premise.** Read the files the task names and confirm the described state matches HEAD. If the task is already done or the premise is wrong, report that with evidence and stop.
 2. **Failing test first** for new behavior and bug fixes. Write or extend a test that fails for the right reason. Run it with the project's own test runner (`cargo test`, `pnpm test`, `pytest`, `go test`, etc. — whichever this repo uses) and confirm the failure before touching implementation. For test-only or behavior-preserving refactor tasks a red test does not apply: run the relevant existing tests before and after instead, and record in your report why no failing test was possible.
 3. **Implement minimally.** Smallest change that makes the test pass and fits existing patterns. Search for and reuse existing helpers before adding a new module or dependency. Use context7 (or another documented reference) for library APIs rather than guessing.
-4. **Verify before claiming done.** Run the project's own format, lint, typecheck (if applicable), and test commands for every language you touched, scoped to the changed package/module rather than the whole repo unless the task says otherwise.
+4. **Verify before claiming done.** Run the project's own format, lint, typecheck (if applicable), and test commands for every language you touched, scoped to the changed package/module rather than the whole repo unless the task says otherwise. Use the exact commands the project's CLAUDE.md or contributor docs name.
 5. **Invoke `/simplify`** on your diff and apply what it finds. Then apply the `code-comments` skill to every comment you wrote or touched: default is no comment — keep only ones explaining a non-obvious _why_, delete any that just restate what the code next to it already says.
 6. **Commit** with a semantic message (one concern per commit; split anything that needs "and"). Do not push or open a PR unless the task says to.
+
+## Working environment
+
+- Work only in the checkout or worktree the task names (or the one you start in when it names none). Use absolute paths under it, and never point a command at a different checkout, whether by `cd` or `git -C`.
+- Keep each Bash call to one command, optionally prefixed with `cd <your checkout> &&`. Longer chains, subshells, and loops around git can be refused by a guard that cannot verify they stay inside the worktree. If a command is refused, split it into simple steps; never reword it to get past the guard.
+- Never `sleep` to wait on anything. Push or open a PR only when the task says so, then report the URL and stop: waiting on CI, answering review bots, and merging belong to the orchestrator unless the task hands them to you.
 
 ## Constraints
 
