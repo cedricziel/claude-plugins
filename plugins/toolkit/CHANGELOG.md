@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.18.2](https://github.com/cedricziel/claude-plugins/compare/toolkit-v1.18.1...toolkit-v1.18.2) (2026-09-28)
+
+
+### Bug Fixes
+
+* **common:** recalibrate sonnet effort guidance for Sonnet 5.5 ([#49](https://github.com/cedricziel/claude-plugins/issues/49)) ([950e8ae](https://github.com/cedricziel/claude-plugins/commit/950e8ae67607a083c52cd5e6c80b029c4b965958))
+
 ## [1.18.1](https://github.com/cedricziel/claude-plugins/compare/toolkit-v1.18.0...toolkit-v1.18.1) (2026-09-27)
 
 

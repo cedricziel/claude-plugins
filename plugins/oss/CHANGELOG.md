@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/cedricziel/claude-plugins/compare/oss-v0.7.0...oss-v0.7.1) (2026-09-28)
+
+
+### Bug Fixes
+
+* **common:** recalibrate sonnet effort guidance for Sonnet 5.5 ([#49](https://github.com/cedricziel/claude-plugins/issues/49)) ([950e8ae](https://github.com/cedricziel/claude-plugins/commit/950e8ae67607a083c52cd5e6c80b029c4b965958))
+
 ## [0.7.0](https://github.com/cedricziel/claude-plugins/compare/oss-v0.6.0...oss-v0.7.0) (2026-09-27)
 
 
