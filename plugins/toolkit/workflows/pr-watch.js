@@ -99,7 +99,7 @@ for (let round = 1; round <= MAX_ROUNDS; round++) {
     // Only CI is red: no judgment needed, just the cheap lint fix from pr-open.
     const fix = await agent(
       `${AT}In an isolated worktree: \`git fetch origin && git checkout ${branch}\`. CI on PR #${number} (${repo}) is red. If the newest run fails only on formatting/lint, run the project's formatter/linter, commit as "style: apply formatter", push. Any other red: do nothing and report.`,
-      { label: `lint-fix#${round}`, phase: 'Apply', schema: APPLIED, model: WORK, isolation: 'worktree', effort: 'low' },
+      { label: `lint-fix#${round}`, phase: 'Apply', schema: APPLIED, model: WORK, isolation: 'worktree', effort: 'medium' },
     )
     rounds.push({ round, fresh: 0, decisions: [], applied: fix })
     if (!fix?.pushed) break

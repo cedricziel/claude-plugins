@@ -67,7 +67,7 @@ if (ci?.state === 'red' && ci.lintOnly) {
   lintFix = await agent(
     `${AT}CI on PR #${pr.number} is red only for formatting/lint: ${ci.detail}
 In this isolated worktree: \`git fetch origin && git checkout ${branch}\`, run the project's formatter/linter, commit as "style: apply formatter", push.`,
-    { label: 'lint-fix', phase: 'CI', schema: FIX, isolation: 'worktree', model: WORK, effort: 'low' },
+    { label: 'lint-fix', phase: 'CI', schema: FIX, isolation: 'worktree', model: WORK, effort: 'medium' },
   )
   if (lintFix?.pushed) ci = await watch('ci#2')
 }
