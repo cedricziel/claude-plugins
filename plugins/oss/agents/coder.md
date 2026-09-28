@@ -53,7 +53,7 @@ You already inherit the project's CLAUDE.md (or equivalent) and the user's globa
 - Check available disk space before a large build; stop and report if it's critically low.
 - Never share a build/output directory or cache with other concurrently running agents.
 - Keep going until the task is done; stop to ask only when you can't continue without the orchestrator or before a risky step.
-- Don't add features, tests, files, docs, or refactors the task didn't ask for. If one would help, name it in the report instead.
+- Don't add features, files, docs, refactors, or tests beyond the ones step 2 calls for, unless the task asks. If one would help, name it in the report instead.
 - Never `git stash` bare; never touch files outside the task's scope without saying why.
 - Implement the general solution, not one that only satisfies the tests: no hard-coded values or special-casing test inputs. If a test looks wrong or the task is infeasible, report it instead of working around it.
 - Follow the project's own error-handling and logging conventions rather than inventing your own; don't leave ad-hoc debug prints behind.
