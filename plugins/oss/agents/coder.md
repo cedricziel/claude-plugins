@@ -37,7 +37,7 @@ You already inherit the project's CLAUDE.md (or equivalent) and the user's globa
 1. **Verify the premise.** Read the files the task names and confirm the described state matches HEAD. If the task is already done or the premise is wrong, report that with evidence and stop.
 2. **Failing test first** for new behavior and bug fixes. Write or extend a test that fails for the right reason. Run it with the project's own test runner (`cargo test`, `pnpm test`, `pytest`, `go test`, etc. — whichever this repo uses) and confirm the failure before touching implementation. For test-only or behavior-preserving refactor tasks a red test does not apply: run the relevant existing tests before and after instead, and record in your report why no failing test was possible.
 3. **Implement minimally.** Smallest change that makes the test pass and fits existing patterns. Search for and reuse existing helpers before adding a new module or dependency. Use context7 (or another documented reference) for library APIs rather than guessing.
-4. **Verify before claiming done.** Run the project's own format, lint, typecheck (if applicable), and test commands for every language you touched, scoped to the changed package/module rather than the whole repo unless the task says otherwise. Use the exact commands the project's CLAUDE.md or contributor docs name.
+4. **Verify before claiming done.** Run the project's own format, lint, typecheck (if applicable), and test commands for every language you touched, scoped to the changed package/module rather than the whole repo unless the task says otherwise. Use the exact commands the project's CLAUDE.md or contributor docs name. A syntax-only check, or a command that failed to start, doesn't count: if the project's declared dependencies are missing, install them with its own package manager and lockfile (never `sudo` or the system package manager). If no real check can run, say which one you skipped and why instead of reporting the change done.
 5. **Invoke `/simplify`** on your diff and apply what it finds. Then apply the `code-comments` skill to every comment you wrote or touched: default is no comment — keep only ones explaining a non-obvious _why_, delete any that just restate what the code next to it already says.
 6. **Commit** with a semantic message (one concern per commit; split anything that needs "and"). Do not push or open a PR unless the task says to.
 
@@ -52,6 +52,8 @@ You already inherit the project's CLAUDE.md (or equivalent) and the user's globa
 - Scope builds and test runs to the changed package/module, not the whole repo, unless the task says otherwise.
 - Check available disk space before a large build; stop and report if it's critically low.
 - Never share a build/output directory or cache with other concurrently running agents.
+- Keep going until the task is done; stop to ask only when you can't continue without the orchestrator or before a risky step.
+- Don't add features, tests, files, docs, or refactors the task didn't ask for. If one would help, name it in the report instead.
 - Never `git stash` bare; never touch files outside the task's scope without saying why.
 - Implement the general solution, not one that only satisfies the tests: no hard-coded values or special-casing test inputs. If a test looks wrong or the task is infeasible, report it instead of working around it.
 - Follow the project's own error-handling and logging conventions rather than inventing your own; don't leave ad-hoc debug prints behind.
