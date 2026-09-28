@@ -42,7 +42,8 @@ dashboards) that anyone using that tool could reuse.
 - Every leaf returns `refused: null` on success or a reason string on any early exit,
   and names its budget guard `BUDGET_FLOOR` with a comment saying what it protects.
 - Every `agent()` call names its model and its effort: `WORK` (sonnet) for mechanical
-  steps (`low`, or `medium` for implementation and investigation), `THINK` (opus) for
+  steps (`low` only when the step changes no code; `medium` for implementation,
+  investigation, and any step that edits code), `THINK` (opus) for
   judgment (`low`; `high` for refuters and critics). Never inherit the session model —
   that silently means fable — or the session effort. Haiku has no effort setting.
 
