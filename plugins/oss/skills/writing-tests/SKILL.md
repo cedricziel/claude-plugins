@@ -13,12 +13,20 @@ The goal, in one line: **a good test fails when — and only when — the behavi
 2. **Timely**: write the test just before the code it drives, not as an afterthought batch.
 3. **Listen to test pain.** If a test is hard to write — huge setup, deep mock chains, reaching into internals — that's a design smell in the production code, not a testing problem. Fix the design, don't power through.
 
-## What to test
+## Behavior, not implementation
+
+Deciding *whether* something deserves a test is the test-strategy skill's job. Once it does:
 
 - **Test behavior, not implementation.** The unit of isolation is the behavior, not the class or function. Test through the public API of the module. A test-per-class with mocks for every collaborator locks in the current design and makes refactoring painful.
 - **Structure-insensitive**: refactoring internals without changing behavior must not break any test. If it does, the test is coupled to implementation — rewrite it.
 - **Behavioral sensitivity**: if behavior breaks, some test must fail. Cover the contract: happy path, error paths, boundary values.
-- **Mock things you own; don't mock types you don't own.** For external systems (databases, queues, HTTP APIs), use real integration tests against real or containerized instances rather than mocks of third-party clients.
+
+## Test doubles
+
+- **Prefer, in order: real implementation → fake → stub → interaction check** (Google). A fake is a working lightweight version (in-memory repo); a stub returns canned answers; an interaction check asserts which calls were made.
+- **Assert on state, not calls.** Check the returned value or the resulting state. Asserting that a method was called proves only that it was called, not that the system works.
+- **Use the real thing for dependencies only your app touches** — your own database, your filesystem — and check final state. **Mock only external dependencies other systems can observe**: third-party APIs, message buses, email (Khorikov). Even then, wrap the client in an adapter you own and mock the adapter.
+- **Watch for change-detector tests**: a test that fails on any edit to the production code, even when behavior stays the same. It's almost always overused stubs and call assertions — replace them with state checks against reals or fakes.
 
 ## How to structure each test
 
@@ -44,6 +52,7 @@ These properties tension against each other (Beck's test desiderata): e.g. predi
 - [ ] Saw it fail for the right reason before making it pass
 - [ ] Name states the scenario and expected outcome
 - [ ] Tests behavior through the public API; survives refactoring of internals
+- [ ] Uses reals or fakes where it can; asserts on state, not on calls made
 - [ ] One logical assertion; no conditionals or loops in the test body
 - [ ] Deterministic: no time, network, ordering, or shared-state dependence
 - [ ] Fails with a message that localizes the defect
