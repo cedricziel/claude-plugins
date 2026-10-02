@@ -110,8 +110,8 @@ late). Percentages are a sanity check, not a target.
 Coverage shows what's definitely untested, nothing about whether covered code
 is tested well. Google's rough guide: 60% acceptable, 75% commendable, 90%
 exemplary; going from 30% to 70% removes real risk, past that returns shrink
-fast. Enforce it on the diff — new and changed lines — rather than as a
-project-wide number, which teams treat as a ceiling. An untested critical path
+fast. Read it on the diff — new and changed lines. If you gate on coverage,
+gate the diff, not a project-wide number, which teams treat as a ceiling. An untested critical path
 is the actual risk, not a missing percent.
 
 Mutation testing checks test quality where coverage can't: inject small bugs
