@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/cedricziel/claude-plugins/compare/common-v1.6.2...common-v1.7.0) (2026-10-02)
+
+
+### Features
+
+* ground the testing skills in test-value research ([#51](https://github.com/cedricziel/claude-plugins/issues/51)) ([14e0526](https://github.com/cedricziel/claude-plugins/commit/14e0526ac595725e51e9840aabc3581c838806dd))
+
 ## [1.6.2](https://github.com/cedricziel/claude-plugins/compare/common-v1.6.1...common-v1.6.2) (2026-09-28)
 
 
