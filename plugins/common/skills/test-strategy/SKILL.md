@@ -16,35 +16,65 @@ Companion to the writing-tests skill: that skill covers how to write a good
 test once you've decided to write one. This is what earns a test, what kind,
 and when.
 
-## What to test
+## Does it earn a test?
+
+Score a test on four properties (Khorikov):
+
+1. **Protection against regressions** — how likely it catches a real bug;
+   grows with the complexity and business weight of the code it covers.
+2. **Resistance to refactoring** — stays green when internals change but
+   behavior doesn't.
+3. **Fast feedback** — how quickly it runs.
+4. **Maintainability** — how easy it is to read and keep working.
+
+Value is the product, not the sum: a zero anywhere makes the test worthless.
+Resistance to refactoring is all-or-nothing — a test that breaks on
+refactors raises false alarms until nobody trusts the suite. Maintainability
+isn't negotiable either. The one real trade-off is regression protection vs.
+speed, which is the unit-vs-end-to-end choice.
+
+Litmus: would a real change — a bug, not a refactor — make this test fail?
+If no plausible bug flips it red, it tests nothing; delete it or don't write
+it.
+
+## Where tests pay off
+
+Sort code by complexity/business weight and by number of collaborators:
+
+| | Few collaborators | Many collaborators |
+|---|---|---|
+| **Complex / critical** | Domain logic, algorithms: unit test thoroughly | Overcomplicated: split into logic + glue first |
+| **Simple** | Trivial code: don't test | Controllers, glue: a few integration tests |
+
+Always test:
 
 - Business logic, branching, edge cases.
 - Previously-fixed bugs — the regression test is the fix's proof; never delete
   it once green.
 - Public contracts/API boundaries other code depends on.
-- Anything a reviewer would ask "did you check X?" about.
+- Anything you rely on that isn't plain correctness — performance, security,
+  failure handling — if it matters, it needs a test (Google's "Beyoncé rule").
 
-## What not to test
+Don't test:
 
 - Trivial pass-throughs, generated code, framework/library internals, a getter
   with no logic.
 - A test whose only failure mode is "the mock returned what I told it to" —
-  see writing-tests' "test behavior, not implementation."
+  see writing-tests on test doubles.
 
-## Litmus test
+## What kind: scope and size
 
-Would a real change — a bug, a bad refactor — make this test fail? If no
-plausible change flips it red, it tests nothing; delete it or don't write it.
+Two independent axes (Google). **Scope** is how much code a test covers:
+**unit** (narrow), **integration** (a few components together), **end-to-end**
+(the whole system). **Size** is what resources it may use: **small** = single
+process, no network/disk/sleep; **medium** = single machine, may hit
+localhost, a real DB, the filesystem; **large** = multi-machine, real
+external services. Aim for small size at every scope you can — a broad test
+that still runs in one process is cheap and predictive.
 
-## What kind (size, not folder name)
-
-Classify by scope/resources, not layer label (Google's test-size model):
-**small** = single process, no network/disk/sleep; **medium** = single
-machine, may hit localhost/a real DB/filesystem; **large** = multi-machine,
-real external services. Default to the smallest size that can prove the
-behavior. Business logic → small. Real integration points (DB queries, an
-HTTP client's actual behavior) → medium. A handful of critical user journeys
-→ large.
+Push each test as far down as it can go (Fowler): if a higher-level test
+catches a bug and no lower-level test failed, write the lower-level test.
+Don't check the same behavior at several levels.
 
 ## When to test
 
@@ -59,21 +89,42 @@ HTTP client's actual behavior) → medium. A handful of critical user journeys
 
 ## Suite shape
 
-70-80% small, 15-20% medium, 5-10% large is the well-established range
-(Google's internal ratio, the industry test pyramid) — a sanity check, not a
-mandate. An inverted pyramid (few unit tests, mostly e2e/UI — the
-"ice-cream cone") means slow, flaky feedback; flatten it. "Just say no to
-more end-to-end tests" (Google Testing Blog): if a smaller test at the layer
-that owns the logic can prove it, write that instead.
+Put most tests where most of the complexity lives:
+
+- **Logic-heavy code** → pyramid: Google's mix by scope is 80% unit, 15%
+  integration, 5% end-to-end.
+- **Thin services that mostly move data between systems** → honeycomb
+  (Spotify): mostly integration tests at the service boundary, few tests of
+  internals, and almost none that pass or fail based on another live system.
+- **UI apps** → trophy (Kent C. Dodds): static checks, then mostly
+  integration tests through the UI's real usage.
+
+All three agree: end-to-end tests cover a handful of critical journeys,
+nothing more. Two shapes are always wrong — the **ice-cream cone** (mostly
+end-to-end; slow, flaky, hard to debug) and the **hourglass** (lots of unit
+and end-to-end tests, few integration tests, so integration bugs surface
+late). Percentages are a sanity check, not a target.
 
 ## Coverage
 
-Coverage % is a lagging diagnostic, not a target — it shows what's definitely
-untested, nothing about whether what's covered is tested well. A ratchet
-(never regress) beats a fixed target nobody revisits. 100% is not the goal;
-an untested critical path is the actual risk.
+Coverage shows what's definitely untested, nothing about whether covered code
+is tested well. Google's rough guide: 60% acceptable, 75% commendable, 90%
+exemplary; going from 30% to 70% removes real risk, past that returns shrink
+fast. Read it on the diff — new and changed lines. If you gate on coverage,
+gate the diff, not a project-wide number, which teams treat as a ceiling. An untested critical path
+is the actual risk, not a missing percent.
+
+Mutation testing checks test quality where coverage can't: inject small bugs
+and see which survive. At Google, surviving mutants matched real faults and
+developers shown them wrote better tests. Use it on critical code or per diff.
+
+## Flaky tests
+
+A flaky test is worse than none: it trains people to ignore red. Google sees
+tests lose value as flakiness approaches 1%. Fix or quarantine a flaky test
+the day it's found — never just retry it into green.
 
 ## Cross-reference
 
 Once something has earned a test, see the writing-tests skill for how to
-structure it (AAA, isolation, determinism, naming).
+structure it (AAA, test doubles, isolation, determinism, naming).
