@@ -92,9 +92,13 @@ class UpdateSettingsTest(unittest.TestCase):
         self.assertIn("claude plugin marketplace add cedricziel/claude-plugins", script)
         self.assertIn("claude plugin install toolkit@cedricziel", script)
         self.assertIn("claude plugin install oss@cedricziel", script)
+        self.assertIn("claude plugin marketplace update cedricziel", script)
+        self.assertIn("claude plugin update toolkit@cedricziel", script)
+        self.assertIn("claude plugin update oss@cedricziel", script)
         self.assertTrue(self.hook_script().stat().st_mode & 0o100)
-        command = self.read()["hooks"]["SessionStart"][0]["hooks"][0]["command"]
-        self.assertEqual(command, f"$CLAUDE_PROJECT_DIR/{self.hook_script()}")
+        hook = self.read()["hooks"]["SessionStart"][0]["hooks"][0]
+        self.assertEqual(hook["command"], f"$CLAUDE_PROJECT_DIR/{self.hook_script()}")
+        self.assertIs(hook["async"], True)
 
     def test_session_hook_is_idempotent_and_keeps_edits(self):
         self.run_script(SHA_A, "oss", "--session-hook")

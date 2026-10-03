@@ -24,8 +24,9 @@ inputs:
     default: .claude/settings.json
   session-hook:
     description: >
-      "true" adds a SessionStart hook that installs the plugins in remote (cloud) sessions,
-      where settings.json alone does not install them. Existing hook scripts are never overwritten.
+      "true" adds an async SessionStart hook that installs and updates the plugins in remote
+      (cloud) sessions, where settings.json alone does not install them. Changes take effect in
+      the next session. Existing hook scripts are never overwritten.
     default: "true"
   token:
     description: >

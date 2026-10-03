@@ -247,8 +247,11 @@ Auto-merge needs "Allow auto-merge" in the repo settings and at least one requir
 check on the base branch. PRs opened with the default `GITHUB_TOKEN` don't trigger
 other workflows, so if checks are required, pass a PAT or GitHub App token as `token`.
 It also adds `.claude/hooks/install-claude-plugins.sh` and registers it as a `SessionStart`
-hook: in remote (cloud) sessions it installs the enabled plugins, since `settings.json`
-alone doesn't do that there. Set `session-hook: "false"` to skip it; an existing script is never overwritten.
+hook: in remote (cloud) sessions it installs and updates the enabled plugins in the background,
+since `settings.json` alone doesn't do that there. Plugins load before the hook runs, so changes
+take effect in the next session. To have plugins active in the first session, install them from
+the cloud environment's setup script instead. Set `session-hook: "false"` to skip the hook; an
+existing script is never overwritten.
 Inputs: `marketplace`, `repo`, `plugins`, `ref`, `settings-file`, `session-hook`, `merge-method`, `base`.
 
 ## Development

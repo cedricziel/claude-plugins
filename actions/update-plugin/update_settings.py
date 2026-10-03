@@ -74,12 +74,14 @@ def update(settings, marketplace, repo, plugins, ref, sha):
 
 
 def hook_script(marketplace, repo, plugins):
-    installs = "".join(f"claude plugin install {p}@{marketplace} >/dev/null 2>&1\n" for p in plugins)
+    commands = "".join(f"claude plugin {verb} {p}@{marketplace} >/dev/null 2>&1\n"
+                       for p in plugins for verb in ("install", "update"))
     return (
         "#!/bin/bash\n"
         'if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then\n  exit 0\nfi\n\n'
         f"claude plugin marketplace add {repo} >/dev/null 2>&1\n"
-        f"{installs}"
+        f"claude plugin marketplace update {marketplace} >/dev/null 2>&1\n"
+        f"{commands}"
         "exit 0\n"
     )
 
@@ -104,7 +106,7 @@ def add_session_hook(settings, settings_path, marketplace, repo):
 
     groups = settings.setdefault("hooks", {}).setdefault("SessionStart", [])
     if not any(h.get("command") == command for g in groups for h in g.get("hooks", [])):
-        groups.append({"hooks": [{"type": "command", "command": command}]})
+        groups.append({"hooks": [{"type": "command", "command": command, "async": True}]})
         added = True
 
     return script if added else None
