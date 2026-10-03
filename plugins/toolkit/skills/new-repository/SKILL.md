@@ -78,7 +78,7 @@ git add .github && git commit -m "chore(ci): add workflow to keep Claude plugins
 gh workflow run update-claude-plugins.yml
 ```
 
-Once merged, the first run creates `.claude/settings.json` (marketplace pinned to the latest commit, `oss` enabled) and `.claude/hooks/install-claude-plugins.sh`, registered as a `SessionStart` hook that installs the plugins in cloud sessions. The action opens a PR with auto-merge on. Pass `session-hook: "false"` to skip the hook.
+Once merged, the first run creates `.claude/settings.json` (marketplace pinned to the latest commit, `oss` enabled) and `.claude/hooks/install-claude-plugins.sh`, registered as an async `SessionStart` hook that installs and updates the plugins in cloud sessions (effective from the next session; a cloud environment setup script makes them active in the first). The action opens a PR with auto-merge on. Pass `session-hook: "false"` to skip the hook.
 
 ## 5. Report
 
