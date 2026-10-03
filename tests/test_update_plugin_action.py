@@ -109,6 +109,17 @@ class UpdateSettingsTest(unittest.TestCase):
         self.assertIn("edited", self.hook_script().read_text())
         self.assertEqual(len(self.read()["hooks"]["SessionStart"]), 1)
 
+    def test_session_hook_made_async_when_registered_without_it(self):
+        self.run_script(SHA_A, "oss", "--session-hook")
+        settings = self.read()
+        del settings["hooks"]["SessionStart"][0]["hooks"][0]["async"]
+        self.settings.write_text(json.dumps(settings))
+        self.hook_script().write_text("#!/bin/bash\n# edited\n")
+        _, out = self.run_script(SHA_A, "oss", "--session-hook")
+        self.assertEqual(out["changed"], "true")
+        self.assertIs(self.read()["hooks"]["SessionStart"][0]["hooks"][0]["async"], True)
+        self.assertIn("edited", self.hook_script().read_text())
+
     def test_session_hook_added_to_existing_config(self):
         self.run_script(SHA_A, "oss")
         _, out = self.run_script(SHA_A, "oss", "--session-hook")

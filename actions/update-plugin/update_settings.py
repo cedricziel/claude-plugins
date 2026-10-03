@@ -87,9 +87,9 @@ def hook_script(marketplace, repo, plugins):
 
 
 def add_session_hook(settings, settings_path, marketplace, repo):
-    """Write the install script if absent and register it under SessionStart.
+    """Write the install script if absent and register it as an async SessionStart hook.
 
-    Returns the script path when anything was added, else None.
+    Returns the script path when anything was added or changed, else None.
     """
     script = settings_path.parent / "hooks" / "install-claude-plugins.sh"
     command = f"$CLAUDE_PROJECT_DIR/{script}"
@@ -105,9 +105,14 @@ def add_session_hook(settings, settings_path, marketplace, repo):
         added = True
 
     groups = settings.setdefault("hooks", {}).setdefault("SessionStart", [])
-    if not any(h.get("command") == command for g in groups for h in g.get("hooks", [])):
+    ours = [h for g in groups for h in g.get("hooks", []) if h.get("command") == command]
+    if not ours:
         groups.append({"hooks": [{"type": "command", "command": command, "async": True}]})
         added = True
+    for hook in ours:
+        if hook.get("async") is not True:
+            hook["async"] = True
+            added = True
 
     return script if added else None
 
