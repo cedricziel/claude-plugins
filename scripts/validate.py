@@ -147,17 +147,24 @@ def check_codex(root, claude_plugins):
             err(f"{where}: .codex-plugin/plugin.json name '{manifest.get('name')}' does not match")
         if claude_entry and manifest.get("version") != claude_entry.get("version"):
             err(f"{where}: version mismatch claude={claude_entry.get('version')} codex={manifest.get('version')}")
-        skills = manifest.get("skills")
-        if skills:
-            skills_dir = (plugin_dir / skills).resolve()
-            if not skills_dir.is_dir() or not any(skills_dir.glob("*/SKILL.md")):
-                err(f"{where}: skills directory '{skills}' has no skills")
+        if "skills" in manifest:
+            skills = manifest["skills"]
+            if not isinstance(skills, str) or not skills.startswith("./") or ".." in Path(skills).parts:
+                err(f"{where}: skills path '{skills}' must stay inside the plugin")
             else:
-                for skill_md in sorted(skills_dir.glob("*/SKILL.md")):
-                    check_skill(skill_md)
-        hooks = manifest.get("hooks")
-        if isinstance(hooks, str):
-            if not hooks.startswith("./") or ".." in Path(hooks).parts or not (plugin_dir / hooks).is_file():
+                skills_dir = (plugin_dir / skills).resolve()
+                if not skills_dir.is_relative_to(plugin_dir):
+                    err(f"{where}: skills path '{skills}' must stay inside the plugin")
+                elif not skills_dir.is_dir() or not any(skills_dir.glob("*/SKILL.md")):
+                    err(f"{where}: skills directory '{skills}' has no skills")
+                else:
+                    for skill_md in sorted(skills_dir.glob("*/SKILL.md")):
+                        check_skill(skill_md)
+        if "hooks" in manifest:
+            hooks = manifest["hooks"]
+            if not isinstance(hooks, str):
+                err(f"{where}: hooks must be a relative file path")
+            elif not hooks.startswith("./") or ".." in Path(hooks).parts or not (plugin_dir / hooks).resolve().is_relative_to(plugin_dir) or not (plugin_dir / hooks).is_file():
                 err(f"{where}: hooks path '{hooks}' must be an existing relative file")
 
 

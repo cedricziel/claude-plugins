@@ -182,6 +182,26 @@ class CodexValidateTest(unittest.TestCase):
         self.assertNotEqual(r.returncode, 0)
         self.assertIn("hooks path", r.stdout)
 
+    def test_codex_skills_path_must_stay_inside_plugin(self):
+        manifest_path = self.plugin / ".codex-plugin" / "plugin.json"
+        for skills in (str(self.plugin / "skills"), "./../p/skills"):
+            with self.subTest(skills=skills):
+                manifest = json.loads(manifest_path.read_text())
+                manifest["skills"] = skills
+                manifest_path.write_text(json.dumps(manifest))
+                r = run(self.tmp)
+                self.assertNotEqual(r.returncode, 0)
+                self.assertIn("skills path", r.stdout)
+
+    def test_codex_hooks_must_be_a_file_path(self):
+        manifest_path = self.plugin / ".codex-plugin" / "plugin.json"
+        manifest = json.loads(manifest_path.read_text())
+        manifest["hooks"] = {"SessionStart": []}
+        manifest_path.write_text(json.dumps(manifest))
+        r = run(self.tmp)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("hooks must be a relative file path", r.stdout)
+
 
 def add_release_please(tmp, version="1.0.0", codex=False):
     extra = [
