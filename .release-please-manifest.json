@@ -1,6 +1,6 @@
 {
-  "plugins/common": "1.6.2",
-  "plugins/toolkit": "1.18.2",
-  "plugins/oss": "0.7.1",
-  "plugins/skills": "0.2.0"
+  "plugins/common": "1.7.0",
+  "plugins/toolkit": "1.19.0",
+  "plugins/oss": "0.8.0",
+  "plugins/skills": "0.3.0"
 }

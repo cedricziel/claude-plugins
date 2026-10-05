@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.0](https://github.com/cedricziel/claude-plugins/compare/oss-v0.7.1...oss-v0.8.0) (2026-10-05)
+
+
+### Features
+
+* ground the testing skills in test-value research ([#51](https://github.com/cedricziel/claude-plugins/issues/51)) ([14e0526](https://github.com/cedricziel/claude-plugins/commit/14e0526ac595725e51e9840aabc3581c838806dd))
+* make every plugin installable in Codex ([#56](https://github.com/cedricziel/claude-plugins/issues/56)) ([f46f6ee](https://github.com/cedricziel/claude-plugins/commit/f46f6eeef4cbe0961b828d92fb4ab5e60ef83381))
+
 ## [0.7.1](https://github.com/cedricziel/claude-plugins/compare/oss-v0.7.0...oss-v0.7.1) (2026-09-28)
 
 
