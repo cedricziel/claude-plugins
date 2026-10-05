@@ -5,3 +5,4 @@
 - Write a failing test first for behavior changes when practical. Run relevant formatting, lint, and tests before committing.
 - Prefer code that explains itself. Use the `code-comments` skill when a comment may be needed.
 - Add tests that protect behavior or catch a real regression. Use the `test-strategy` skill to choose the level and scope.
+- When a project has a runnable app or service, consider creating and maintaining a checked-in, project-local `verify` skill that gives agents a repeatable feedback loop against a throwaway instance. Document how to start it, exercise meaningful behavior, inspect results, and clean up. The instance must not conflict with the user's local state or running apps: isolate ports, data stores, files, profiles, and processes; use test credentials and destinations rather than inherited user or production settings. If isolation cannot be established, do not run the verification instance.

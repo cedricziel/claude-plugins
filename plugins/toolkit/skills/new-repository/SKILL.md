@@ -45,6 +45,7 @@ Adapt each to the repo's language; keep them minimal.
 | `.github/workflows/release-please.yml` | `googleapis/release-please-action@v5` on push to `main`, `permissions: contents: write, pull-requests: write`, `token: ${{ secrets.RELEASE_PLEASE_TOKEN \|\| secrets.GITHUB_TOKEN }}`. Set `release-type` for the stack (`rust`, `node`, `dart`, `simple`). Tell the user to add the `RELEASE_PLEASE_TOKEN` PAT secret: a PR opened by `GITHUB_TOKEN` doesn't trigger CI, so the release PR would merge ungated. |
 | `.github/dependabot.yml` | `version: 2`; one entry for the language's ecosystem and one for `github-actions`, both `directory: "/"`, `interval: daily`, `assignees: [cedricziel]`. |
 | `CLAUDE.md` | Build/test/lint commands, layout in a few lines, and repo-specific rules. Nothing generic — the plugins already carry that. |
+| Project-local `verify` skill | For a runnable app or service, record a repeatable way to launch a throwaway instance, exercise meaningful behavior, inspect results, and clean up. Isolate ports, data stores, files, profiles, and processes; use test credentials and destinations instead of inherited user or production settings. Maintain it as the app changes; omit it when there is no useful runtime verification loop yet. |
 | `.gitignore` | Language standard. Do not ignore `.claude/settings.json` or `.claude/hooks/`. |
 
 ## 4. Claude plugins
