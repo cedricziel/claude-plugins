@@ -44,6 +44,15 @@ class SessionStartTest(unittest.TestCase):
         self.assertNotIn("{{FLEET_BRIEF}}", ctx)
         self.assertNotIn("context7", ctx)
 
+    def test_reflect_data_directory_uses_host_plugin_data(self):
+        for env, args in (
+            ({"CLAUDE_PLUGIN_DATA": "/tmp/claude toolkit data"}, ()),
+            ({"PLUGIN_DATA": "/tmp/codex toolkit data"}, ("codex",)),
+        ):
+            with self.subTest(args=args):
+                ctx = json.loads(run(env, args).stdout)["hookSpecificOutput"]["additionalContext"]
+                self.assertIn(next(iter(env.values())), ctx)
+
     def test_disable_env_emits_nothing(self):
         r = run({"TOOLKIT_INSTRUCTIONS_DISABLE": "1"})
         self.assertEqual(r.returncode, 0)

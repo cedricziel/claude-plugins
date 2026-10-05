@@ -13,6 +13,11 @@ fleet="$root/instructions/fleet-brief.md"
 [ -f "$shared" ] && [ -f "$specific" ] || exit 0
 
 body=$(cat "$shared" "$specific" | sed "s|{{FLEET_BRIEF}}|$fleet|g")
+data="${CLAUDE_PLUGIN_DATA:-${PLUGIN_DATA:-}}"
+if [ -n "$data" ]; then
+  body="$body
+Toolkit plugin data directory for the reflect skill: $data"
+fi
 jq -n --arg c "<GLOBAL_INSTRUCTIONS source=\"toolkit plugin\">
 $body
 </GLOBAL_INSTRUCTIONS>" '{hookSpecificOutput: {hookEventName: "SessionStart", additionalContext: $c}}'
