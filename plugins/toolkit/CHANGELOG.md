@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.19.1](https://github.com/cedricziel/claude-plugins/compare/toolkit-v1.19.0...toolkit-v1.19.1) (2026-10-05)
+
+
+### Bug Fixes
+
+* **toolkit:** require PR follow-through and parallel independent work ([#59](https://github.com/cedricziel/claude-plugins/issues/59)) ([fecac45](https://github.com/cedricziel/claude-plugins/commit/fecac4524ac95b3a45b54c34aefdc8a6a274af1a))
+
 ## [1.19.0](https://github.com/cedricziel/claude-plugins/compare/toolkit-v1.18.2...toolkit-v1.19.0) (2026-10-05)
 
 
