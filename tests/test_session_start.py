@@ -7,10 +7,10 @@ PLUGIN = Path(__file__).resolve().parent.parent / "plugins" / "toolkit"
 HOOK = PLUGIN / "scripts" / "session-start.sh"
 
 
-def run(env=None):
+def run(env=None, args=()):
     e = {"PATH": "/usr/bin:/bin:/opt/homebrew/bin", "CLAUDE_PLUGIN_ROOT": str(PLUGIN)}
     e.update(env or {})
-    r = subprocess.run(["bash", str(HOOK)], input="{}", capture_output=True, text=True, env=e)
+    r = subprocess.run(["bash", str(HOOK), *args], input="{}", capture_output=True, text=True, env=e)
     return r
 
 
@@ -30,8 +30,19 @@ class SessionStartTest(unittest.TestCase):
         self.assertIn(str(PLUGIN / "instructions" / "fleet-brief.md"), ctx)
 
     def test_instruction_files_exist(self):
-        self.assertTrue((PLUGIN / "instructions" / "global.md").is_file())
+        for name in ("shared.md", "claude.md", "codex.md"):
+            self.assertTrue((PLUGIN / "instructions" / name).is_file())
         self.assertTrue((PLUGIN / "instructions" / "fleet-brief.md").is_file())
+
+    def test_codex_context_uses_openai_model_guidance(self):
+        r = run({"PLUGIN_ROOT": str(PLUGIN)}, ("codex",))
+        self.assertEqual(r.returncode, 0, r.stderr)
+        ctx = json.loads(r.stdout)["hookSpecificOutput"]["additionalContext"]
+        self.assertIn("Caveman Compression", ctx)
+        self.assertIn("`gpt-6.1-sol`", ctx)
+        self.assertIn("`gpt-6-luna`", ctx)
+        self.assertNotIn("{{FLEET_BRIEF}}", ctx)
+        self.assertNotIn("context7", ctx)
 
     def test_disable_env_emits_nothing(self):
         r = run({"TOOLKIT_INSTRUCTIONS_DISABLE": "1"})

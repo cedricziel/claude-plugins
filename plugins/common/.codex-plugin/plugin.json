@@ -15,5 +15,6 @@
     "writing",
     "shared"
   ],
-  "skills": "./skills/"
+  "skills": "./skills/",
+  "hooks": "./codex-hooks/hooks.json"
 }

@@ -27,6 +27,7 @@ jobs:
           # commit-discipline conventions surfaced via oss) are available too.
           plugin_marketplaces: |
             https://github.com/anthropics/claude-code.git
+            https://github.com/anthropics/claude-plugins-official.git
             ${{ github.server_url }}/${{ github.repository }}.git
           plugins: |
             code-review@claude-code-plugins

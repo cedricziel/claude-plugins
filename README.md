@@ -1,6 +1,6 @@
 # claude-plugins
 
-Cedric Ziel's [Claude Code](https://docs.claude.com/en/docs/claude-code) plugin marketplace.
+Cedric Ziel's plugin marketplace for [Claude Code](https://docs.claude.com/en/docs/claude-code) and Codex.
 
 ## Install
 
@@ -13,15 +13,24 @@ Cedric Ziel's [Claude Code](https://docs.claude.com/en/docs/claude-code) plugin 
 
 ### Codex
 
-`common`, `oss`, and `skills` also ship a `.codex-plugin/plugin.json`, and
-`.agents/plugins/marketplace.json` lists them, so the skills install in Codex too:
+All four plugins ship a `.codex-plugin/plugin.json` and appear in the Codex
+marketplace. Add the marketplace, then install the plugins you want:
 
 ```
 codex plugin marketplace add cedricziel/claude-plugins
+codex plugin add common@cedricziel
+codex plugin add oss@cedricziel
+codex plugin add skills@cedricziel
+codex plugin add toolkit@cedricziel
 ```
 
-Only the skills carry over. Hooks, agents, and `toolkit` (workflows, hooks,
-SignalDB integration) are Claude Code only.
+Codex does not install the Claude manifest dependencies automatically, so install
+`common` explicitly when using `oss`, `skills`, or `toolkit`. The Codex `toolkit`
+package includes the SignalDB and repository setup skills. Its Claude `Workflow`
+engine, agents, and enforcement hooks do not run in Codex. `common`, `oss`, and
+`toolkit` include Codex SessionStart instructions; Codex requires the user to
+trust plugin hooks before they run. The Claude-only auto-format hook is not
+installed in Codex.
 
 ## Plugins
 
@@ -47,15 +56,15 @@ Shared building blocks used by `oss` and `toolkit` (and installable on its own).
 | Skill           | Purpose                                                                                                                    |
 | --------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `unslop`        | Strip AI tells from prose and add voice — vendored from [pstack](https://github.com/cursor/plugins/tree/main/pstack) (MIT) |
-| `code-comments` | When a code comment earns its place; referenced from `instructions/global.md` below                                        |
-| `test-strategy` | What deserves a test, what kind (unit/integration/e2e), and when; referenced from `instructions/global.md` below           |
+| `code-comments` | When a code comment earns its place; referenced from `instructions/shared.md` below                                        |
+| `test-strategy` | What deserves a test, what kind (unit/integration/e2e), and when; referenced from `instructions/shared.md` below           |
 
 **Hooks**
 
 | Event                      | What it does                                                                                                                                                                                                                                                                                |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `PostToolUse` (Edit/Write) | Auto-formats the edited file (cargo fmt/rustfmt, goimports/gofmt, swiftformat/swift-format, dart, ruff/black, prettier) — fail-open                                                                                                                                                         |
-| `SessionStart`             | Injects `instructions/global.md` (delegation models, output style, semantic commits, stacked PRs under 500 lines, TDD + lint + `/simplify` before commit, default-no-comment, test-strategy pointer) as context; re-injected after compaction. Disable with `COMMON_INSTRUCTIONS_DISABLE=1` |
+| `SessionStart`             | Injects `instructions/shared.md` plus `instructions/claude.md` or `instructions/codex.md`, depending on the host. Re-injected after compaction. Disable with `COMMON_INSTRUCTIONS_DISABLE=1` |
 
 ### oss
 
@@ -63,9 +72,9 @@ Generic engineering practice, reusable in any repo — OSS or private, day job
 included. Depends on `common@cedricziel`. Meant to be depended on directly by
 other repos' own plugins, not just installed by me.
 
-A SessionStart hook injects `instructions/global.md`: delegate documentation to
-the `oss:technical-writer` agent, and call the `technical-writing` skill when
-writing docs inline. Off switch: `OSS_INSTRUCTIONS_DISABLE=1`.
+A SessionStart hook injects `instructions/shared.md` plus host-specific guidance.
+Claude delegates documentation to `oss:technical-writer`; both hosts use the
+`technical-writing` skill. Off switch: `OSS_INSTRUCTIONS_DISABLE=1`.
 
 **Skills** (loaded automatically when relevant)
 
@@ -125,7 +134,7 @@ subagents. Depends on `common@cedricziel`, `oss@cedricziel`, and
 
 | Event                      | What it does                                                                                                                                                   |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SessionStart`             | Injects `instructions/global.md` (working rules + Caveman Compression) as context; re-injected after compaction. Disable with `TOOLKIT_INSTRUCTIONS_DISABLE=1` |
+| `SessionStart`             | Injects `instructions/shared.md` plus host-specific guidance. Codex receives compact OpenAI model routing; Claude receives its workflow rules. Disable with `TOOLKIT_INSTRUCTIONS_DISABLE=1` |
 | `PostToolUse` (Edit/Write) | Nudges when source changes come without test changes                                                                                                           |
 | `Stop`                     | Blocks finishing while the project's test suite is red (fails open on environment errors)                                                                      |
 | `UserPromptSubmit`         | Reminds to rebase when the branch has fallen behind the default branch                                                                                         |

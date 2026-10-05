@@ -1,0 +1,1 @@
+- For documentation, use the `technical-writing` skill and check every claim against the source. Code comments and docstrings follow the `code-comments` skill instead.

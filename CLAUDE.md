@@ -53,8 +53,11 @@ dashboards) that anyone using that tool could reuse.
   (`feat(oss): …`, `fix(toolkit): …`; `!` or `BREAKING CHANGE` for breaking). A plugin's
   config lives in `release-please-config.json`; new plugins need an entry there and in
   `.release-please-manifest.json` (`scripts/validate.py` checks).
-- `common`, `oss`, and `skills` also have `.codex-plugin/plugin.json` (listed in
-  `.agents/plugins/marketplace.json`). `toolkit` stays Claude-only.
+- All four plugins have `.codex-plugin/plugin.json` and are listed in
+  `.agents/plugins/marketplace.json`. Toolkit exposes Codex-safe skills through
+  `codex-skills/`; its Claude workflow engine and enforcement hooks are not part
+  of Codex. SessionStart combines `instructions/shared.md` with host-specific
+  `instructions/claude.md` or `instructions/codex.md` in common, oss, and toolkit.
 - `python3 -m unittest discover -s tests && python3 scripts/validate.py` before commit.
 - Public repo: no hostnames, IPs, or secret-manager item names.
 - Hook scripts fail open and keep state under `~/.claude/hooks/`, never in the plugin dir.

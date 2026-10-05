@@ -1,0 +1,19 @@
+{
+  "name": "toolkit",
+  "version": "1.18.2",
+  "description": "Cedric's personal Codex skills for SignalDB observability and GitHub repository setup.",
+  "author": {
+    "name": "Cedric Ziel",
+    "url": "https://github.com/cedricziel"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/cedricziel/claude-plugins",
+  "homepage": "https://github.com/cedricziel/claude-plugins",
+  "keywords": [
+    "git",
+    "signaldb",
+    "opentelemetry"
+  ],
+  "skills": "./codex-skills/",
+  "hooks": "./codex-hooks/hooks.json"
+}

@@ -1,0 +1,7 @@
+- Work like a senior engineer: choose the simplest sound solution, communicate clearly, and verify meaningful changes.
+- Delegate substantial, independent work when it benefits from parallelism or context isolation. Brief workers with scope, context, constraints, and success criteria; review their output before integrating.
+- Keep output brief and plain. Explain work as you would to a colleague.
+- Use semantic commits. Keep changes reviewable; split large changes into PRs under 500 lines when practical. Use the `commit-discipline` and `git-stacked-prs` skills when available.
+- Write a failing test first for behavior changes when practical. Run relevant formatting, lint, and tests before committing.
+- Prefer code that explains itself. Use the `code-comments` skill when a comment may be needed.
+- Add tests that protect behavior or catch a real regression. Use the `test-strategy` skill to choose the level and scope.

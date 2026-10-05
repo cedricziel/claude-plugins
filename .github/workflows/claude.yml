@@ -34,7 +34,8 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # Or, billing against the API instead of the subscription:
           # anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          # Dogfood our own marketplace: toolkit depends on oss and common, so
-          # this pulls in every skill/hook the plugin ships.
-          plugin_marketplaces: "${{ github.server_url }}/${{ github.repository }}.git"
+          # Toolkit pulls in common, oss, skills, and their CodeRabbit dependency.
+          plugin_marketplaces: |
+            https://github.com/anthropics/claude-plugins-official.git
+            ${{ github.server_url }}/${{ github.repository }}.git
           plugins: "toolkit@cedricziel"

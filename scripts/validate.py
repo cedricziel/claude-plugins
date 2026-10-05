@@ -118,6 +118,9 @@ def check_codex(root, claude_plugins):
     if marketplace is None:
         return
     require(marketplace, ("name", "plugins"), "codex marketplace.json")
+    codex_names = {entry.get("name") for entry in marketplace.get("plugins", [])}
+    for name in sorted(claude_plugins.keys() - codex_names):
+        err(f"codex marketplace.json: missing Claude plugin '{name}'")
     for entry in marketplace.get("plugins", []):
         name = entry.get("name", "?")
         where = f"codex marketplace.json plugin '{name}'"
@@ -134,6 +137,8 @@ def check_codex(root, claude_plugins):
         if not plugin_dir.is_dir():
             err(f"{where}: source directory {src} does not exist")
             continue
+        if claude_entry and plugin_dir != (root / claude_entry["source"]).resolve():
+            err(f"{where}: source does not match Claude marketplace source")
         manifest = load_json(plugin_dir / ".codex-plugin" / "plugin.json")
         if manifest is None:
             continue
@@ -142,6 +147,25 @@ def check_codex(root, claude_plugins):
             err(f"{where}: .codex-plugin/plugin.json name '{manifest.get('name')}' does not match")
         if claude_entry and manifest.get("version") != claude_entry.get("version"):
             err(f"{where}: version mismatch claude={claude_entry.get('version')} codex={manifest.get('version')}")
+        if "skills" in manifest:
+            skills = manifest["skills"]
+            if not isinstance(skills, str) or not skills.startswith("./") or ".." in Path(skills).parts:
+                err(f"{where}: skills path '{skills}' must stay inside the plugin")
+            else:
+                skills_dir = (plugin_dir / skills).resolve()
+                if not skills_dir.is_relative_to(plugin_dir):
+                    err(f"{where}: skills path '{skills}' must stay inside the plugin")
+                elif not skills_dir.is_dir() or not any(skills_dir.glob("*/SKILL.md")):
+                    err(f"{where}: skills directory '{skills}' has no skills")
+                else:
+                    for skill_md in sorted(skills_dir.glob("*/SKILL.md")):
+                        check_skill(skill_md)
+        if "hooks" in manifest:
+            hooks = manifest["hooks"]
+            if not isinstance(hooks, str):
+                err(f"{where}: hooks must be a relative file path")
+            elif not hooks.startswith("./") or ".." in Path(hooks).parts or not (plugin_dir / hooks).resolve().is_relative_to(plugin_dir) or not (plugin_dir / hooks).is_file():
+                err(f"{where}: hooks path '{hooks}' must be an existing relative file")
 
 
 def check_release_please(root, claude_plugins):
