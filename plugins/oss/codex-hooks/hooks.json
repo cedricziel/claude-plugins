@@ -2,11 +2,11 @@
   "hooks": {
     "SessionStart": [
       {
-        "matcher": "startup|resume|clear|compact|fork",
+        "matcher": "startup|resume|clear|compact",
         "hooks": [
           {
             "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/session-start.sh\"",
+            "command": "\"${PLUGIN_ROOT}/scripts/session-start.sh\" codex",
             "timeout": 10,
             "statusMessage": "Loading oss instructions"
           }

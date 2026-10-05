@@ -21,5 +21,6 @@
     "release-notes",
     "changelog"
   ],
-  "skills": "./skills/"
+  "skills": "./skills/",
+  "hooks": "./codex-hooks/hooks.json"
 }

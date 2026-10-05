@@ -155,6 +155,33 @@ class CodexValidateTest(unittest.TestCase):
         self.assertNotEqual(r.returncode, 0)
         self.assertIn("ghost", r.stdout)
 
+    def test_every_claude_plugin_must_be_in_codex_marketplace(self):
+        path = self.tmp / ".agents" / "plugins" / "marketplace.json"
+        path.write_text(json.dumps({"name": "t", "plugins": []}))
+        r = run(self.tmp)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("missing Claude plugin 'p'", r.stdout)
+
+    def test_codex_source_must_match_claude_source(self):
+        other = self.tmp / "plugins" / "other"
+        shutil.copytree(self.plugin, other)
+        path = self.tmp / ".agents" / "plugins" / "marketplace.json"
+        path.write_text(json.dumps({"name": "t", "plugins": [
+            {"name": "p", "source": {"source": "local", "path": "./plugins/other"}},
+        ]}))
+        r = run(self.tmp)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("does not match Claude marketplace", r.stdout)
+
+    def test_codex_hooks_path_must_exist(self):
+        manifest_path = self.plugin / ".codex-plugin" / "plugin.json"
+        manifest = json.loads(manifest_path.read_text())
+        manifest["hooks"] = "./missing/hooks.json"
+        manifest_path.write_text(json.dumps(manifest))
+        r = run(self.tmp)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("hooks path", r.stdout)
+
 
 def add_release_please(tmp, version="1.0.0", codex=False):
     extra = [

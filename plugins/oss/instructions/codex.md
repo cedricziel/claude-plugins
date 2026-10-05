@@ -1,0 +1,1 @@
+- When delegating documentation, give the worker the source files, target format, and checks; review the finished claims before integrating.

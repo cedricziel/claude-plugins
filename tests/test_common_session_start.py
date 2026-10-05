@@ -7,10 +7,10 @@ PLUGIN = Path(__file__).resolve().parent.parent / "plugins" / "common"
 HOOK = PLUGIN / "scripts" / "session-start.sh"
 
 
-def run(env=None):
+def run(env=None, args=()):
     e = {"PATH": "/usr/bin:/bin:/opt/homebrew/bin", "CLAUDE_PLUGIN_ROOT": str(PLUGIN)}
     e.update(env or {})
-    r = subprocess.run(["bash", str(HOOK)], input="{}", capture_output=True, text=True, env=e)
+    r = subprocess.run(["bash", str(HOOK), *args], input="{}", capture_output=True, text=True, env=e)
     return r
 
 
@@ -24,9 +24,24 @@ class CommonSessionStartTest(unittest.TestCase):
         self.assertIn("semantic commits", ctx.lower())
         self.assertIn("delegation models", ctx.lower())
         self.assertIn("code-comments", ctx)
+        self.assertIn("`sonnet`", ctx)
 
     def test_instruction_file_exists(self):
-        self.assertTrue((PLUGIN / "instructions" / "global.md").is_file())
+        for name in ("shared.md", "claude.md", "codex.md"):
+            self.assertTrue((PLUGIN / "instructions" / name).is_file())
+
+    def test_codex_context_uses_codex_instructions(self):
+        r = run({"PLUGIN_ROOT": str(PLUGIN)}, ("codex",))
+        self.assertEqual(r.returncode, 0, r.stderr)
+        ctx = json.loads(r.stdout)["hookSpecificOutput"]["additionalContext"]
+        self.assertIn("semantic commits", ctx)
+        self.assertIn("supported tools and subagent interface", ctx)
+        self.assertNotIn("sonnet", ctx)
+
+    def test_claude_context_does_not_switch_on_plugin_root_env(self):
+        ctx = json.loads(run({"PLUGIN_ROOT": str(PLUGIN)}).stdout)["hookSpecificOutput"]["additionalContext"]
+        self.assertIn("`sonnet`", ctx)
+        self.assertNotIn("supported tools and subagent interface", ctx)
 
     def test_disable_env_emits_nothing(self):
         r = run({"COMMON_INSTRUCTIONS_DISABLE": "1"})

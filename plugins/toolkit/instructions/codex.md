@@ -1,0 +1,5 @@
+- Honor explicit model choices and use only models and reasoning efforts supported by the current Codex runtime.
+- Route bounded scans, extraction, and mechanical edits to `gpt-6-luna`: start at `low` for trivial work and `high` for tool-using workers.
+- Route implementation and coordinated debugging to `gpt-6.1-sol`: start at `medium`, use `high` for difficult work or reviews, and `xhigh` for demanding long tasks.
+- Use `gpt-6-astra` when analysis or a deliverable exceeds Sol's demonstrated capability, or when its stronger reasoning helps finish sooner: start at `low` and raise effort when warranted.
+- Optimize for correct end-to-end results, including tool calls, retries, and integration. Escalate after a weak result; do not default to maximum effort. API prices do not measure Codex plan usage.

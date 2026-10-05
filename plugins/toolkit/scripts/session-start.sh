@@ -5,12 +5,14 @@
 set -u
 [ "${TOOLKIT_INSTRUCTIONS_DISABLE:-0}" = "1" ] && exit 0
 
-root="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
-global="$root/instructions/global.md"
+root="${CLAUDE_PLUGIN_ROOT:-${PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}}"
+shared="$root/instructions/shared.md"
+specific="$root/instructions/claude.md"
+[ "${1:-}" = "codex" ] && specific="$root/instructions/codex.md"
 fleet="$root/instructions/fleet-brief.md"
-[ -f "$global" ] || exit 0
+[ -f "$shared" ] && [ -f "$specific" ] || exit 0
 
-body=$(sed "s|{{FLEET_BRIEF}}|$fleet|g" "$global")
+body=$(cat "$shared" "$specific" | sed "s|{{FLEET_BRIEF}}|$fleet|g")
 jq -n --arg c "<GLOBAL_INSTRUCTIONS source=\"toolkit plugin\">
 $body
 </GLOBAL_INSTRUCTIONS>" '{hookSpecificOutput: {hookEventName: "SessionStart", additionalContext: $c}}'
