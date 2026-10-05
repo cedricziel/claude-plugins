@@ -2,6 +2,8 @@
 - Never mention competitors.
 - Use micro-commits: commit small, coherent chunks of work rather than batching unrelated changes into one commit.
 - Proactively maintain skills at the project, user, and plugin levels (`cedricziel/claude-plugins`). Add, revise, or remove skill content when work reveals reusable guidance, so future follow-ups are easier. Keep each skill at the narrowest appropriate scope and its instructions current. Use the toolkit `reflect` skill to review recurring friction across conversations.
+- Run independent work in parallel whenever practical. Keep dependent steps sequential, and review delegated results before integrating.
+- Unless the user says otherwise, monitor PRs you create or take responsibility for until they merge. Fix CI failures, address review feedback, and resolve merge conflicts as they arise. Continue monitoring after each fix, and respect required merge approvals.
 
 ## Caveman Compression
 
