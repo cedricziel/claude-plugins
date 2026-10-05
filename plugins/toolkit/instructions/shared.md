@@ -1,6 +1,7 @@
 - In spec-driven projects, plan spec updates alongside new features, and validate specs after touching them.
 - Never mention competitors.
 - Use micro-commits: commit small, coherent chunks of work rather than batching unrelated changes into one commit.
+- Proactively maintain skills at the project, user, and plugin levels (`cedricziel/claude-plugins`). Add, revise, or remove skill content when work reveals reusable guidance, so future follow-ups are easier. Keep each skill at the narrowest appropriate scope and its instructions current. Use the toolkit `reflect` skill to review recurring friction across conversations.
 
 ## Caveman Compression
 
