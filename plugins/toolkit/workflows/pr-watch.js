@@ -12,6 +12,7 @@ export const meta = {
 // args: { repoDir?, number (PR), repo, cli, branch, base, maxRounds?, issueNumber? }
 const THINK = args?.thinkModel ?? 'opus'   // judgment: decide, review, refute, critique
 const WORK = args?.workModel ?? 'sonnet'    // mechanical: fetch, search, implement, verify, CI
+const LIGHT = args?.lightModel ?? 'haiku'   // read-only fetches and scripted gh calls
 const { number, repo, cli, branch, base } = args
 if (!number || !repo || !cli || !branch || !base) throw new Error('args.number (PR), repo, cli, branch and base are required — invoke via /issue-run, which supplies them from pr-open')
 const AT = args.repoDir ? `Work in the repository checkout at ${args.repoDir} (cd there first; git and CLI commands run against that repo). ` : ''
@@ -86,7 +87,7 @@ for (let round = 1; round <= MAX_ROUNDS; round++) {
   phase('Collect')
   const state = await agent(
     `${AT}Using the \`${cli}\` CLI, collect the state of PR #${number} on ${repo}: every UNRESOLVED review thread (inline and top-level review comments, bots such as CodeRabbit included; for CodeRabbit prefer its structured output if the CLI/MCP is available), the latest review decision, the newest CI run's state, draft status, merged status. Include any committable suggestion text verbatim.`,
-    { label: `collect#${round}`, phase: 'Collect', schema: THREADS, model: WORK, effort: 'low' },
+    { label: `collect#${round}`, phase: 'Collect', schema: THREADS, model: LIGHT, effort: 'medium' },
   )
   if (!state) break
   final = state
@@ -147,7 +148,7 @@ const readyForReview = Boolean(final && !final.merged && final.isDraft && final.
 
 if (readyForReview) {
   await agent(`${AT}Mark PR #${number} on ${repo} ready for review using ${cli}, and re-request review from the assigned reviewers. Do nothing else.`,
-    { label: 'ready', phase: 'Apply', schema: { type: 'object', properties: { done: { type: 'boolean' } }, required: ['done'] }, model: WORK, effort: 'low' })
+    { label: 'ready', phase: 'Apply', schema: { type: 'object', properties: { done: { type: 'boolean' } }, required: ['done'] }, model: LIGHT, effort: 'medium' })
 }
 
 return { pr: number, refused, rounds, escalations, ci: final?.ci ?? 'unknown', reviewState: final?.reviewState ?? 'unknown', merged: Boolean(final?.merged), readyForReview, unresolvedThreads }

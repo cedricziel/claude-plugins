@@ -12,6 +12,7 @@ export const meta = {
 // args: { number, repo, cli: 'gh'|'fj', repoDir? } from scripts/issue-ref.sh — or a bare issue URL string
 const THINK = args?.thinkModel ?? 'opus'   // judgment: decide, review, refute, critique
 const WORK = args?.workModel ?? 'sonnet'    // mechanical: fetch, search, implement, verify, CI
+const LIGHT = args?.lightModel ?? 'haiku'   // read-only fetches and scripted gh calls
 const fromUrl = (s) => {
   const m = typeof s === 'string' && s.match(/^https?:\/\/([^/]+)\/([^/]+\/[^/]+)\/(?:issues|pulls?)\/(\d+)/)
   return m ? { number: Number(m[3]), repo: m[2], cli: m[1] === 'github.com' ? 'gh' : 'fj' } : null
@@ -76,7 +77,7 @@ phase('Fetch')
 const issue = await agent(
   `${AT}Fetch issue ${ISSUE_REF} with its labels, comments and any linked or referencing PRs. ${forgeHint}
 Extract every factual claim separately (what happens, where, since when, under which conditions). Do not judge them yet.`,
-  { label: 'fetch', phase: 'Fetch', schema: ISSUE, model: WORK, effort: 'low' },
+  { label: 'fetch', phase: 'Fetch', schema: ISSUE, model: LIGHT, effort: 'medium' },
 )
 if (!issue) throw new Error('could not fetch the issue')
 
@@ -95,7 +96,7 @@ Search git history (\`git log -S\`, \`git log --grep\`, blame on the relevant li
   () => agent(
     `${AT}${AT}${HDR}. ${forgeHint}
 Search the tracker for duplicates and related items: same symptom, same file, same feature — open and closed issues, and PRs (merged or not). Linked PRs already known: ${JSON.stringify(issue.linkedPRs)}.`,
-    { label: 'tracker', phase: 'Investigate', schema: EVIDENCE, model: WORK, effort: 'low' }),
+    { label: 'tracker', phase: 'Investigate', schema: EVIDENCE, model: LIGHT, effort: 'medium' }),
   () => agent(
     issue.kind === 'bug'
       ? `${AT}${HDR} reports a bug. Claims:\n${claims}\nExpected: ${issue.expected}
