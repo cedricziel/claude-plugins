@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/cedricziel/claude-plugins/compare/common-v1.7.0...common-v1.8.0) (2026-10-07)
+
+
+### Features
+
+* run read-only workflow steps on Haiku 5.5 ([#61](https://github.com/cedricziel/claude-plugins/issues/61)) ([17e3cad](https://github.com/cedricziel/claude-plugins/commit/17e3cad79e8826880350085833179e96146ba6be))
+
 ## [1.7.0](https://github.com/cedricziel/claude-plugins/compare/common-v1.6.2...common-v1.7.0) (2026-10-05)
 
 
