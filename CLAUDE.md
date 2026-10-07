@@ -45,7 +45,7 @@ dashboards) that anyone using that tool could reuse.
   steps (`low` only when the step changes no code; `medium` for implementation,
   investigation, and any step that edits code), `THINK` (opus) for
   judgment (`low`; `high` for refuters and critics). Never inherit the session model —
-  that silently means fable — or the session effort. Haiku has no effort setting.
+  that silently means fable — or the session effort. That holds for haiku too: since Haiku 5.5 it takes effort.
 
 - Never edit `version` by hand: release-please owns it. It rewrites the plugin's
   `.claude-plugin/plugin.json`, its `.codex-plugin/plugin.json` (where present), and its
