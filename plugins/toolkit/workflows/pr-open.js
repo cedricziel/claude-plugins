@@ -14,6 +14,7 @@ if (!branch || !base || !number || !repo || !cli || !summary) throw new Error('a
 const AT = args.repoDir ? `Work in the repository checkout at ${args.repoDir} (cd there first; git and CLI commands run against that repo). ` : ''
 const THINK = args?.thinkModel ?? 'opus'   // judgment: decide, review, refute, critique
 const WORK = args?.workModel ?? 'sonnet'    // mechanical: fetch, search, implement, verify, CI
+const LIGHT = args?.lightModel ?? 'haiku'   // read-only fetches and scripted gh calls
 const findings = (args.findings || []).map((f) => `- [ ] ${f.file}:${f.line} — ${f.title}`).join('\n')
 
 const PR = {
@@ -52,14 +53,14 @@ ${summary.focus || 'Start with the test, then the smallest diff hunk.'}
 ${findings ? `## Review findings to address\n${findings}\n` : ''}
 Closes #${number}
 Apply the label "${args.label || 'agent'}" if it exists in the repo (skip silently otherwise). Do not enable auto-merge. Return the PR number and URL.`,
-  { label: 'open', phase: 'PR', schema: PR, model: WORK, effort: 'low' },
+  { label: 'open', phase: 'PR', schema: PR, model: LIGHT, effort: 'medium' },
 )
 if (!pr) throw new Error('PR was not opened')
 
 phase('CI')
 const watch = (label) => agent(
   `${AT}${AT}Watch CI for PR #${pr.number} on ${repo} (${cli}) until the NEWEST run finishes; ignore superseded runs that still show red. Report the state and whether every failure is formatting/lint only.`,
-  { label, phase: 'CI', schema: CI, model: WORK, effort: 'low' },
+  { label, phase: 'CI', schema: CI, model: LIGHT, effort: 'medium' },
 )
 let ci = await watch('ci')
 let lintFix = null

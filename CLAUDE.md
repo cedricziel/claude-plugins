@@ -41,11 +41,14 @@ dashboards) that anyone using that tool could reuse.
 
 - Every leaf returns `refused: null` on success or a reason string on any early exit,
   and names its budget guard `BUDGET_FLOOR` with a comment saying what it protects.
-- Every `agent()` call names its model and its effort: `WORK` (sonnet) for mechanical
-  steps (`low` only when the step changes no code; `medium` for implementation,
-  investigation, and any step that edits code), `THINK` (opus) for
-  judgment (`low`; `high` for refuters and critics). Never inherit the session model —
-  that silently means fable — or the session effort. Haiku has no effort setting.
+- Every `agent()` call names its model and its effort: `LIGHT` (haiku, `medium`) for
+  steps that change no code — fetches, collecting threads, CI checks, scripted `gh`
+  calls, read-only summaries; `WORK` (sonnet, `medium`) for implementation,
+  investigation, any step that edits code, and anything that writes code for a human
+  to apply; `THINK` (opus) for judgment (`low`; `high` for refuters and critics).
+  Never run haiku at `low` in a workflow: in long prompts it stops early and skips
+  checks. Never inherit the session model — that silently means fable — or the
+  session effort.
 
 - Never edit `version` by hand: release-please owns it. It rewrites the plugin's
   `.claude-plugin/plugin.json`, its `.codex-plugin/plugin.json` (where present), and its

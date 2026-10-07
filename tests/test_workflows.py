@@ -32,6 +32,11 @@ class WorkflowEffortTest(unittest.TestCase):
             efforts = len(re.findall(r"\beffort:", src))
             self.assertEqual(models, efforts, f"{js.name}: {models} model: vs {efforts} effort:")
 
+    def test_haiku_steps_never_run_at_low_effort(self):
+        for js in sorted(WORKFLOWS.glob("*.js")):
+            for m in re.finditer(r"model: LIGHT,\s*(?:\w+: [^,]+,\s*)*effort: ['\"](\w+)", js.read_text()):
+                self.assertNotEqual(m.group(1), "low", f"{js.name}: haiku at low stops early and skips checks")
+
 
 if __name__ == "__main__":
     unittest.main()

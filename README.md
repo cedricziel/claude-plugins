@@ -145,7 +145,7 @@ Disable per repo with `.no-rebase-nudge` / `.no-format-hook`; override the test 
 
 **Workflows**
 
-Composable leaves; `/issue-run` sequences them and stops for approval at every gate. Judgment steps run on `opus`, mechanical steps on `sonnet`. Every leaf returns `refused: null` on success or a reason string for any early exit (budget floor, too small, unreproduced bug).
+Composable leaves; `/issue-run` sequences them and stops for approval at every gate. Judgment steps run on `opus`, implementation and investigation on `sonnet`, and read-only fetches and scripted `gh` calls on `haiku`. Every leaf returns `refused: null` on success or a reason string for any early exit (budget floor, too small, unreproduced bug).
 
 ```mermaid
 flowchart TD

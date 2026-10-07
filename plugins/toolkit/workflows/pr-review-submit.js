@@ -46,7 +46,7 @@ const comments = args.comments || [];
 const AT = args.repoDir
   ? `Work in the repository checkout at ${args.repoDir} (cd there first; git and CLI commands run against that repo). `
   : "";
-const WORK = args?.workModel ?? "sonnet"; // mechanical: build and submit one API payload
+const LIGHT = args?.lightModel ?? "haiku"; // read-only fetches and scripted gh calls
 const BUDGET_FLOOR = 35_000; // collect call + resolve call + post call
 
 if (budget.total && budget.remaining() < BUDGET_FLOOR) {
@@ -261,8 +261,8 @@ For each thread node report threadId (its \`id\`), path, line, isResolved, tagge
     label: "collect",
     phase: "Collect",
     schema: COLLECTED,
-    model: WORK,
-    effort: "low",
+    model: LIGHT,
+    effort: "medium",
   },
 );
 
@@ -335,8 +335,8 @@ Never resolve a thread not in the list above, never delete anything, and never r
           label: "resolve",
           phase: "Resolve",
           schema: RESOLVED,
-          model: WORK,
-          effort: "low",
+          model: LIGHT,
+          effort: "medium",
         },
       );
 
@@ -364,7 +364,7 @@ Steps:
 7. Those are the only retries allowed, one of each at most. Any other failure, or a failing retry: report posted=false with an empty reviewUrl. Never retry with any other event, and never edit a comment's line to make it fit.
 8. If any post above succeeded, immediately re-read the PR's head SHA the same way as step 1 and return it verbatim as postHead — GitHub's REST API has no atomic precondition for this POST, so a force-push landing in the exact window between step 1 and the POST cannot be prevented, only detected after the fact by comparing heads. Leave postHead empty if nothing was posted or that re-read fails.
 9. Return whether it posted, the response's html_url, how many comments the posted review actually contains (0 if the fallback was used, 0 if you stopped at step 2), decisionDowngraded (false unless you posted a downgraded payload), and postHead.`,
-  { label: "post", phase: "Post", schema: POSTED, model: WORK, effort: "low" },
+  { label: "post", phase: "Post", schema: POSTED, model: LIGHT, effort: "medium" },
 );
 
 // `posted` reports the head the agent read back; the comparison itself stays here
