@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.20.0](https://github.com/cedricziel/claude-plugins/compare/toolkit-v1.19.1...toolkit-v1.20.0) (2026-10-07)
+
+
+### Features
+
+* run read-only workflow steps on Haiku 5.5 ([#61](https://github.com/cedricziel/claude-plugins/issues/61)) ([17e3cad](https://github.com/cedricziel/claude-plugins/commit/17e3cad79e8826880350085833179e96146ba6be))
+
 ## [1.19.1](https://github.com/cedricziel/claude-plugins/compare/toolkit-v1.19.0...toolkit-v1.19.1) (2026-10-05)
 
 
