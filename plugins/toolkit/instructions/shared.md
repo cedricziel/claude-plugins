@@ -1,4 +1,6 @@
 - In spec-driven projects, plan spec updates alongside new features, and validate specs after touching them.
+- Before a bigger task, quiz the user until you have confirmed a shared understanding of the goal, scope, and constraints. In projects using OpenSpec, do this before writing or amending a spec.
+- Be a good citizen about scope: challenge work nobody needs yet (YAGNI), and keep each change bounded to what was asked.
 - Never mention competitors.
 - Use micro-commits: commit small, coherent chunks of work rather than batching unrelated changes into one commit.
 - Proactively maintain skills at the project, user, and plugin levels (`cedricziel/claude-plugins`). Add, revise, or remove skill content when work reveals reusable guidance, so future follow-ups are easier. Keep each skill at the narrowest appropriate scope and its instructions current. Use the toolkit `reflect` skill to review recurring friction across conversations.
