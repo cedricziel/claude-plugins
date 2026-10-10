@@ -71,6 +71,28 @@ class UploadScreenshotsTest(unittest.TestCase):
         ).stdout
         self.assertEqual(status, "A  wip.txt\n")
 
+    def test_links_the_push_url_repository(self):
+        git(self.repo, "remote", "set-url", "--push", "origin", "git@github.com:acme/fork.git")
+        git(self.repo, "config", "--add", "url." + str(self.remote) + ".insteadOf", "git@github.com:acme/fork.git")
+        out = self.run_script("feat", str(self.shot))
+        self.assertEqual(out.returncode, 0, out.stderr)
+        self.assertIn("https://github.com/acme/fork/blob/", out.stdout)
+
+    def test_rejects_duplicate_names(self):
+        other = self.tmp / "sub"
+        other.mkdir()
+        (other / "before.png").write_bytes(b"x")
+        out = self.run_script("feat", str(self.shot), str(other / "before.png"))
+        self.assertNotEqual(out.returncode, 0)
+        self.assertIn("duplicate", out.stderr)
+
+    def test_rejects_names_that_need_url_encoding(self):
+        odd = self.tmp / "my shot (1).png"
+        odd.write_bytes(b"x")
+        out = self.run_script("feat", str(odd))
+        self.assertNotEqual(out.returncode, 0)
+        self.assertIn("rename", out.stderr)
+
     def test_rejects_non_github_remote(self):
         git(self.repo, "remote", "set-url", "origin", str(self.remote))
         out = self.run_script("feat", str(self.shot))

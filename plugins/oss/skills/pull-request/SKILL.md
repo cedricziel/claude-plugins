@@ -70,14 +70,15 @@ visible surface; a screenshot of a diff or a test run adds nothing.
    if it has one, otherwise Playwright (`page.screenshot({ path, fullPage: true })`).
    Take a before shot from the base branch when the difference is the point. Save
    to the scratchpad, never the repo, and crop to the part that changed.
-2. **Upload** with `scripts/upload-screenshots.sh` (next to this file), from inside
-   the checkout:
+2. **Upload** with `scripts/upload-screenshots.sh` from this skill's directory. Run
+   it with the target checkout as the working directory; file names may use only
+   letters, digits, `.`, `_` and `-`:
 
    ```bash
-   scripts/upload-screenshots.sh <pr-branch> before.png after.png
+   <this-skill-dir>/scripts/upload-screenshots.sh <pr-branch> before.png after.png
    ```
 
-   It commits the images to an orphan `pr-assets` branch on `origin` (working tree
+   It commits the images to an orphan `pr-assets` branch on `origin` (its push URL) (working tree
    and index untouched, PR diff unchanged) and prints one Markdown image line per
    file, pinned to that commit's SHA. GitHub has no API for the drag-and-drop
    attachment upload, so this branch is the agent's way in. The links render in

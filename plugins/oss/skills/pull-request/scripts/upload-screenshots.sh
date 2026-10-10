@@ -10,7 +10,7 @@ branch=$1; shift
 assets=pr-assets
 dir=${branch//\//-}
 
-url=$(git config --get remote.origin.url)
+url=$(git config --get remote.origin.pushurl || git config --get remote.origin.url)
 case $url in
   git@github.com:*) slug=${url#git@github.com:} ;;
   ssh://git@github.com/*) slug=${url#ssh://git@github.com/} ;;
@@ -18,6 +18,14 @@ case $url in
   *) echo "origin is not a GitHub remote: $url" >&2; exit 1 ;;
 esac
 slug=${slug%.git}
+
+seen=" "
+for f in "$@"; do
+  name=$(basename "$f")
+  [[ $name =~ ^[A-Za-z0-9._-]+$ ]] || { echo "rename $f: use only letters, digits, '.', '_' and '-'" >&2; exit 1; }
+  [[ $seen != *" $name "* ]] || { echo "duplicate file name: $name" >&2; exit 1; }
+  seen+="$name "
+done
 
 parent=
 if git fetch -q origin "refs/heads/$assets" 2>/dev/null; then
@@ -36,7 +44,6 @@ done
 commit=$(git commit-tree "$(git write-tree)" ${parent:+-p "$parent"} -m "Screenshots for $branch")
 git push -q origin "$commit:refs/heads/$assets"
 
-for f in "$@"; do
-  name=$(basename "$f")
+for name in $seen; do
   echo "![${name%.*}](https://github.com/$slug/blob/$commit/$dir/$name?raw=true)"
 done
