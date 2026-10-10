@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.21.0](https://github.com/cedricziel/claude-plugins/compare/toolkit-v1.20.0...toolkit-v1.21.0) (2026-10-10)
+
+
+### Features
+
+* **toolkit:** quiz the user upfront on bigger tasks and guard scope ([#63](https://github.com/cedricziel/claude-plugins/issues/63)) ([e1e0304](https://github.com/cedricziel/claude-plugins/commit/e1e03048eeaf12221ec48424d368680599b82ae0))
+
 ## [1.20.0](https://github.com/cedricziel/claude-plugins/compare/toolkit-v1.19.1...toolkit-v1.20.0) (2026-10-07)
 
 
