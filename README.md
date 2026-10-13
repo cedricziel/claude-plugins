@@ -109,6 +109,7 @@ not personal, not part of the orchestration engine. Depends on
 | `coderabbit`   | Working with CodeRabbit reviews on PRs                       |
 | `forgejo-cli`  | Using `fj` against Forgejo/Codeberg instances                |
 | `dashboarding` | Designing and reviewing operational dashboards                |
+| `openspec-doctor` | Initializing, updating, and tuning a repo's OpenSpec config from code and PR reviews |
 
 ### toolkit
 

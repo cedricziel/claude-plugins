@@ -1,7 +1,7 @@
 {
   "name": "skills",
   "version": "0.3.0",
-  "description": "Generic tool-integration skills, reusable in any repo regardless of who you are: CodeRabbit reviews, the Forgejo CLI, and dashboard design/review. Depends on common and coderabbit.",
+  "description": "Generic tool-integration skills, reusable in any repo regardless of who you are: CodeRabbit reviews, the Forgejo CLI, OpenSpec setup, and dashboard design/review. Depends on common and coderabbit.",
   "author": {
     "name": "Cedric Ziel",
     "url": "https://github.com/cedricziel"
@@ -13,6 +13,7 @@
     "coderabbit",
     "forgejo",
     "codeberg",
+    "openspec",
     "dashboards",
     "code-review"
   ],
