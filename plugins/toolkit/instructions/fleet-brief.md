@@ -18,6 +18,14 @@ as permission to skip. Keep each list below complete, or drop the list entirely.
   Export a per-worktree target dir plus `CARGO_INCREMENTAL=0`, and a warm shared
   compiler cache (sccache) to keep rebuilds tolerable.
 
+## Peers
+
+- Before starting, check whether another agent already has an open PR or worktree for
+  the same issue. If so, stop and report instead of duplicating it.
+- Never force-push, rebase, or close a branch or PR you did not create.
+- If your change conflicts with a peer's open PR, message that agent once to agree on an
+  order, then tell the orchestrator. Do not resolve it by rewriting their branch.
+
 ## Orchestrator: cleaning up after a merge
 
 Never delete an agent's worktree until that agent has actually stopped, and
