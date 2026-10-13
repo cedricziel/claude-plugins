@@ -34,26 +34,22 @@ def require(obj, keys, where):
             err(f"{where}: missing required field '{k}'")
 
 
-def check_skill(skill_md):
-    text = skill_md.read_text()
-    m = re.match(r"^---\n(.*?)\n---\n", text, re.S)
+def check_frontmatter(md, keys, why=""):
+    m = re.match(r"^---\n(.*?)\n---\n", md.read_text(), re.S)
     if not m:
-        err(f"{skill_md}: no YAML frontmatter")
+        err(f"{md}: no YAML frontmatter")
         return
-    fm = m.group(1)
-    for key in ("name", "description"):
-        if not re.search(rf"^{key}:\s*\S", fm, re.M):
-            err(f"{skill_md}: frontmatter missing '{key}'")
+    for key in keys:
+        if not re.search(rf"^{key}:\s*\S", m.group(1), re.M):
+            err(f"{md}: frontmatter missing '{key}'{why}")
+
+
+def check_skill(skill_md):
+    check_frontmatter(skill_md, ("name", "description"))
 
 
 def check_agent(agent_md):
-    m = re.match(r"^---\n(.*?)\n---\n", agent_md.read_text(), re.S)
-    if not m:
-        err(f"{agent_md}: no YAML frontmatter")
-        return
-    for key in ("name", "description", "model", "effort"):
-        if not re.search(rf"^{key}:\s*\S", m.group(1), re.M):
-            err(f"{agent_md}: frontmatter missing '{key}' (an unset model or effort inherits the session's)")
+    check_frontmatter(agent_md, ("name", "description", "model", "effort"), " (an unset model or effort inherits the session's)")
 
 
 def check_hooks(plugin_dir):
