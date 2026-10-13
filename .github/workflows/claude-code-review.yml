@@ -2,10 +2,17 @@ name: Code Review
 
 on:
   pull_request:
-    types: [opened, synchronize, ready_for_review, reopened]
+    # The review command stops once Claude has commented on a PR, so later
+    # pushes (synchronize) would only start runs that exit early.
+    types: [opened, ready_for_review, reopened]
+
+concurrency:
+  group: claude-code-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   review:
+    if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -22,15 +29,25 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # Or, billing against the API instead of the subscription:
           # anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          # Anthropic's code-review plugin runs the actual review below; our own
-          # toolkit@cedricziel is installed alongside it so its skills (e.g.
-          # commit-discipline conventions surfaced via oss) are available too.
+          # Only the review plugin: our own plugins inject session instructions
+          # (for example "spawn a subagent only for large tracks") that work
+          # against the command's multi-agent review.
           plugin_marketplaces: |
             https://github.com/anthropics/claude-code.git
-            https://github.com/anthropics/claude-plugins-official.git
-            ${{ github.server_url }}/${{ github.repository }}.git
           plugins: |
             code-review@claude-code-plugins
-            toolkit@cedricziel
           prompt: "/code-review:code-review --comment ${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
-          claude_args: '--allowedTools "mcp__github_inline_comment__create_inline_comment"'
+          claude_args: >-
+            --allowedTools "mcp__github_inline_comment__create_inline_comment"
+            --append-system-prompt "This repository is a Claude Code and Codex
+            plugin marketplace: most changes are skill and instruction Markdown,
+            workflow scripts, and hook scripts. Treat the conventions in the root
+            CLAUDE.md as rules to check, in particular: every agent() call in
+            workflows/ names its model and effort and never inherits the session
+            model; every leaf workflow returns refused and names its BUDGET_FLOOR;
+            a leaf never calls workflow(); hook scripts fail open and keep state
+            under ~/.claude/hooks/; versions are never edited by hand; and nothing
+            public names a hostname, IP, or secret-manager item. In Markdown,
+            flag instructions that are wrong, contradict another file, reference a
+            skill, agent, file, or command that does not exist, or put
+            host-specific (Claude or Codex) content in a shared file."
