@@ -39,6 +39,9 @@ What the change does, and why this shape over the alternatives. 1-3 sentences.
 ## Tests
 Concrete commands run and their observed outcome — not "tests pass".
 
+## Evidence
+Only for visible changes: before/after screenshots, a GIF, or output.
+
 ## Security Impact
 `None`, or what changed and why it's safe. One line when possible.
 
@@ -54,5 +57,8 @@ Add `Closes #<issue>` when the PR closes a tracked issue.
   more, the change likely needs splitting instead (see `commit-discipline`'s PR
   Strategy).
 - Don't restate the diff or narrate file-by-file changes — the diff already shows that.
+- For a visible change (UI, CLI or API output, rendered pages), add before/after
+  evidence. Read [references/evidence.md](references/evidence.md) for how to capture
+  it and upload it through GitHub's own uploader.
 - Skip a section only when it is genuinely inapplicable (e.g. no security-relevant
   surface touched) — never leave it out just to save space.
