@@ -61,3 +61,53 @@ class SessionStartTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ReflectNudgeTest(unittest.TestCase):
+    def setUp(self):
+        import tempfile
+
+        self.tmp = Path(tempfile.mkdtemp())
+        self.data = self.tmp / "data"
+        (self.data / "reflect").mkdir(parents=True)
+        self.marker = self.data / "reflect" / "last-reviewed.json"
+        self.env = {"CLAUDE_PLUGIN_DATA": str(self.data), "REFLECT_NUDGE_STATE_DIR": str(self.tmp / "state")}
+
+    def tearDown(self):
+        import shutil
+
+        shutil.rmtree(self.tmp)
+
+    def ctx(self, source="startup"):
+        e = {"PATH": "/usr/bin:/bin:/opt/homebrew/bin", "CLAUDE_PLUGIN_ROOT": str(PLUGIN), **self.env}
+        r = subprocess.run(
+            ["bash", str(HOOK)], input=json.dumps({"source": source}), capture_output=True, text=True, env=e
+        )
+        self.assertEqual(r.returncode, 0, r.stderr)
+        return json.loads(r.stdout)["hookSpecificOutput"]["additionalContext"]
+
+    def review(self, days_ago):
+        import os
+        import time
+
+        self.marker.write_text("{}")
+        t = time.time() - days_ago * 86400
+        os.utime(self.marker, (t, t))
+
+    def test_nudges_when_reflect_never_ran(self):
+        self.assertIn("/reflect", self.ctx())
+
+    def test_nudges_when_last_review_is_overdue(self):
+        self.review(days_ago=10)
+        self.assertIn("/reflect", self.ctx())
+
+    def test_quiet_after_a_recent_review(self):
+        self.review(days_ago=2)
+        self.assertNotIn("/reflect", self.ctx())
+
+    def test_nudges_at_most_once_a_day(self):
+        self.assertIn("/reflect", self.ctx())
+        self.assertNotIn("/reflect", self.ctx())
+
+    def test_quiet_when_context_is_reinjected_after_compaction(self):
+        self.assertNotIn("/reflect", self.ctx(source="compact"))
