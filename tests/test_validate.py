@@ -92,6 +92,13 @@ class ValidateTest(unittest.TestCase):
         self.assertNotEqual(r.returncode, 0)
         self.assertIn("w.js", r.stdout)
 
+    def test_agent_without_model_fails(self):
+        (self.plugin / "agents").mkdir()
+        (self.plugin / "agents" / "a.md").write_text("---\nname: a\ndescription: d\neffort: medium\n---\nbody\n")
+        r = run(self.tmp)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("a.md", r.stdout)
+
     def test_workflow_name_must_match_filename(self):
         (self.plugin / "workflows" / "w.js").write_text("export const meta = { name: 'other', description: 'd' }\n")
         r = run(self.tmp)
