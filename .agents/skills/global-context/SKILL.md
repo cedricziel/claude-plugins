@@ -83,13 +83,14 @@ change. It proposes changes; it does not apply them until the user approves.
    dependencies):
 
    ```sh
-   for h in claude codex; do arg=; [ "$h" = codex ] && arg=codex
-     for stack in "common oss" "common oss toolkit"; do
-       echo "== $stack / $h"
-       for p in $stack; do
-         plugins/$p/scripts/session-start.sh $arg | jq -r .hookSpecificOutput.additionalContext
-       done
-     done
+   render() { h=$1; shift; echo "== $* / $h"
+     for p in "$@"; do
+       plugins/$p/scripts/session-start.sh $([ "$h" = codex ] && echo codex) |
+         jq -r .hookSpecificOutput.additionalContext
+     done; }
+   for h in claude codex; do
+     render $h common oss
+     render $h common oss toolkit
    done
    ```
 
