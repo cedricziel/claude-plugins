@@ -165,7 +165,7 @@ Return an empty string — no suggestion — if the fix needs to touch any other
           phase: "Suggest",
           schema: SUGGESTION,
           model: WORK,
-          effort: "low",
+          effort: "medium",
         },
       ).then((r) => r?.suggestion || ""),
   ),

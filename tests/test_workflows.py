@@ -37,6 +37,11 @@ class WorkflowEffortTest(unittest.TestCase):
             for m in re.finditer(r"model: LIGHT,\s*(?:\w+: [^,]+,\s*)*effort: ['\"](\w+)", js.read_text()):
                 self.assertNotEqual(m.group(1), "low", f"{js.name}: haiku at low stops early and skips checks")
 
+    def test_work_steps_never_run_at_low_effort(self):
+        for js in sorted(WORKFLOWS.glob("*.js")):
+            for m in re.finditer(r"model: WORK,\s*(?:\w+: [^,]+,\s*)*effort: ['\"](\w+)", js.read_text()):
+                self.assertNotEqual(m.group(1), "low", f"{js.name}: sonnet at low can report a change done without checking it")
+
 
 if __name__ == "__main__":
     unittest.main()
