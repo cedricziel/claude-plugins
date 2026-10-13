@@ -87,6 +87,7 @@ Claude delegates documentation to `oss:technical-writer`; both hosts use the
 | `no-comments`        | `/oss:no-comments` — spawns the `comment-sicko` agent to purge narration comments and suppressions, then fixes the root causes — vendored from pstack (MIT)     |
 | `technical-writing`  | `/oss:technical-writing` — Diátaxis + Google style + STE + Global English standard for docs, RFCs, READMEs, PR descriptions — vendored from pstack (MIT)        |
 | `release-notes`      | Draft informative, non-bloated, user-value-focused release notes for a GitHub release: output shape, include/omit rules, input gathering with `gh`, grounding and unslop gates |
+| `skill-maintenance`  | When to add, edit, or delete a skill, at which scope, and how to lay out references and scripts |
 
 **Agents**
 
