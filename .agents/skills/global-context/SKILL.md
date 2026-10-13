@@ -77,8 +77,22 @@ change. It proposes changes; it does not apply them until the user approves.
    done; done
    ```
 
-   Also read the stacked context per host (all three plugins together), since
-   that is what a session actually sees.
+   Then render the stacks a session can load, since cross-plugin duplication
+   and conflicts only show up there: `common + oss`, and
+   `common + oss + toolkit` (which `toolkit` pulls in through its
+   dependencies):
+
+   ```sh
+   for h in claude codex; do arg=; [ "$h" = codex ] && arg=codex
+     for stack in "common oss" "common oss toolkit"; do
+       echo "== $stack / $h"
+       for p in $stack; do
+         plugins/$p/scripts/session-start.sh $arg | jq -r .hookSpecificOutput.additionalContext
+       done
+     done
+   done
+   ```
+
 2. Score each plugin and host against these checks. Record pass or fail with
    the offending line for each:
    - **Placement**: the rule fits the plugin's audience, and `shared.md` names
