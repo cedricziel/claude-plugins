@@ -19,6 +19,8 @@ reflect_nudge() {
   source=$(jq -r '.source // "startup"' 2>/dev/null)
   [ "$source" = "startup" ] || return
   days="${REFLECT_NUDGE_DAYS:-7}"
+  case "$days" in "" | *[!0-9]*) days=7 ;; esac
+  days=$((10#$days)); [ "$days" -ge 1 ] || days=7
   marker="$1/reflect/last-reviewed.json"
   if [ -f "$marker" ]; then
     [ -n "$(find "$marker" -mtime +"$((days - 1))" 2>/dev/null)" ] || return
@@ -30,7 +32,7 @@ reflect_nudge() {
   [ -n "$state" ] || return
   today=$(date +%Y-%m-%d)
   [ "$(cat "$state/nudged" 2>/dev/null)" = "$today" ] && return
-  mkdir -p "$state" 2>/dev/null && echo "$today" >"$state/nudged" 2>/dev/null
+  { mkdir -p "$state" && echo "$today" >"$state/nudged"; } 2>/dev/null || return
   printf '\n%s' "- The last /reflect review ran $when. At a natural break, offer the user to run /reflect once; do not run it unasked."
 }
 

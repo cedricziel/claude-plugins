@@ -111,3 +111,13 @@ class ReflectNudgeTest(unittest.TestCase):
 
     def test_quiet_when_context_is_reinjected_after_compaction(self):
         self.assertNotIn("/reflect", self.ctx(source="compact"))
+
+    def test_quiet_when_nudge_state_cannot_be_recorded(self):
+        blocker = self.tmp / "state"
+        blocker.write_text("not a directory")
+        self.assertNotIn("/reflect", self.ctx())
+
+    def test_threshold_with_leading_zero_is_decimal(self):
+        self.env["REFLECT_NUDGE_DAYS"] = "08"
+        self.review(days_ago=10)
+        self.assertIn("/reflect", self.ctx())
