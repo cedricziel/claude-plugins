@@ -138,12 +138,11 @@ subagents. Depends on `common@cedricziel`, `oss@cedricziel`, and
 | Event                      | What it does                                                                                                                                                   |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `SessionStart`             | Injects `instructions/shared.md` plus host-specific guidance. Codex receives compact OpenAI model routing; Claude receives its workflow rules. Disable with `TOOLKIT_INSTRUCTIONS_DISABLE=1` |
-| `PostToolUse` (Edit/Write) | Nudges when source changes come without test changes                                                                                                           |
-| `Stop`                     | Blocks finishing while the project's test suite is red (fails open on environment errors)                                                                      |
+| `PostToolUse` (Edit/Write) | Nudges once per file when source changes with no test changed on the branch, and points at `test-strategy`/`writing-tests` on the first test edit |
 | `UserPromptSubmit`         | Reminds to rebase when the branch has fallen behind the default branch                                                                                         |
 
 Knobs and off-switches are documented in the headers of `plugins/{common,toolkit}/scripts/*.sh`.
-Disable per repo with `.no-rebase-nudge` / `.no-format-hook`; override the test command with `.tdd-test-cmd`.
+Disable per repo with `.no-rebase-nudge` / `.no-format-hook` / `.no-tdd-nudge`.
 
 **Workflows**
 

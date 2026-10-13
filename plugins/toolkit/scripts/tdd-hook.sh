@@ -1,57 +1,73 @@
 #!/usr/bin/env bash
-# TDD hooks for Claude Code (shipped by the toolkit plugin, wired via hooks/hooks.json).
-#   tdd-hook.sh edit-check  — PostToolUse(Edit|Write): nudge when source changes lack any test change
-#   tdd-hook.sh stop-check  — Stop: block finishing while the project's test suite fails
-# Both modes no-op silently outside git repos or in projects with no recognized test setup.
-# stop-check only blocks on a genuine red suite; timeouts, low disk, an
-# already-running build, or environment errors (ENOSPC/OOM) downgrade to a
-# non-blocking user warning. A `.tdd-test-cmd` file at the repo root overrides
-# the auto-detected test command (first line, e.g. "cargo nextest run").
+# PostToolUse(Edit|Write) TDD nudge (toolkit plugin, wired via hooks/hooks.json).
+#   - Source edit while no test changed on the branch or in the working tree:
+#     ask for a failing test first, once per file per session.
+#   - First test-file edit in a session: point at the test-hygiene skills.
+# Silent outside git repos and on config, generated, and vendored files.
+# Off: TDD_NUDGE_DISABLE=1, or a `.no-tdd-nudge` file at the repo root.
 set -u
+[ "${TDD_NUDGE_DISABLE:-0}" = "1" ] && exit 0
 
-MODE="${1:-stop-check}"
-INPUT="$(cat 2>/dev/null || true)"
-STATE_DIR="${TDD_STATE_DIR:-$HOME/.claude/hooks/toolkit/tdd}"
-mkdir -p "$STATE_DIR"
+IFS=$'\t' read -r f session < <(jq -r '[.tool_input.file_path // "", .session_id // "none"] | @tsv' 2>/dev/null)
+[ -n "${f:-}" ] || exit 0
+session="$(printf '%s' "${session:-}" | tr -cd 'A-Za-z0-9_-')"; session="${session:-none}"
+state="${TDD_STATE_DIR:-${HOME:+$HOME/.claude/hooks/toolkit/tdd}}"
+[ -n "$state" ] || exit 0
 
-jqr() { printf '%s' "$INPUT" | jq -r "$1" 2>/dev/null; }
+# True the first time KEY is seen in this session; false if state can't be kept.
+once() {
+  grep -qxF "$1" "$state/$session" 2>/dev/null && return 1
+  { mkdir -p "$state" && echo "$1" >>"$state/$session"; } 2>/dev/null
+}
 
-# Non-blocking outcome: surface a warning to the user, let the turn end.
-warn_skip() {
-  jq -n --arg m "$1" '{systemMessage: ("TDD: " + $m)}'
+say() {
+  jq -n --arg c "TDD: $1" '{hookSpecificOutput:{hookEventName:"PostToolUse",additionalContext:$c}}'
   exit 0
 }
 
 is_test_path() {
   case "$1" in
-    *__tests__*|*_test.*|*.test.*|*.spec.*|test_*|*/test_*|*Tests.swift|*Test.java|*Test.kt|*_spec.rb|tests/*|*/tests/*|test/*|*/test/*|spec/*|*/spec/*) return 0 ;;
+    *__tests__*|*_test.*|*.test.*|*.spec.*|test_*|*/test_*|*Tests.swift|*Test.java|*Test.kt|*_spec.rb|tests/*|*/tests/*|test/*|*/test/*|spec/*|*/spec/*|e2e/*|*/e2e/*) return 0 ;;
     *) return 1 ;;
   esac
 }
 
 is_source_path() {
   case "$1" in
-    *.ts|*.tsx|*.js|*.jsx|*.mjs|*.py|*.rs|*.go|*.swift|*.dart|*.php|*.rb|*.java|*.kt|*.c|*.cc|*.cpp|*.h) return 0 ;;
+    *.ts|*.tsx|*.js|*.jsx|*.mjs|*.py|*.rs|*.go|*.swift|*.dart|*.php|*.rb|*.java|*.kt|*.scala|*.cs|*.ex|*.exs|*.vue|*.svelte|*.c|*.cc|*.cpp|*.sh) return 0 ;;
     *) return 1 ;;
   esac
 }
 
-if [ "$MODE" = "edit-check" ]; then
-  f="$(jqr '.tool_input.file_path // empty')"
-  [ -n "$f" ] || exit 0
-  is_source_path "$f" || exit 0
-  is_test_path "$f" && exit 0
-  dir="$(dirname "$f")"
-  git -C "$dir" rev-parse --is-inside-work-tree >/dev/null 2>&1 || exit 0
-  while IFS= read -r line; do
-    [ -n "$line" ] && is_test_path "${line:3}" && exit 0
-  done <<EOF
-$(git -C "$dir" status --porcelain 2>/dev/null)
-EOF
-  jq -n '{hookSpecificOutput:{hookEventName:"PostToolUse",additionalContext:"TDD: source changed, no test file touched yet. Write a failing test first, or say why existing tests cover this."}}'
+is_exempt_path() {
+  case "$1" in
+    *.config.*|*.d.ts|*.pb.go|*_pb2.py|*/migrations/*|migrations/*|*/generated/*|*/vendor/*|vendor/*|*/node_modules/*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+# Paths changed on this branch since the default branch, plus uncommitted ones.
+changed_paths() {
+  base="$(cd "$root" && "${BASH_SOURCE%/*}/default-branch.sh" 2>/dev/null)"
+  git -C "$root" diff --name-only "$base...HEAD" 2>/dev/null
+  git -C "$root" status --porcelain 2>/dev/null | sed 's/^...//; s/.* -> //'
+}
+
+is_source_path "$f" || exit 0
+root="$(git -C "$(dirname "$f")" rev-parse --show-toplevel 2>/dev/null)" || exit 0
+[ -e "$root/.no-tdd-nudge" ] && exit 0
+rel="${f#"$root"/}"
+if is_test_path "$rel"; then
+  once "test-hygiene" && say "test file changed. Keep only tests that would catch a real regression, and no tautologies: use test-strategy to pick the level and writing-tests for red-first discipline."
   exit 0
 fi
+is_exempt_path "$rel" && exit 0
+grep -qxF "src:$rel" "$state/$session" 2>/dev/null && exit 0
 
-# ---- stop-check ----
-# No-op: test suite running is now a manual decision.
+while IFS= read -r p; do
+  [ -n "$p" ] && is_test_path "$p" && exit 0
+done <<EOF
+$(changed_paths)
+EOF
+once "src:$rel" && say "source changed, no test changed on this branch yet. Write a failing test first (writing-tests), or say why existing tests cover this."
 exit 0

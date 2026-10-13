@@ -37,18 +37,6 @@
         ]
       }
     ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/tdd-hook.sh\" stop-check",
-            "timeout": 300,
-            "statusMessage": "TDD gate: running tests"
-          }
-        ]
-      }
-    ],
     "UserPromptSubmit": [
       {
         "hooks": [
