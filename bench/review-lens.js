@@ -30,6 +30,7 @@ const BUGS = [
   { id: "shared-mutable-overrides", file: "quota/limiter.py", lo: 35, hi: 43 },
   { id: "page-count-floor", file: "quota/usage.py", lo: 1, hi: 4 },
   { id: "grace-multiplier", file: "quota/usage.py", lo: 16, hi: 18 },
+  { id: "override-refills-bucket", file: "quota/limiter.py", lo: 44, hi: 44 },
 ];
 const DECOY = { id: "decoy-deltas", file: "quota/usage.py", lo: 11, hi: 13 };
 
@@ -124,6 +125,15 @@ for (const cell of CELLS) {
       : { trial: t + 1, error: "agent died" },
   );
   cells.push({ cell: name, outputTokens: budget.spent() - before, trials });
+  const row = (trial, case_id, evaluator, pass) =>
+    rows.push({
+      version: name,
+      case_id,
+      name: evaluator,
+      score: pass ? 1 : 0,
+      label: pass ? "pass" : "fail",
+      trial,
+    });
   for (const tr of trials) {
     if (tr.error) {
       rows.push({
@@ -135,24 +145,8 @@ for (const cell of CELLS) {
       });
       continue;
     }
-    BUGS.forEach((b, i) =>
-      rows.push({
-        version: name,
-        case_id: b.id,
-        name: "found",
-        score: tr.found[i] ? 1 : 0,
-        label: tr.found[i] ? "pass" : "fail",
-        trial: tr.trial,
-      }),
-    );
-    rows.push({
-      version: name,
-      case_id: DECOY.id,
-      name: "not-flagged",
-      score: tr.decoy ? 0 : 1,
-      label: tr.decoy ? "fail" : "pass",
-      trial: tr.trial,
-    });
+    BUGS.forEach((b, i) => row(tr.trial, b.id, "found", tr.found[i]));
+    row(tr.trial, DECOY.id, "not-flagged", !tr.decoy);
     rows.push({
       version: name,
       case_id: "unmatched",

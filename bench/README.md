@@ -2,7 +2,7 @@
 
 `review-lens.js` measures how well each model and effort level finds bugs with the correctness lens from `plugins/toolkit/workflows/adversarial-review.js`. Re-run it when a new model ships to decide which tier the lens should use.
 
-It is a standalone Claude Code Workflow script, not a registered plugin workflow. It reviews the fixture in `fixtures/review-lens/`: `base/` is the code before the change, `src/` is the code after it, and `change.diff` is the diff between them. The change plants four bugs and one decoy, a correct line that looks suspicious.
+It is a standalone Claude Code Workflow script, not a registered plugin workflow. It reviews the fixture in `fixtures/review-lens/`: `base/` is the code before the change, `src/` is the code after it, and `change.diff` is the diff between them. The change plants five bugs and one decoy, a correct line that looks suspicious.
 
 ## Run the bench
 

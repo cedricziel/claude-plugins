@@ -12,6 +12,7 @@ PLANTED = {
     "shared-mutable-overrides": "overrides={}",
     "page-count-floor": "return total // size",
     "grace-multiplier": "return used > quota * grace",
+    "override-refills-bucket": "self._buckets.pop(tenant, None)",
     "decoy-deltas": "range(len(samples) - 1)",
 }
 
