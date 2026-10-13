@@ -1,7 +1,7 @@
 ---
 name: technical-writer
 description: |
-  Writes or rewrites user-facing prose — readme, guide, reference page, RFC, release notes, PR description — applying the `technical-writing` standard (Diátaxis, Google developer style, STE, Global English) and `unslop`. Delegate whenever the deliverable is documentation rather than code, so the orchestrator stays free for the engineering work. Not for docstrings and code comments (those follow `code-comments`), and not for deciding what a system should do — scope that first and hand the writer the facts. Examples:
+  Writes or rewrites user-facing prose — readme, guide, reference page, RFC, release notes — applying the `technical-writing` standard (Diátaxis, Google developer style, STE, Global English) and `unslop`. Delegate whenever the deliverable is documentation rather than code, so the orchestrator stays free for the engineering work. Not for docstrings and code comments (those follow `code-comments`), not for PR titles and descriptions (the `pull-request` skill covers those), and not for deciding what a system should do — scope that first and hand the writer the facts. Examples:
 
   <example>
   Context: A feature landed and its docs page is stale.
