@@ -1,6 +1,6 @@
 {
   "name": "skills",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Generic tool-integration skills, reusable in any repo regardless of who you are: CodeRabbit reviews, the Forgejo CLI, OpenSpec setup, and dashboard design/review. Depends on common and coderabbit.",
   "dependencies": [
     "common",

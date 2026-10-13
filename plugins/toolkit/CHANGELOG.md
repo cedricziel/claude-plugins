@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.22.0](https://github.com/cedricziel/claude-plugins/compare/toolkit-v1.21.0...toolkit-v1.22.0) (2026-10-13)
+
+
+### Features
+
+* **common:** coordinate with peer agents on shared state ([#79](https://github.com/cedricziel/claude-plugins/issues/79)) ([47af297](https://github.com/cedricziel/claude-plugins/commit/47af297defdd58e6369f7b58389360d739ec4b0f))
+* **oss:** add skill-maintenance skill ([#74](https://github.com/cedricziel/claude-plugins/issues/74)) ([72f8d0b](https://github.com/cedricziel/claude-plugins/commit/72f8d0be748b568556390c86508f620fd6ecdb1d))
+* **toolkit:** suggest /reflect when a review is overdue ([#75](https://github.com/cedricziel/claude-plugins/issues/75)) ([b8770c3](https://github.com/cedricziel/claude-plugins/commit/b8770c3f65875262a564b0f7cd00548b5f9e70ae))
+
+
+### Bug Fixes
+
+* **toolkit:** align model tiers with the delegation guidance ([#80](https://github.com/cedricziel/claude-plugins/issues/80)) ([a69a058](https://github.com/cedricziel/claude-plugins/commit/a69a0581dcbc4bb8aa56a43c7a28b1c7546cd55b))
+* **toolkit:** make the TDD nudge branch-aware and point at test skills ([#77](https://github.com/cedricziel/claude-plugins/issues/77)) ([d7b2565](https://github.com/cedricziel/claude-plugins/commit/d7b2565469793c47f68d6d02c4f2dd496b5a09e1))
+
 ## [1.21.0](https://github.com/cedricziel/claude-plugins/compare/toolkit-v1.20.0...toolkit-v1.21.0) (2026-10-10)
 
 
