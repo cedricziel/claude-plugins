@@ -1,6 +1,6 @@
 ---
 name: global-context
-description: How to change the global rules this marketplace injects into every Claude Code and Codex session — the `instructions/*.md` files in `common`, `oss`, and `toolkit`. Use when the user wants to add, change, reword, move, or remove a global instruction or rule ("add a rule that…", "the agent should always…", "stop telling it to…", "change the global instructions").
+description: Add, change, or evaluate the global rules this marketplace injects into every Claude Code and Codex session — the `instructions/*.md` files in `common`, `oss`, and `toolkit`. Use when the user wants to add, change, reword, move, or remove a global instruction or rule ("add a rule that…", "the agent should always…", "stop telling it to…"), or to review or evaluate the global context per plugin and host.
 ---
 
 # Global context
@@ -37,6 +37,18 @@ workers.
 If the user means this repository's own conventions rather than the injected
 rules, edit `CLAUDE.md` instead.
 
+## Add a rule
+
+1. State the rule in one sentence and the failure it prevents. If you cannot
+   name a failure, the rule probably does not need to exist.
+2. Choose the plugin and file as described above.
+3. Search all nine `instructions/*.md` files for a bullet that already covers
+   it. If one exists, edit or move that bullet instead of adding a new one.
+4. Write the bullet in `shared.md` when it holds for both hosts. When it needs
+   host-specific wording, keep the host-neutral part in `shared.md` and put
+   only the host-specific detail in `claude.md` and `codex.md`.
+5. Run the evaluation below on the plugin you changed, then ship.
+
 ## How to write the rule
 
 - One bullet per rule. Write it as an imperative and give the reason when it is
@@ -49,6 +61,48 @@ rules, edit `CLAUDE.md` instead.
 - Every line costs context in every session. Keep rules short and remove the
   ones that no longer earn their place.
 - The repo is public. Do not include hostnames, IPs, or secret names.
+
+## Evaluate the global context
+
+Use this mini eval when asked to review the global context, and after any
+change. It proposes changes; it does not apply them until the user approves.
+
+1. Render what each host receives, for each plugin:
+
+   ```sh
+   for p in common oss toolkit; do for h in claude codex; do
+     arg=; [ "$h" = codex ] && arg=codex
+     echo "== $p / $h"
+     plugins/$p/scripts/session-start.sh $arg | jq -r .hookSpecificOutput.additionalContext
+   done; done
+   ```
+
+   Also read the stacked context per host (all three plugins together), since
+   that is what a session actually sees.
+2. Score each plugin and host against these checks. Record pass or fail with
+   the offending line for each:
+   - **Placement**: the rule fits the plugin's audience, and `shared.md` names
+     no host-specific models, agents, tools, or commands.
+   - **Parity**: each rule in `claude.md` has a `codex.md` equivalent, or has
+     a clear reason not to have one (and the reverse).
+   - **Duplication**: no rule repeats one in another file or layer.
+   - **Conflict**: no two rules contradict each other, within a host or
+     across layers.
+   - **References**: every skill, agent, file, command, and model a rule names
+     exists. Check skills under `plugins/*/skills/` and
+     `plugins/toolkit/codex-skills/`, and check that model names are current
+     for the host.
+   - **Actionability**: an agent can tell when the rule applies and what to
+     do. Vague advice ("be careful") fails.
+   - **Tone**: no shouting, no all-caps "MUST".
+   - **Cost**: report the word count per plugin and host
+     (`wc -w`). Flag any rule whose length is out of proportion to what it
+     prevents.
+   - **Hygiene**: no hostnames, IPs, or secret names.
+3. Report a table with one row per plugin and host, showing the failed checks
+   and the word count. Under it, list each proposed change as a concrete edit
+   (file, old text, new text) with the check it fixes.
+4. Stop and ask which changes to apply. Then follow "Add a rule" and "Ship it".
 
 ## Ship it
 
