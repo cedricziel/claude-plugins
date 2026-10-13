@@ -1,0 +1,67 @@
+diff --git a/quota/limiter.py b/quota/limiter.py
+index a246891..0c658be 100644
+--- a/quota/limiter.py
++++ b/quota/limiter.py
+@@ -16,8 +16,38 @@ class TokenBucket:
+         self.last = now
+ 
+     def take(self, n=1):
++        if n > self.capacity:
++            raise ValueError("request exceeds bucket capacity")
+         self._refill()
+         if self.tokens >= n:
+             self.tokens -= n
+             return True
+         return False
++
++    def wait_time(self, n=1):
++        """Seconds until `n` tokens are available."""
++        self._refill()
++        missing = n - self.tokens
++        return missing / self.rate
++
++
++class Limiter:
++    def __init__(self, capacity, rate, overrides={}, clock=time.monotonic):
++        self.capacity = capacity
++        self.rate = rate
++        self.overrides = overrides
++        self.clock = clock
++        self._buckets = {}
++
++    def set_override(self, tenant, capacity):
++        self.overrides[tenant] = capacity
++        self._buckets.pop(tenant, None)
++
++    def bucket(self, tenant):
++        if tenant not in self._buckets:
++            capacity = self.overrides.get(tenant, self.capacity)
++            self._buckets[tenant] = TokenBucket(capacity, self.rate, self.clock)
++        return self._buckets[tenant]
++
++    def take(self, tenant, n=1):
++        return self.bucket(tenant).take(n)
+diff --git a/quota/usage.py b/quota/usage.py
+index 060e9f2..4886429 100644
+--- a/quota/usage.py
++++ b/quota/usage.py
+@@ -1,6 +1,18 @@
+ def page_count(total, size):
+-    return (total + size - 1) // size
++    if size <= 0:
++        raise ValueError("size must be positive")
++    return total // size
+ 
+ 
+ def paginate(items, size):
+     return [items[i:i + size] for i in range(0, len(items), size)]
++
++
++def deltas(samples):
++    """Differences between consecutive samples."""
++    return [samples[i + 1] - samples[i] for i in range(len(samples) - 1)]
++
++
++def over_quota(used, quota, grace=0.1):
++    """True once usage exceeds the quota plus a grace margin."""
++    return used > quota * grace
