@@ -46,6 +46,16 @@ def check_skill(skill_md):
             err(f"{skill_md}: frontmatter missing '{key}'")
 
 
+def check_agent(agent_md):
+    m = re.match(r"^---\n(.*?)\n---\n", agent_md.read_text(), re.S)
+    if not m:
+        err(f"{agent_md}: no YAML frontmatter")
+        return
+    for key in ("name", "description", "model", "effort"):
+        if not re.search(rf"^{key}:\s*\S", m.group(1), re.M):
+            err(f"{agent_md}: frontmatter missing '{key}' (an unset model or effort inherits the session's)")
+
+
 def check_hooks(plugin_dir):
     hooks_json = plugin_dir / "hooks" / "hooks.json"
     if not hooks_json.exists():
@@ -104,6 +114,8 @@ def check_plugin(root, entry):
 
     for skill_md in sorted((plugin_dir / "skills").glob("*/SKILL.md")):
         check_skill(skill_md)
+    for agent_md in sorted((plugin_dir / "agents").glob("*.md")):
+        check_agent(agent_md)
     for cmd in sorted((plugin_dir / "commands").glob("*.md")):
         if not cmd.read_text().strip():
             err(f"{cmd}: empty command file")
