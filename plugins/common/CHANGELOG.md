@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.9.0](https://github.com/cedricziel/claude-plugins/compare/common-v1.8.0...common-v1.9.0) (2026-10-13)
+
+
+### Features
+
+* **common:** coordinate with peer agents on shared state ([#79](https://github.com/cedricziel/claude-plugins/issues/79)) ([47af297](https://github.com/cedricziel/claude-plugins/commit/47af297defdd58e6369f7b58389360d739ec4b0f))
+* **common:** require a maintained verify skill on ephemeral instances ([#72](https://github.com/cedricziel/claude-plugins/issues/72)) ([8b77ab3](https://github.com/cedricziel/claude-plugins/commit/8b77ab3a32506b44680f974c213d599c782e041d))
+
 ## [1.8.0](https://github.com/cedricziel/claude-plugins/compare/common-v1.7.0...common-v1.8.0) (2026-10-07)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/cedricziel/claude-plugins/compare/skills-v0.3.0...skills-v0.4.0) (2026-10-13)
+
+
+### Features
+
+* **skills:** add openspec-doctor skill ([#71](https://github.com/cedricziel/claude-plugins/issues/71)) ([68d928e](https://github.com/cedricziel/claude-plugins/commit/68d928e3507a2c53d6b2269a7e5805b6249f2558))
+
 ## [0.3.0](https://github.com/cedricziel/claude-plugins/compare/skills-v0.2.0...skills-v0.3.0) (2026-10-05)
 
 

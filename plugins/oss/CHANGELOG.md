@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.9.0](https://github.com/cedricziel/claude-plugins/compare/oss-v0.8.0...oss-v0.9.0) (2026-10-13)
+
+
+### Features
+
+* **oss:** add before/after evidence to pull requests ([#76](https://github.com/cedricziel/claude-plugins/issues/76)) ([45965e5](https://github.com/cedricziel/claude-plugins/commit/45965e5d979ee2fff292f8adb925f6064866f680))
+* **oss:** add skill-maintenance skill ([#74](https://github.com/cedricziel/claude-plugins/issues/74)) ([72f8d0b](https://github.com/cedricziel/claude-plugins/commit/72f8d0be748b568556390c86508f620fd6ecdb1d))
+
+
+### Bug Fixes
+
+* **oss:** leave PR descriptions out of technical-writer scope ([#78](https://github.com/cedricziel/claude-plugins/issues/78)) ([b8acaa0](https://github.com/cedricziel/claude-plugins/commit/b8acaa0e876da43ab48189871cdeac3874f256e3))
+* **toolkit:** align model tiers with the delegation guidance ([#80](https://github.com/cedricziel/claude-plugins/issues/80)) ([a69a058](https://github.com/cedricziel/claude-plugins/commit/a69a0581dcbc4bb8aa56a43c7a28b1c7546cd55b))
+
 ## [0.8.0](https://github.com/cedricziel/claude-plugins/compare/oss-v0.7.1...oss-v0.8.0) (2026-10-05)
 
 
