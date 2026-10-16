@@ -230,9 +230,11 @@ and the freeform `/pr-review` and `/issue-create` commands by the `pr-review`
 
 ## Keep plugins up to date in other repos
 
-`actions/update-plugin` pins the marketplace in a repo's `.claude/settings.json` to
-the latest commit, opens a PR, and enables auto-merge. If the config or the
-marketplace entry doesn't exist yet, it creates them and enables `plugins`.
+`actions/update-plugin` pins the marketplace in `.claude/settings.json` and
+`.codex/config.toml` to the same commit, opens a PR, and enables auto-merge. It
+creates missing marketplace entries and enables the bootstrap plugin lists.
+Codex defaults to `common,oss`, independently of the `plugins` input; `toolkit`
+remains a personal opt-in. Existing plugin choices and unrelated settings are preserved.
 Drop this into `.github/workflows/update-claude-plugins.yml` in any repo:
 
 ```yaml
@@ -249,7 +251,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: cedricziel/claude-plugins/actions/update-plugin@7d5e56c1a0f1f689b982ebdb15aa11fa97710d81 # main
+      - uses: cedricziel/claude-plugins/actions/update-plugin@275b2981d29e4953625b908037939f7e988fa1b4 # Codex support
         with:
           plugins: oss # enabled only when bootstrapping
           # token: ${{ secrets.PLUGIN_UPDATE_TOKEN }}
@@ -261,11 +263,21 @@ other workflows, so if checks are required, pass a PAT or GitHub App token as `t
 It also adds `.claude/hooks/install-claude-plugins.sh` and registers it as a `SessionStart`
 hook: in remote (cloud) sessions it installs the enabled plugins, since `settings.json`
 alone doesn't do that there. Set `session-hook: "false"` to skip it; an existing script is never overwritten.
-Inputs: `marketplace`, `repo`, `plugins`, `ref`, `settings-file`, `session-hook`, `merge-method`, `base`.
+Codex uses a Git marketplace source with its `ref` pinned to the resolved commit.
+Project config applies only in trusted projects; plugin hooks still require user
+trust. See the [Codex configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference).
+Set `codex-config: ""` to skip Codex, or use `codex-plugins` to choose its bootstrap
+plugins. Gitignored configs are skipped independently; set `settings-file: ""`
+for a Codex-only repository. The action does not install Codex
+or modify user-level config.
+
+Inputs: `marketplace`, `repo`, `plugins`, `ref`, `settings-file`, `codex-config`,
+`codex-plugins`, `session-hook`, `token`, `merge-method`, `base`.
 
 ## Development
 
 ```
+python3 -m pip install -r actions/update-plugin/requirements.txt
 python3 -m unittest discover -s tests
 python3 scripts/validate.py
 claude --plugin-dir plugins/toolkit   # local smoke test
