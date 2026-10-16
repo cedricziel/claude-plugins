@@ -1,1 +1,2 @@
-- For documentation, use the `technical-writing` skill and check every claim against the source. Code comments and docstrings follow the `code-comments` skill instead.
+- Use semantic commits and reviewable PRs; apply `commit-discipline`, and `git-stacked-prs` when a change needs a stack.
+- For documentation, use `technical-writing` and verify claims against source. Code comments and docstrings follow `code-comments`.

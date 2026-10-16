@@ -20,7 +20,8 @@ class OssSessionStartTest(unittest.TestCase):
         out = json.loads(r.stdout)
         ctx = out["hookSpecificOutput"]["additionalContext"]
         self.assertEqual(out["hookSpecificOutput"]["hookEventName"], "SessionStart")
-        self.assertIn("oss:technical-writer", ctx)
+        self.assertNotIn("oss:technical-writer", ctx)
+        self.assertIn("Invoke `technical-writing` explicitly", ctx)
         self.assertIn("technical-writing", ctx)
         self.assertIn("Code comments and docstrings", ctx)
 

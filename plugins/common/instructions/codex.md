@@ -1,1 +1,1 @@
-- Use Codex's supported tools and subagent interface for the shared guidance; do not assume Claude-specific commands or agent names are available.
+- Use Codex's supported tools and subagent interface; follow project and user preferences for models and effort.

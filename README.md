@@ -73,8 +73,9 @@ included. Depends on `common@cedricziel`. Meant to be depended on directly by
 other repos' own plugins, not just installed by me.
 
 A SessionStart hook injects `instructions/shared.md` plus host-specific guidance.
-Claude delegates documentation to `oss:technical-writer`; both hosts use the
-`technical-writing` skill. Off switch: `OSS_INSTRUCTIONS_DISABLE=1`.
+Both hosts use `technical-writing` for documentation. Personal model routing
+and mandatory documentation delegation belong to `toolkit`, not `oss` or its
+`common` dependency. Off switch: `OSS_INSTRUCTIONS_DISABLE=1`.
 
 **Skills** (loaded automatically when relevant)
 
