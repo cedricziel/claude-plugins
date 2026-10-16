@@ -64,9 +64,9 @@ months earlier and we were pinned to it for no reason.) Where a pin names the
 upstream PRs it carries, assert those are still open and that the pinned rev
 descends from upstream's default branch.
 
-Check the issue's claim against current HEAD before writing code. Much of a
-backlog is already fixed. If it is, comment with evidence, close it, and report —
-no empty PR.
+If the issue is already fixed, report the evidence and propose closing it; do
+not open an empty PR. Comment or close the issue only when the user has authorized
+those actions.
 
 ## Before every commit
 

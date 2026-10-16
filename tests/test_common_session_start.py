@@ -21,10 +21,9 @@ class CommonSessionStartTest(unittest.TestCase):
         out = json.loads(r.stdout)
         ctx = out["hookSpecificOutput"]["additionalContext"]
         self.assertEqual(out["hookSpecificOutput"]["hookEventName"], "SessionStart")
-        self.assertIn("semantic commits", ctx.lower())
-        self.assertIn("delegation models", ctx.lower())
         self.assertIn("code-comments", ctx)
-        self.assertIn("`sonnet`", ctx)
+        self.assertIn("host's supported tools", ctx)
+        self.assertNotIn("`sonnet`", ctx)
 
     def test_instruction_file_exists(self):
         for name in ("shared.md", "claude.md", "codex.md"):
@@ -34,14 +33,14 @@ class CommonSessionStartTest(unittest.TestCase):
         r = run({"PLUGIN_ROOT": str(PLUGIN)}, ("codex",))
         self.assertEqual(r.returncode, 0, r.stderr)
         ctx = json.loads(r.stdout)["hookSpecificOutput"]["additionalContext"]
-        self.assertIn("semantic commits", ctx)
-        self.assertIn("supported tools and subagent interface", ctx)
+        self.assertIn("Codex", ctx)
         self.assertNotIn("sonnet", ctx)
 
     def test_claude_context_does_not_switch_on_plugin_root_env(self):
         ctx = json.loads(run({"PLUGIN_ROOT": str(PLUGIN)}).stdout)["hookSpecificOutput"]["additionalContext"]
-        self.assertIn("`sonnet`", ctx)
-        self.assertNotIn("supported tools and subagent interface", ctx)
+        self.assertIn("host's supported tools", ctx)
+        self.assertNotIn("`sonnet`", ctx)
+        self.assertNotIn("Codex", ctx)
 
     def test_disable_env_emits_nothing(self):
         r = run({"COMMON_INSTRUCTIONS_DISABLE": "1"})

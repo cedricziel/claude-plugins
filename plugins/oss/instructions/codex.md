@@ -1,1 +1,1 @@
-- When delegating documentation, give the worker the source files, target format, and checks; review the finished claims before integrating.
+- When delegating documentation, provide source files, target format, and checks; review claims before integrating.
