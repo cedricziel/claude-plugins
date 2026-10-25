@@ -8,7 +8,25 @@
 set -u
 [ "${TDD_NUDGE_DISABLE:-0}" = "1" ] && exit 0
 
-IFS=$'\t' read -r f session < <(jq -r '[.tool_input.file_path // "", .session_id // "none"] | @tsv' 2>/dev/null)
+if [ "${1:-}" = "codex" ]; then
+  export TDD_STATE_DIR="${TDD_STATE_DIR:-${CODEX_HOME:-$HOME/.codex}/hooks/toolkit/tdd}"
+fi
+input=$(cat)
+if [ "$(printf '%s' "$input" | jq -r '.tool_name // empty' 2>/dev/null)" = "apply_patch" ]; then
+  hook_script="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+  cwd=$(printf '%s' "$input" | jq -r '.cwd // empty')
+  [ -n "$cwd" ] && cd "$cwd" 2>/dev/null || exit 0
+  contexts=$(
+    while IFS= read -r f; do
+      [[ "$f" = /* ]] || f="$PWD/$f"
+      [ -f "$f" ] || continue
+      printf '%s' "$input" | jq --arg f "$f" '.tool_name="Edit" | .tool_input={file_path:$f}' | bash "$hook_script"
+    done < <(printf '%s' "$input" | jq -r '.tool_input.command // "" | split("\n")[] | select(test("^\\*\\*\\* (Add File: |Update File: |Move to: )")) | sub("^\\*\\*\\* (Add File: |Update File: |Move to: )"; "")' 2>/dev/null)
+  )
+  [ -n "$contexts" ] && printf '%s' "$contexts" | jq -s '{hookSpecificOutput:{hookEventName:"PostToolUse",additionalContext:(map(.hookSpecificOutput.additionalContext) | join("\n"))}}'
+  exit 0
+fi
+IFS=$'\t' read -r f session < <(printf '%s' "$input" | jq -r '[.tool_input.file_path // "", .session_id // "none"] | @tsv' 2>/dev/null)
 [ -n "${f:-}" ] || exit 0
 session="$(printf '%s' "${session:-}" | tr -cd 'A-Za-z0-9_-')"; session="${session:-none}"
 state="${TDD_STATE_DIR:-${HOME:+$HOME/.claude/hooks/toolkit/tdd}}"
