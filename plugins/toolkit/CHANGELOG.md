@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.23.0](https://github.com/cedricziel/claude-plugins/compare/toolkit-v1.22.0...toolkit-v1.23.0) (2026-10-25)
+
+
+### Features
+
+* **toolkit:** add project review and Codex hook parity ([#84](https://github.com/cedricziel/claude-plugins/issues/84)) ([4b55e3d](https://github.com/cedricziel/claude-plugins/commit/4b55e3dc73a53db6511e8839338e62e297a8e7cf))
+
 ## [1.22.0](https://github.com/cedricziel/claude-plugins/compare/toolkit-v1.21.0...toolkit-v1.22.0) (2026-10-13)
 
 
