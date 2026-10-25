@@ -34,7 +34,7 @@ jqr() { printf '%s' "$INPUT" | jq -r "$1" 2>/dev/null; }
 age_of() {
   [ -f "$1" ] || { echo 999999999; return; }
   local m
-  m="$(stat -f %m "$1" 2>/dev/null || stat -c %Y "$1" 2>/dev/null)"
+  m="$(stat -f %m "$1" 2>/dev/null)" || m="$(stat -c %Y "$1" 2>/dev/null)"
   [ -n "$m" ] || { echo 999999999; return; }
   echo $(( $(date +%s) - m ))
 }

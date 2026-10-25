@@ -48,6 +48,18 @@ class RebaseHookTest(unittest.TestCase):
         git(self.repo, "checkout", "-q", "main")
         self.assertEqual(self.run_hook(), "")
 
+    def test_throttles_when_bsd_stat_probe_prints_output_before_failing(self):
+        bin_dir = self.home / "bin"
+        bin_dir.mkdir()
+        stat = bin_dir / "stat"
+        stat.write_text('#!/bin/sh\nif [ "$1" = "-f" ]; then\n  echo "filesystem information"\n  exit 1\nfi\ndate +%s\n')
+        stat.chmod(0o755)
+        from unittest.mock import patch
+
+        with patch.dict(os.environ, {"PATH": f"{bin_dir}:{os.environ['PATH']}"}):
+            self.assertIn("additionalContext", self.run_hook())
+            self.assertEqual(self.run_hook(), "")
+
     def test_codex_respects_pause_file(self):
         state = self.home / ".codex/hooks/toolkit/rebase"
         state.mkdir(parents=True)
