@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Rebase reminder for Claude Code (shipped by the toolkit plugin, wired via hooks/hooks.json).
+# Rebase reminder for both hosts; pass codex to use Codex state.
 #   UserPromptSubmit: when the current branch has fallen behind the repo's
 #   default branch, inject a note asking the agent to rebase before continuing.
 #
@@ -12,12 +12,15 @@
 #   REBASE_HOOK_NAG_INTERVAL    seconds between repeat nudges       (default 1800)
 #   REBASE_HOOK_MIN_BEHIND      commits behind before nudging       (default 1)
 # Off switches:
-#   touch ~/.claude/hooks/toolkit/rebase/paused   — disable everywhere
+#   touch ~/.claude/hooks/toolkit/rebase/paused   — disable for Claude
+#   touch ~/.codex/hooks/toolkit/rebase/paused    — disable for Codex
 #   touch <repo>/.no-rebase-nudge                — disable for one repo
 set -u
 
 INPUT="$(cat 2>/dev/null || true)"
-STATE_DIR="${REBASE_HOOK_STATE_DIR:-$HOME/.claude/hooks/toolkit/rebase}"
+HOST_STATE="$HOME/.claude/hooks/toolkit/rebase"
+[ "${1:-}" = "codex" ] && HOST_STATE="${CODEX_HOME:-$HOME/.codex}/hooks/toolkit/rebase"
+STATE_DIR="${REBASE_HOOK_STATE_DIR:-$HOST_STATE}"
 FETCH_INTERVAL="${REBASE_HOOK_FETCH_INTERVAL:-900}"
 NAG_INTERVAL="${REBASE_HOOK_NAG_INTERVAL:-1800}"
 MIN_BEHIND="${REBASE_HOOK_MIN_BEHIND:-1}"
@@ -31,7 +34,7 @@ jqr() { printf '%s' "$INPUT" | jq -r "$1" 2>/dev/null; }
 age_of() {
   [ -f "$1" ] || { echo 999999999; return; }
   local m
-  m="$(stat -f %m "$1" 2>/dev/null || stat -c %Y "$1" 2>/dev/null)"
+  m="$(stat -f %m "$1" 2>/dev/null)" || m="$(stat -c %Y "$1" 2>/dev/null)"
   [ -n "$m" ] || { echo 999999999; return; }
   echo $(( $(date +%s) - m ))
 }

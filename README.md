@@ -26,11 +26,11 @@ codex plugin add toolkit@cedricziel
 
 Codex does not install the Claude manifest dependencies automatically, so install
 `common` explicitly when using `oss`, `skills`, or `toolkit`. The Codex `toolkit`
-package includes the SignalDB and repository setup skills. Its Claude `Workflow`
+package includes the SignalDB, repository setup, project review, and reflection skills. Its Claude `Workflow`
 engine, agents, and enforcement hooks do not run in Codex. `common`, `oss`, and
 `toolkit` include Codex SessionStart instructions; Codex requires the user to
-trust plugin hooks before they run. The Claude-only auto-format hook is not
-installed in Codex.
+trust plugin hooks before they run. Codex also receives automatic formatting,
+TDD reminders, and rebase reminders.
 
 ## Plugins
 
@@ -63,7 +63,7 @@ Shared building blocks used by `oss` and `toolkit` (and installable on its own).
 
 | Event                      | What it does                                                                                                                                                                                                                                                                                |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PostToolUse` (Edit/Write) | Auto-formats the edited file (cargo fmt/rustfmt, goimports/gofmt, swiftformat/swift-format, dart, ruff/black, prettier) — fail-open                                                                                                                                                         |
+| `PostToolUse` (Edit/Write, Codex `apply_patch`) | Auto-formats edited files (cargo fmt/rustfmt, goimports/gofmt, swiftformat/swift-format, dart, ruff/black, prettier) — fail-open |
 | `SessionStart`             | Injects `instructions/shared.md` plus `instructions/claude.md` or `instructions/codex.md`, depending on the host. Re-injected after compaction. Disable with `COMMON_INSTRUCTIONS_DISABLE=1` |
 
 ### oss
@@ -130,6 +130,7 @@ subagents. Depends on `common@cedricziel`, `oss@cedricziel`, and
 | `deep-review`        | `/deep-review [PR\|branch]` — categorized review with severities, nitpicks and committable suggestions; report only, never touches GitHub                                  |
 | `pr-review`          | `/pr-review <PR>` — the same engine, then submits one real GitHub review (decision, summary, inline suggestions)                                                            |
 | `reflect`            | Review recent conversations and maintain project, user, or toolkit skills from recurring friction                                                                          |
+| `project-review`     | Review the whole project from relevant angles and suggest a fix chat for each confirmed finding, preserving model choices and carrying fixes through merge |
 | `issue-run`          | `/issue-run <ref> [--review] [--no-watch] [--yes]` — sequences the issue workflows below with human gates between them                                                     |
 | `new-repository`     | `/new-repository <name> [--private] [--adopt]` — repo settings, CI, semantic PR titles, release-please, Dependabot, CLAUDE.md, and the plugin pin with its auto-update workflow |
 | `signaldb-observe`   | Instrument an app with OpenTelemetry and ship to SignalDB                                                                                                                   |
@@ -139,8 +140,8 @@ subagents. Depends on `common@cedricziel`, `oss@cedricziel`, and
 | Event                      | What it does                                                                                                                                                   |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `SessionStart`             | Injects `instructions/shared.md` plus host-specific guidance. Codex receives compact OpenAI model routing; Claude receives its workflow rules. Disable with `TOOLKIT_INSTRUCTIONS_DISABLE=1` |
-| `PostToolUse` (Edit/Write) | Nudges once per file when source changes with no test changed on the branch, and points at `test-strategy`/`writing-tests` on the first test edit |
-| `UserPromptSubmit`         | Reminds to rebase when the branch has fallen behind the default branch                                                                                         |
+| `PostToolUse` (Edit/Write, Codex `apply_patch`) | Nudges once per file when source changes with no test changed on the branch, and points at `test-strategy`/`writing-tests` on the first test edit. Codex state lives under `${CODEX_HOME:-~/.codex}/hooks/toolkit/tdd`. |
+| `UserPromptSubmit`         | Reminds to rebase when the branch has fallen behind the default branch, on both hosts. Codex keeps reminder state under `${CODEX_HOME:-~/.codex}/hooks/toolkit/rebase`. |
 
 Knobs and off-switches are documented in the headers of `plugins/{common,toolkit}/scripts/*.sh`.
 Disable per repo with `.no-rebase-nudge` / `.no-format-hook` / `.no-tdd-nudge`.

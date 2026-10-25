@@ -30,13 +30,30 @@ class FormatHookTest(unittest.TestCase):
         p.write_text(f'#!/bin/sh\necho "{name} $*" >> "{self.log}"\n')
         p.chmod(0o755)
 
-    def run_hook(self, file, env=None):
+    def run_hook(self, file, env=None, patch=None):
         e = {"PATH": f"{self.bin}:/usr/bin:/bin", "HOME": str(self.tmp)}
         e.update(env or {})
         payload = json.dumps({"tool_name": "Edit", "tool_input": {"file_path": str(file)}})
-        r = subprocess.run(["bash", str(HOOK)], input=payload, capture_output=True, text=True, env=e, cwd=self.repo)
+        if patch is not None:
+            payload = json.dumps({"cwd": str(self.repo), "tool_name": "apply_patch", "tool_input": {"command": patch}})
+        command = ["bash", str(HOOK)]
+        if patch is not None:
+            config = json.loads((HOOK.parent.parent / "codex-hooks/hooks.json").read_text())
+            hook = config["hooks"]["PostToolUse"][0]["hooks"][0]
+            e["PLUGIN_ROOT"] = str(HOOK.parent.parent)
+            command = ["bash", "-c", hook["command"]]
+        r = subprocess.run(command, input=payload, capture_output=True, text=True, env=e, cwd=self.repo)
         self.assertEqual(r.returncode, 0, r.stderr)
         return self.log.read_text() if self.log.exists() else ""
+
+    def test_codex_patch_formats_added_updated_and_moved_files(self):
+        self.stub("gofmt")
+        added = self.touch("new file.go")
+        updated = self.touch("updated.go")
+        moved = self.touch("moved.go")
+        patch = "*** Begin Patch\n*** Add File: new file.go\n+x\n*** Update File: updated.go\n@@\n-x\n+y\n*** Update File: old.go\n*** Move to: moved.go\n@@\n-x\n+y\n*** Delete File: deleted.go\n*** End Patch"
+        output = self.run_hook(added, patch=patch)
+        self.assertEqual(output.splitlines(), [f"gofmt -w {p}" for p in (added, updated, moved)])
 
     def touch(self, rel, content="x\n"):
         p = self.repo / rel

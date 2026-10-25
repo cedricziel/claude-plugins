@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Auto-format the file Claude just wrote or edited (PostToolUse: Edit|Write).
+# Auto-format edited files (PostToolUse: Edit|Write or apply_patch).
 # Picks a formatter by extension, prefers project-local tools, and never fails
 # the tool call: missing formatters and formatter errors are swallowed.
 #
@@ -18,7 +18,19 @@ set -u
 
 [ "${FORMAT_HOOK_DISABLE:-0}" = "1" ] && exit 0
 
-f=$(jq -r '.tool_response.filePath // .tool_input.file_path // empty' 2>/dev/null)
+input=$(cat)
+if [ "$(printf '%s' "$input" | jq -r '.tool_name // empty' 2>/dev/null)" = "apply_patch" ]; then
+  hook_script="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+  cwd=$(printf '%s' "$input" | jq -r '.cwd // empty')
+  [ -n "$cwd" ] && cd "$cwd" 2>/dev/null || exit 0
+  while IFS= read -r f; do
+    case "$f" in /*) ;; *) f="$PWD/$f" ;; esac
+    [ -f "$f" ] || continue
+    jq -n --arg f "$f" '{tool_input:{file_path:$f}}' | bash "$hook_script"
+  done < <(printf '%s' "$input" | jq -r '.tool_input.command // "" | split("\n")[] | select(test("^\\*\\*\\* (Add File: |Update File: |Move to: )")) | sub("^\\*\\*\\* (Add File: |Update File: |Move to: )"; "")' 2>/dev/null)
+  exit 0
+fi
+f=$(printf '%s' "$input" | jq -r '.tool_response.filePath // .tool_input.file_path // empty' 2>/dev/null)
 [ -n "$f" ] && [ -f "$f" ] || exit 0
 
 dir=$(dirname "$f")

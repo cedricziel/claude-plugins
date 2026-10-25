@@ -1,5 +1,30 @@
 {
   "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "^apply_patch$|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${PLUGIN_ROOT}/scripts/tdd-hook.sh\" codex",
+            "timeout": 15,
+            "statusMessage": "TDD check"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${PLUGIN_ROOT}/scripts/rebase-hook.sh\" codex",
+            "timeout": 30,
+            "statusMessage": "Checking branch sync with main"
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "matcher": "startup|resume|clear|compact",
