@@ -5,11 +5,9 @@ description: 'How to drive a self-hosted Pangolin (fosrl/pangolin) tunnel revers
 
 # Pangolin API
 
-Pangolin has no published OpenAPI spec on self-hosted instances (`/openapi.json`
-returns the SPA shell). Everything below comes from the fosrl/pangolin source and
-live use against a 1.25 community-edition instance. When an endpoint is missing
-here, read `server/routers/` in https://github.com/fosrl/pangolin — the route
-definitions and their zod schemas are the real reference.
+Everything below comes from the fosrl/pangolin source and live use against a
+1.25 community-edition instance. When an endpoint is missing here, see
+"Discover endpoints".
 
 ## Setup
 
@@ -17,29 +15,33 @@ Keep credentials out of commands and out of this skill. Load them from the user'
 secret manager into env vars first:
 
 ```bash
-export PANGOLIN_URL=https://pangolin.example.com   # dashboard host
+export PANGOLIN_URL=...                            # dashboard base URL
 export PANGOLIN_EMAIL=...                          # from the secret manager
 export PANGOLIN_PASSWORD=...                       # from the secret manager
 export PANGOLIN_ORG=...                            # org id, see "orgs" below
 ```
+
+Examples below also use `UPSTREAM_HOST` / `UPSTREAM_PORT` for the backend
+service as seen from the site's newt.
 
 ## Auth: session cookie + CSRF header
 
 There are two APIs:
 
 - **`/api/v1`** — the one the dashboard uses. Session cookie auth. This always works.
-- **`/v1`** — the integration API for `Bearer <keyId>.<secret>` API keys. On many
-  self-hosted installs it is **not routed** by Traefik: `/v1` hits the Next.js
-  frontend (404) and a Bearer key on `/api/v1` gets 401. Exposing it needs a
-  Traefik router `PathPrefix(/v1)` → the Pangolin integration port. Unless that is
-  set up, use the session API.
+- **`/v1`** — the integration API for `Bearer <keyId>.<secret>` API keys. It runs
+  as a separate server that only starts when the config has
+  `flags.enable_integration_api: true`. It listens on `server.integration_port`
+  (default 3003), and Traefik doesn't route it by default. Without both, `/v1`
+  on the dashboard host hits the Next.js frontend (404), and a Bearer key on
+  `/api/v1` gets 401. Unless it is set up, use the session API.
 
 **Every `/api/v1` call needs the header `X-CSRF-Token: x-csrf-protection`** — the
 login call too. Without it requests fail with a CSRF error.
 
 ```bash
 JAR=$(mktemp); H='X-CSRF-Token: x-csrf-protection'; API="$PANGOLIN_URL/api/v1"
-jq -n --arg e "$PANGOLIN_EMAIL" --arg p "$PANGOLIN_PASSWORD" '{email:$e,password:$p}' \
+jq -n '{email:env.PANGOLIN_EMAIL, password:env.PANGOLIN_PASSWORD}' \
   | curl -s -c "$JAR" -H "$H" -H 'Content-Type: application/json' -d @- "$API/auth/login"
 # → {"success":true,"message":"Logged in successfully",...}
 
@@ -47,17 +49,30 @@ pg() { curl -s -b "$JAR" -H "$H" -H 'Content-Type: application/json' "$@"; }
 pg "$API/orgs" | jq '.data.orgs[] | {orgId,name}'
 ```
 
-Piping the body through `jq ... | curl -d @-` keeps the password out of `ps` and
-shell history. Accounts with 2FA need `code` in the login body.
+Reading the values through jq's `env` and piping the body to `curl -d @-` keeps
+the password out of `ps` and shell history. Accounts with 2FA need `code` in the login body.
 
 Responses wrap everything: `{data, success, error, message, status}`. List
 endpoints return `data.<plural>` plus `data.pagination` `{total, pageSize, page}`;
-the default page size is 20, so pass `?pageSize=200&page=1` or loop.
+most use `?pageSize=&page=` with a default page size of 20, so pass
+`?pageSize=200&page=1` or loop. Some endpoints (for example `GET /idp`) use
+`?limit=&offset=` instead and reject unknown query parameters. Check the
+endpoint's query schema when a list call errors.
 
 ## Discover endpoints
 
-The tables below cover common tasks only. For anything else, get the full route
-list from the source for the instance's release. Don't guess paths.
+The tables below cover common tasks only. Don't guess paths for anything else.
+
+**OpenAPI.** The integration API server serves Swagger UI at `/v1/docs` and the
+spec at `/v1/openapi.json` (and `/v1/openapi.yaml`). It only covers the `/v1`
+API-key routes, and only exists when the integration API is enabled (see Auth).
+The dashboard host doesn't serve it: `$PANGOLIN_URL/openapi.json` returns the
+SPA shell. If you have shell access to the server, check whether it is running:
+`curl -s localhost:3003/v1/openapi.json` inside the pangolin container. The image
+has no curl or wget, so use `node -e 'fetch(...)'`.
+
+**Source.** For the `/api/v1` session API, or when the integration API is off,
+get the route list from the source for the instance's release:
 
 ```bash
 V=1.25.3   # instance's Pangolin version (image tag in its compose file); else `main`
@@ -99,7 +114,7 @@ Find a resource by hostname:
 
 ```bash
 pg "$API/org/$PANGOLIN_ORG/resources?pageSize=500" \
-  | jq '.data.resources[] | select(.fullDomain|test("^app\\.")) | {resourceId,niceId,fullDomain,sso}'
+  | jq '.data.resources[] | select((.fullDomain // "") | test("^app\\.")) | {resourceId,niceId,fullDomain,sso}'
 ```
 
 ## Publish an HTTP service
@@ -107,13 +122,15 @@ pg "$API/org/$PANGOLIN_ORG/resources?pageSize=500" \
 Three calls. `PUT` creates, `POST` updates.
 
 ```bash
-# 1. resource → returns data.resourceId
-pg -X PUT "$API/org/$PANGOLIN_ORG/resource" \
-  -d '{"name":"app","subdomain":"app","domainId":"domain1","mode":"http"}'
+# 1. resource; stop unless it returns a resourceId
+RID=$(pg -X PUT "$API/org/$PANGOLIN_ORG/resource" \
+  -d '{"name":"app","subdomain":"app","domainId":"domain1","mode":"http"}' \
+  | jq -er 'select(.success) | .data.resourceId') || { echo "create failed"; exit 1; }
 
 # 2. target on a site (the upstream as seen from that site's newt)
 pg -X PUT "$API/resource/$RID/target" \
-  -d '{"siteId":1,"ip":"10.0.0.5","port":8080,"method":"http","enabled":true}'
+  -d "$(jq -n --arg ip "$UPSTREAM_HOST" --argjson port "$UPSTREAM_PORT" \
+        '{siteId:1, ip:$ip, port:$port, method:"http", enabled:true}')"
 
 # 3. optional: turn off Pangolin's login wall (only for apps with their own auth)
 pg -X POST "$API/resource/$RID" -d '{"sso":false}'
@@ -146,8 +163,9 @@ Update a target: `POST /target/{targetId}`. Delete: `DELETE /target/{targetId}`,
 Pattern: a default target with no path at priority 100, path targets at 200.
 
 ```bash
-pg -X PUT "$API/resource/$RID/target" -d '{"siteId":1,"ip":"10.0.0.5","port":8081,
-  "method":"http","enabled":true,"path":"/ws","pathMatchType":"prefix","priority":200}'
+pg -X PUT "$API/resource/$RID/target" \
+  -d "$(jq -n --arg ip "$UPSTREAM_HOST" '{siteId:1, ip:$ip, port:8081, method:"http",
+        enabled:true, path:"/ws", pathMatchType:"prefix", priority:200}')"
 ```
 
 ## Rules (auth bypass / blocking)
@@ -172,9 +190,12 @@ tokenUrl, identifierPath, emailPath, namePath, scopes, autoProvision`.
   (JMESPath over the id_token claims).
 - Dry-run the login URL: `POST /auth/idp/{idpId}/oidc/generate-url`.
 - `identifierPath` decides the user key and the forwarded `Remote-User` header.
-  Use `preferred_username` rather than `sub` if downstream apps expect a readable
-  name. **Changing it later re-keys every user from that IdP**: old users are
-  orphaned and new ones provision on next login.
+  Pangolin finds an existing user by this value (case-folded) and the IdP, and
+  logs the person in as that user. So it must be unique and never reassigned.
+  `sub` is the safe default. Only use `preferred_username` when the IdP
+  guarantees it is unique and immutable, and ask the user first. **Changing it
+  later re-keys every user from that IdP**: old users are orphaned and new ones
+  provision on next login.
 - Skip Pangolin's own login form for a resource: `POST /resource/{id}`
   `{"skipToIdpId":<idpId>}`. The final redirect happens client-side, so you only
   see it in a browser, not in curl.
@@ -185,18 +206,25 @@ tokenUrl, identifierPath, emailPath, namePath, scopes, autoProvision`.
 The API call alone is not enough. A TCP/UDP resource on port N needs all three:
 
 1. The resource and target (`mode` `tcp`/`udp`, `proxyPort` N) via API or UI.
-2. A static Traefik entrypoint named exactly **`tcp-N`** (or `udp-N`) in the
-   Traefik static config. Pangolin's generated dynamic config refers to that name.
-3. A `N:N` port mapping on the **gerbil** service in the server's
-   `docker-compose.yml` (Traefik runs in gerbil's network namespace).
+2. A static Traefik entrypoint named exactly **`tcp-N`** (address `:N`) or
+   **`udp-N`** (address `:N/udp`) in the Traefik static config. Pangolin's
+   generated dynamic config refers to that name.
+3. A port mapping on the **gerbil** service in the server's `docker-compose.yml`
+   (Traefik runs in gerbil's network namespace): `N:N` for TCP, `N:N/udp` for
+   UDP. Compose publishes TCP only unless you add `/udp`.
 
 Then `docker compose up -d` on the server. All public services blip briefly.
 
 ## Server-side gotchas
 
-- **DB migrations are forward-only.** Before an upgrade: `docker compose stop
-pangolin`, tar `config/` + the compose file (a live sqlite DB tars corrupt),
-  then bump tags, `pull`, `up -d`. The tarball is the only rollback.
+- **DB migrations are forward-only.** A verified database backup is the only
+  rollback, so find out which backend the instance uses before an upgrade:
+  - SQLite (default, `config/db/`): `docker compose stop pangolin`, then tar
+    `config/` and the compose file. A live SQLite DB tars corrupt.
+  - PostgreSQL: the database isn't in `config/`. Take a `pg_dump` and check it
+    restores before upgrading.
+
+  Then bump tags, `pull`, `up -d`.
 - After upgrading, check the **badger** plugin version in the Traefik static
   config. Badger 1.8.0 fails Traefik's plugin integrity check and gets disabled
   (traefik/traefik#14115), which silently drops auth; 1.7.0 works.
