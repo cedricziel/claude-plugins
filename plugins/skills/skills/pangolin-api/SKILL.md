@@ -22,7 +22,11 @@ export PANGOLIN_ORG=...                            # org id, see "orgs" below
 ```
 
 Examples below also use `UPSTREAM_HOST` / `UPSTREAM_PORT` for the backend
-service as seen from the site's newt.
+service as seen from the site's newt, and `SITE_ID` from `GET /org/{orgId}/sites`.
+
+Each Bash tool call is a fresh shell, so put the setup (`JAR`, `H`, `API`, `pg`)
+in a file and `source` it in every call. In zsh, never use `path` as a shell
+variable name: it is tied to `PATH`, and assigning it breaks every command.
 
 ## Auth: session cookie + CSRF header
 
@@ -77,8 +81,9 @@ SPA shell. If you have shell access to the server, check whether it is running:
 `curl -s localhost:3003/v1/openapi.json` inside the pangolin container. The image
 has no curl or wget, so use `node -e 'fetch(...)'`.
 
-**Source.** For the `/api/v1` session API, or when the integration API is off,
-get the route list from the source for the instance's release:
+**Source.** On an instance without the integration API, the zod schemas in the
+handler files are the only schema there is. Get the route list from the source
+for the instance's release:
 
 ```bash
 V=1.25.3   # instance's Pangolin version (image tag in its compose file); else `main`
@@ -98,6 +103,9 @@ curl -sf "https://raw.githubusercontent.com/fosrl/pangolin/$V/server/routers/ext
   The zod schemas near the top of that file list the accepted fields. Grep the
   file for `Schema =`. Strict schemas (`z.strictObject`, `.strict()`) reject
   unknown keys.
+- Handlers live in `server/routers/<area>/` (`resource/`, `target/`, `site/`,
+  `idp/`, …). Generated Traefik config is in `server/lib/traefik/`, including
+  `loadBalancer.ts`, which decides which targets get traffic.
 - Routes under `server/private/` are enterprise-only. Community builds return
   404 or a license error for them.
 - Before you write, probe with a `GET` on the same resource. It shows the
@@ -112,7 +120,8 @@ curl -sf "https://raw.githubusercontent.com/fosrl/pangolin/$V/server/routers/ext
 | Domains                 | `GET /org/{orgId}/domains` — `domainId` (e.g. `domain1`), `baseDomain`                |
 | Resources               | `GET /org/{orgId}/resources` — summary only, see below                                |
 | One resource            | `GET /resource/{resourceId}` — full settings incl. `applyRules`, `sso`                |
-| Targets                 | `GET /resource/{resourceId}/targets` — `ip`, `port`, `method`, path fields            |
+| Targets                 | `GET /resource/{resourceId}/targets` — `ip`, `port`, `method`, path and `hc*` fields  |
+| One target              | `GET /target/{targetId}` — target IDs are their own sequence, not resource IDs        |
 | Rules                   | `GET /resource/{resourceId}/rules`                                                    |
 | Roles on a resource     | `GET /resource/{resourceId}/roles`                                                    |
 | Users on a resource     | `GET /resource/{resourceId}/users`                                                    |
@@ -122,10 +131,15 @@ curl -sf "https://raw.githubusercontent.com/fosrl/pangolin/$V/server/routers/ext
 
 The resource list is a summary. It has `resourceId`, `niceId`, `name`,
 `fullDomain`, `mode`, `enabled`, `sso` and `targets`, but no `applyRules`, and
-its targets carry no `method`. In the list, `sso` is `0`/`1`; in
+its targets carry no `method`. They do carry `targetId`, `enabled`, `hcEnabled`
+and `healthStatus`, so one list call is enough to inventory health state. In the list, `sso` is `0`/`1`; in
 `GET /resource/{id}` it is a boolean. To filter on a setting the list doesn't
 have, such as which resources apply rules, call `GET /resource/{id}` for each
 resource.
+
+A resource and its targets each have their own `enabled` flag. A resource can be
+enabled while all its targets are disabled, which serves nothing. Check both when
+triaging. Raw TCP/UDP resources have no `fullDomain`.
 
 Find a resource by hostname:
 
@@ -146,8 +160,8 @@ RID=$(pg -X PUT "$API/org/$PANGOLIN_ORG/resource" \
 
 # 2. target on a site (the upstream as seen from that site's newt)
 pg -X PUT "$API/resource/$RID/target" \
-  -d "$(jq -n --arg ip "$UPSTREAM_HOST" --argjson port "$UPSTREAM_PORT" \
-        '{siteId:1, ip:$ip, port:$port, method:"http", enabled:true}')"
+  -d "$(jq -n --argjson site "$SITE_ID" --arg ip "$UPSTREAM_HOST" --argjson port "$UPSTREAM_PORT" \
+        '{siteId:$site, ip:$ip, port:$port, method:"http", enabled:true}')"
 
 # 3. optional: turn off Pangolin's login wall (only for apps with their own auth)
 pg -X POST "$API/resource/$RID" -d '{"sso":false}'
@@ -181,9 +195,49 @@ Pattern: a default target with no path at priority 100, path targets at 200.
 
 ```bash
 pg -X PUT "$API/resource/$RID/target" \
-  -d "$(jq -n --arg ip "$UPSTREAM_HOST" '{siteId:1, ip:$ip, port:8081, method:"http",
+  -d "$(jq -n --argjson site "$SITE_ID" --arg ip "$UPSTREAM_HOST" '{siteId:$site, ip:$ip, port:8081, method:"http",
         enabled:true, path:"/ws", pathMatchType:"prefix", priority:200}')"
 ```
+
+## Health checks
+
+Health checks belong to a target and run from the **site's newt**, so
+`hcHostname` is resolved on the site's network (use the same LAN IP as the
+target), not from the Pangolin server.
+
+**Unhealthy targets get no traffic.** `server/lib/traefik/loadBalancer.ts` drops
+targets whose health is `unhealthy`; `unknown` still routes. Turning a check on
+sets the target to `unhealthy` at once, so a single-target resource has no
+backend until the first check passes (usually under 10 s). A check on a wrong
+path takes the site down. So:
+
+1. Probe the path from the site's network first and pick one that returns 200
+   without auth: the app's health endpoint (`/health`, `/healthz`, `/ping`,
+   `/api/health`), or a login page for apps that redirect `/`.
+2. Enable one target, then re-read it until `hcHealth` is `healthy` and the
+   public hostname answers as before.
+3. If it goes `unhealthy`, send `hcEnabled:false` at once. That resets health to
+   `unknown` and routing resumes.
+
+Update with `POST /target/{targetId}` (a target ID, not a resource ID). The
+schema is strict and **`siteId` and `ip` are required** even for a
+health-check-only change. `hcHostname` is required when `hcEnabled` is true.
+Omitted `hc*` fields keep their current values.
+
+```bash
+pg -X POST "$API/target/$TID" -d "$(jq -n --argjson site "$SITE_ID" \
+  --arg ip "$UPSTREAM_HOST" --argjson port "$UPSTREAM_PORT" '{
+    siteId:$site, ip:$ip, hcEnabled:true, hcHostname:$ip, hcPort:$port,
+    hcPath:"/health", hcScheme:"http", hcMode:"http", hcMethod:"GET",
+    hcInterval:30, hcUnhealthyInterval:30, hcTimeout:5, hcFollowRedirects:true,
+    hcHealthyThreshold:1, hcUnhealthyThreshold:2}')"
+pg "$API/target/$TID" | jq '.data | {hcEnabled, hcHealth}'
+```
+
+Other fields: `hcStatus` (expected code), `hcHeaders` (`[{name,value}]`),
+`hcTlsServerName`. Checks are HTTP/HTTPS only. They don't work on `h2c` or raw
+TCP/UDP targets. For https upstreams with self-signed certs, test
+`hcScheme:"https"` with `hcTlsServerName` on one target before rolling it out.
 
 ## Rules (auth bypass / blocking)
 
