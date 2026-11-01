@@ -260,11 +260,14 @@ pg "$API/target/$TID" | jq '.data | {hcEnabled, hcHealth}'
 
 Other fields: `hcStatus` (expected code), `hcHeaders` (`[{name,value}]`),
 `hcTlsServerName`. Newt checks only HTTP/HTTPS. The API doesn't stop you from
-enabling a check on an `h2c` or raw TCP/UDP target, but don't. For https
-upstreams with self-signed certs: `hcTlsServerName` only sets SNI, and whether
-newt verifies the cert isn't visible in the Pangolin source. Probe with
-`curl -k` from the site, then test `hcScheme:"https"` on one target with
-`hcEnabled:false` ready as rollback.
+enabling a check on an `h2c` or raw TCP/UDP target, but don't.
+
+For https upstreams with self-signed certs, use `hcScheme:"https"`. Newt skips
+certificate verification unless it runs with `--enforce-hc-cert` /
+`ENFORCE_HC_CERT=true` (`healthcheck/healthcheck.go` in fosrl/newt), so
+self-signed certs pass by default. `hcTlsServerName` sets the SNI, which helps
+when the upstream serves different certs per name. Probe with `curl -k` from the
+site first, and still enable one target at a time with `hcEnabled:false` ready.
 
 ## Rules (auth bypass / blocking)
 
