@@ -8,7 +8,7 @@ Cedric Ziel's plugin marketplace for [Claude Code](https://docs.claude.com/en/do
 /plugin marketplace add cedricziel/claude-plugins
 /plugin install toolkit@cedricziel   # everything, personal use
 /plugin install oss@cedricziel       # generic practice only, for any repo (day job, OSS, ...)
-/plugin install skills@cedricziel    # generic tool-integration skills only (CodeRabbit, Forgejo, dashboards)
+/plugin install skills@cedricziel    # generic tool-integration skills only (CodeRabbit, Forgejo, Pangolin, dashboards)
 ```
 
 ### Codex
@@ -43,7 +43,7 @@ earlier ones automatically:
 - **`oss`** — generic engineering practice reusable in any repo, whether it's an
   OSS project or a private one (day job included).
 - **`skills`** — generic tool-integration skills reusable by anyone who uses that
-  tool: CodeRabbit, the Forgejo CLI, and dashboard design/review.
+  tool: CodeRabbit, the Forgejo CLI, the Pangolin API, and dashboard design/review.
 - **`toolkit`** — my personal layer: global working instructions, SignalDB
   observability, and the GitHub issue/PR orchestration engine.
 
@@ -110,6 +110,7 @@ not personal, not part of the orchestration engine. Depends on
 | -------------- | ------------------------------------------------------------ |
 | `coderabbit`   | Working with CodeRabbit reviews on PRs                       |
 | `forgejo-cli`  | Using `fj` against Forgejo/Codeberg instances                |
+| `pangolin-api` | Publishing and managing services through a Pangolin proxy's API |
 | `dashboarding` | Designing and reviewing operational dashboards                |
 | `openspec-doctor` | Initializing, updating, and tuning a repo's OpenSpec config from code and PR reviews |
 
