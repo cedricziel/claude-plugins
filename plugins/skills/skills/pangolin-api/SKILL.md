@@ -54,6 +54,31 @@ Responses wrap everything: `{data, success, error, message, status}`. List
 endpoints return `data.<plural>` plus `data.pagination` `{total, pageSize, page}`;
 the default page size is 20, so pass `?pageSize=200&page=1` or loop.
 
+## Discover endpoints
+
+The tables below cover common tasks only. For anything else, get the full route
+list from the source for the instance's release. Don't guess paths.
+
+```bash
+V=1.25.3   # instance's Pangolin version (image tag in its compose file); else `main`
+curl -sf "https://raw.githubusercontent.com/fosrl/pangolin/$V/server/routers/external.ts" \
+  | perl -0777 -ne 'while(/\b\w+\.(get|put|post|delete)\(\s*"([^"]+)"/g){print uc($1)," $2\n"}' \
+  | sort -u | grep -i resource
+```
+
+- `external.ts` is the `/api/v1` session API, about 270 routes. `integration.ts`
+  is the `/v1` API-key API.
+- Route paths are relative to `/api/v1`. `:orgId`-style segments are parameters.
+- To get the request body, open the handler that the route calls. For example,
+  `resource.createResource` is in `server/routers/resource/createResource.ts`.
+  The zod schemas near the top of that file list the accepted fields. Grep the
+  file for `Schema =`. Strict schemas (`z.strictObject`, `.strict()`) reject
+  unknown keys.
+- Routes under `server/private/` are enterprise-only. Community builds return
+  404 or a license error for them.
+- Before you write, probe with a `GET` on the same resource. It shows the
+  current field names and values.
+
 ## Read endpoints
 
 | What                    | Call                                                                                  |
