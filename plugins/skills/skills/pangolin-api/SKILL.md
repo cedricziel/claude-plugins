@@ -25,7 +25,10 @@ Examples below also use `UPSTREAM_HOST` / `UPSTREAM_PORT` for the backend
 service as seen from the site's newt, and `SITE_ID` from `GET /org/{orgId}/sites`.
 
 Each Bash tool call is a fresh shell, so put the setup (`JAR`, `H`, `API`, `pg`)
-in a file and `source` it in every call. In zsh, never use `path` as a shell
+in a file and `source` it in every call. Give `JAR` a fixed path in that file
+instead of `mktemp`, so the session cookie survives between calls.
+`PANGOLIN_ORG` is the org id from `GET /orgs`, which can differ from its display
+name. In zsh, never use `path` as a shell
 variable name: it is tied to `PATH`, and assigning it breaks every command.
 
 ## Auth: session cookie + CSRF header
@@ -66,8 +69,9 @@ Read `data.pagination` to see which one an endpoint uses:
 - `{total, pageSize, page}`: query with `?pageSize=200&page=1`. The default page
   size is 20. Orgs, sites, domains and resources use this style.
 - `{total, limit, offset}`: query with `?limit=&offset=`. Rules and IdPs use
-  this style. These endpoints reject unknown query parameters, so `pageSize`
-  makes them return an error.
+  this style, with a default limit of 1000, so they rarely need paging. These
+  endpoints reject unknown query parameters: `pageSize` returns an
+  "Unrecognized key" error.
 
 ## Discover endpoints
 
@@ -219,10 +223,30 @@ path takes the site down. So:
 3. If it goes `unhealthy`, send `hcEnabled:false` at once. That resets health to
    `unknown` and routing resumes.
 
+Routing reads the stored health value even when the check is off. Only an
+explicit `hcEnabled:false` resets it to `unknown`. Creating a target with
+`hcEnabled:true` (`PUT /resource/{id}/target`) also starts it at `unhealthy`.
+
+Find enabled HTTP targets without a check (the list has no target `method`, so
+check `https`/`h2c` targets with `GET /resource/{id}/targets`):
+
+```bash
+pg "$API/org/$PANGOLIN_ORG/resources?pageSize=500" | jq '.data.resources[]
+  | select(.mode=="http" and .enabled) | {resourceId, fullDomain}
+    + (.targets[] | select(.enabled and (.hcEnabled|not)) | {targetId})'
+```
+
 Update with `POST /target/{targetId}` (a target ID, not a resource ID). The
 schema is strict and **`siteId` and `ip` are required** even for a
 health-check-only change. `hcHostname` is required when `hcEnabled` is true.
-Omitted `hc*` fields keep their current values.
+
+**Always send `hcEnabled` (and `hcHeaders`, if set) on every target update.**
+Most omitted `hc*` fields keep their stored values, but `updateTarget.ts` writes
+`hcEnabled: body.hcEnabled || false` and `hcHeaders: body.hcHeaders ?? null`. A
+body without `hcEnabled` silently switches the check off and leaves the last
+health value in place, so the target keeps routing on a stale result. This
+applies to any target update, not just health-check changes. Each update also
+picks a new random `internalPort` and pushes the target to the newt again.
 
 ```bash
 pg -X POST "$API/target/$TID" -d "$(jq -n --argjson site "$SITE_ID" \
@@ -235,9 +259,12 @@ pg "$API/target/$TID" | jq '.data | {hcEnabled, hcHealth}'
 ```
 
 Other fields: `hcStatus` (expected code), `hcHeaders` (`[{name,value}]`),
-`hcTlsServerName`. Checks are HTTP/HTTPS only. They don't work on `h2c` or raw
-TCP/UDP targets. For https upstreams with self-signed certs, test
-`hcScheme:"https"` with `hcTlsServerName` on one target before rolling it out.
+`hcTlsServerName`. Newt checks only HTTP/HTTPS. The API doesn't stop you from
+enabling a check on an `h2c` or raw TCP/UDP target, but don't. For https
+upstreams with self-signed certs: `hcTlsServerName` only sets SNI, and whether
+newt verifies the cert isn't visible in the Pangolin source. Probe with
+`curl -k` from the site, then test `hcScheme:"https"` on one target with
+`hcEnabled:false` ready as rollback.
 
 ## Rules (auth bypass / blocking)
 
