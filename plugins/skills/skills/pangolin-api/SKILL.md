@@ -33,8 +33,11 @@ There are two APIs:
   as a separate server that only starts when the config has
   `flags.enable_integration_api: true`. It listens on `server.integration_port`
   (default 3003), and Traefik doesn't route it by default. Without both, `/v1`
-  on the dashboard host hits the Next.js frontend (404), and a Bearer key on
-  `/api/v1` gets 401. Unless it is set up, use the session API.
+  on the dashboard host hits the Next.js frontend (a 404, or a 200 with the HTML
+  app shell, so check the content type, not just the status). A Bearer key on
+  `/api/v1` gets 401. Unless the integration API is set up, use the session API.
+  To send a key without exposing it in `ps`, pass the header on stdin:
+  `printf 'Authorization: Bearer %s\n' "$PANGOLIN_API_KEY" | curl -H @- ...`.
 
 **Every `/api/v1` call needs the header `X-CSRF-Token: x-csrf-protection`** — the
 login call too. Without it requests fail with a CSRF error.
@@ -53,11 +56,14 @@ Reading the values through jq's `env` and piping the body to `curl -d @-` keeps
 the password out of `ps` and shell history. Accounts with 2FA need `code` in the login body.
 
 Responses wrap everything: `{data, success, error, message, status}`. List
-endpoints return `data.<plural>` plus `data.pagination` `{total, pageSize, page}`;
-most use `?pageSize=&page=` with a default page size of 20, so pass
-`?pageSize=200&page=1` or loop. Some endpoints (for example `GET /idp`) use
-`?limit=&offset=` instead and reject unknown query parameters. Check the
-endpoint's query schema when a list call errors.
+endpoints return `data.<plural>` plus `data.pagination`, in one of two styles.
+Read `data.pagination` to see which one an endpoint uses:
+
+- `{total, pageSize, page}`: query with `?pageSize=200&page=1`. The default page
+  size is 20. Orgs, sites, domains and resources use this style.
+- `{total, limit, offset}`: query with `?limit=&offset=`. Rules and IdPs use
+  this style. These endpoints reject unknown query parameters, so `pageSize`
+  makes them return an error.
 
 ## Discover endpoints
 
@@ -78,12 +84,15 @@ get the route list from the source for the instance's release:
 V=1.25.3   # instance's Pangolin version (image tag in its compose file); else `main`
 curl -sf "https://raw.githubusercontent.com/fosrl/pangolin/$V/server/routers/external.ts" \
   | perl -0777 -ne 'while(/\b\w+\.(get|put|post|delete)\(\s*"([^"]+)"/g){print uc($1)," $2\n"}' \
-  | sort -u | grep -i resource
+  | sort -u | grep -E ' /resource/'
 ```
 
 - `external.ts` is the `/api/v1` session API, about 270 routes. `integration.ts`
   is the `/v1` API-key API.
 - Route paths are relative to `/api/v1`. `:orgId`-style segments are parameters.
+- `site-resource` routes are a different resource type (private resources that
+  clients reach through a site), not public resources. `resource-policy` routes
+  are separate too. Grep narrowly.
 - To get the request body, open the handler that the route calls. For example,
   `resource.createResource` is in `server/routers/resource/createResource.ts`.
   The zod schemas near the top of that file list the accepted fields. Grep the
@@ -101,14 +110,22 @@ curl -sf "https://raw.githubusercontent.com/fosrl/pangolin/$V/server/routers/ext
 | Orgs                    | `GET /orgs`                                                                           |
 | Sites (newt connectors) | `GET /org/{orgId}/sites` — `siteId`, `name`, `type`, `online`                         |
 | Domains                 | `GET /org/{orgId}/domains` — `domainId` (e.g. `domain1`), `baseDomain`                |
-| Resources               | `GET /org/{orgId}/resources` — `resourceId`, `niceId`, `fullDomain`, `sso`, `targets` |
-| One resource            | `GET /resource/{resourceId}`                                                          |
-| Targets                 | `GET /resource/{resourceId}/targets`                                                  |
+| Resources               | `GET /org/{orgId}/resources` — summary only, see below                                |
+| One resource            | `GET /resource/{resourceId}` — full settings incl. `applyRules`, `sso`                |
+| Targets                 | `GET /resource/{resourceId}/targets` — `ip`, `port`, `method`, path fields            |
 | Rules                   | `GET /resource/{resourceId}/rules`                                                    |
 | Roles on a resource     | `GET /resource/{resourceId}/roles`                                                    |
+| Users on a resource     | `GET /resource/{resourceId}/users`                                                    |
 | Users / roles           | `GET /org/{orgId}/users`, `GET /org/{orgId}/roles`                                    |
 | IdPs                    | `GET /idp`                                                                            |
 | API keys                | `GET /org/{orgId}/api-keys`                                                           |
+
+The resource list is a summary. It has `resourceId`, `niceId`, `name`,
+`fullDomain`, `mode`, `enabled`, `sso` and `targets`, but no `applyRules`, and
+its targets carry no `method`. In the list, `sso` is `0`/`1`; in
+`GET /resource/{id}` it is a boolean. To filter on a setting the list doesn't
+have, such as which resources apply rules, call `GET /resource/{id}` for each
+resource.
 
 Find a resource by hostname:
 
