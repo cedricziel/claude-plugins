@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/cedricziel/claude-plugins/compare/skills-v0.4.0...skills-v0.5.0) (2026-11-09)
+
+
+### Features
+
+* **skills:** add pangolin-api skill ([#88](https://github.com/cedricziel/claude-plugins/issues/88)) ([1a48515](https://github.com/cedricziel/claude-plugins/commit/1a48515e819772e33a4ac8caa1719ced66eb5b93))
+
 ## [0.4.0](https://github.com/cedricziel/claude-plugins/compare/skills-v0.3.0...skills-v0.4.0) (2026-10-13)
 
 
