@@ -26,7 +26,7 @@ class CommonSessionStartTest(unittest.TestCase):
         self.assertNotIn("`sonnet`", ctx)
 
     def test_instruction_file_exists(self):
-        for name in ("shared.md", "claude.md", "codex.md"):
+        for name in ("shared.md", "claude.md", "codex.md", "opencode.md"):
             self.assertTrue((PLUGIN / "instructions" / name).is_file())
 
     def test_codex_context_uses_codex_instructions(self):
@@ -34,6 +34,14 @@ class CommonSessionStartTest(unittest.TestCase):
         self.assertEqual(r.returncode, 0, r.stderr)
         ctx = json.loads(r.stdout)["hookSpecificOutput"]["additionalContext"]
         self.assertIn("Codex", ctx)
+        self.assertNotIn("sonnet", ctx)
+
+    def test_opencode_context_uses_opencode_instructions(self):
+        r = run({"PLUGIN_ROOT": str(PLUGIN)}, ("opencode",))
+        self.assertEqual(r.returncode, 0, r.stderr)
+        ctx = json.loads(r.stdout)["hookSpecificOutput"]["additionalContext"]
+        self.assertIn("OpenCode", ctx)
+        self.assertNotIn("Codex", ctx)
         self.assertNotIn("sonnet", ctx)
 
     def test_claude_context_does_not_switch_on_plugin_root_env(self):

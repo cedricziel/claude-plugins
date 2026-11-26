@@ -25,13 +25,21 @@ class RebaseHookTest(unittest.TestCase):
         git(self.repo, "checkout", "-q", "fix")
 
     def run_hook(self, host="codex"):
-        config = PLUGIN / ("codex-hooks" if host == "codex" else "hooks") / "hooks.json"
-        hook = json.loads(config.read_text())["hooks"]["UserPromptSubmit"][0]["hooks"][0]
+        if host == "opencode":
+            command = ["bash", str(PLUGIN / "scripts" / "rebase-hook.sh"), "opencode"]
+            shell = False
+            timeout = 30
+        else:
+            config = PLUGIN / ("codex-hooks" if host == "codex" else "hooks") / "hooks.json"
+            hook = json.loads(config.read_text())["hooks"]["UserPromptSubmit"][0]["hooks"][0]
+            command = hook["command"]
+            shell = True
+            timeout = hook["timeout"]
         result = subprocess.run(
-            hook["command"], shell=True, cwd=self.home, input=json.dumps({"cwd": str(self.repo)}),
+            command, shell=shell, cwd=self.home, input=json.dumps({"cwd": str(self.repo)}),
             env={**os.environ, "HOME": str(self.home), "CODEX_HOME": str(self.home / ".codex"), "PLUGIN_ROOT": str(PLUGIN),
                  "CLAUDE_PLUGIN_ROOT": str(PLUGIN)},
-            capture_output=True, text=True, timeout=hook["timeout"],
+            capture_output=True, text=True, timeout=timeout,
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         return result.stdout
@@ -43,6 +51,14 @@ class RebaseHookTest(unittest.TestCase):
         self.assertTrue((self.home / ".codex/hooks/toolkit/rebase").is_dir())
         self.assertFalse((self.home / ".claude").exists())
         self.assertEqual(self.run_hook(), "")
+
+    def test_opencode_reminds_and_throttles_in_its_own_state_directory(self):
+        output = json.loads(self.run_hook("opencode"))["hookSpecificOutput"]
+        self.assertIn("1 commit(s) behind main", output["additionalContext"])
+        self.assertTrue((self.home / ".local/state/opencode/plugins/toolkit/rebase").is_dir())
+        self.assertFalse((self.home / ".codex").exists())
+        self.assertFalse((self.home / ".claude").exists())
+        self.assertEqual(self.run_hook("opencode"), "")
 
     def test_codex_is_quiet_on_default_branch(self):
         git(self.repo, "checkout", "-q", "main")

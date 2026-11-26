@@ -92,6 +92,36 @@ def check_workflow(js):
         err(f"{js}: meta has no description")
 
 
+def check_opencode_plugin(root, entry):
+    name = entry.get("name", "?")
+    plugin_dir = (root / entry.get("source", "")).resolve()
+    entry_js = plugin_dir / "opencode" / "index.js"
+    if not entry_js.is_file():
+        return
+    where = f"plugin '{name}' OpenCode package"
+    package = load_json(plugin_dir / "package.json")
+    if package is None:
+        return
+    require(package, ("name", "version", "type", "exports"), where)
+    if package.get("type") != "module":
+        err(f"{where}: package.json type must be 'module'")
+    if package.get("version") != entry.get("version"):
+        err(f"{where}: version mismatch marketplace={entry.get('version')} package.json={package.get('version')}")
+    exports = package.get("exports")
+    target = exports.get(".") if isinstance(exports, dict) else None
+    if not isinstance(target, str) or not target.startswith("./") or ".." in Path(target).parts:
+        err(f"{where}: exports['.'] must be a relative path inside the plugin")
+    else:
+        resolved = (plugin_dir / target).resolve()
+        if not resolved.is_relative_to(plugin_dir):
+            err(f"{where}: exports['.'] must stay inside the plugin")
+        elif not resolved.is_file():
+            err(f"{where}: exports['.'] target {target} does not exist")
+    instructions = plugin_dir / "instructions"
+    if (instructions / "shared.md").is_file() and not (instructions / "opencode.md").is_file():
+        err(f"{where}: instructions/opencode.md is missing")
+
+
 def check_plugin(root, entry):
     name = entry.get("name", "?")
     source = entry.get("source", "")
@@ -118,6 +148,7 @@ def check_plugin(root, entry):
     for js in sorted((plugin_dir / "workflows").glob("*.js")):
         check_workflow(js)
     check_hooks(plugin_dir)
+    check_opencode_plugin(root, entry)
 
 
 def check_codex(root, claude_plugins):
@@ -202,6 +233,8 @@ def check_release_please(root, claude_plugins):
         ]
         if (root / pkg / ".codex-plugin" / "plugin.json").exists():
             wanted.append((".codex-plugin/plugin.json", "$.version"))
+        if (root / pkg / "opencode" / "index.js").exists():
+            wanted.append(("package.json", "$.version"))
         for path, jsonpath in wanted:
             if (path, jsonpath) not in targets:
                 err(f"{where}: extra-files missing {path} {jsonpath}")

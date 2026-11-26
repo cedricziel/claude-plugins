@@ -1,0 +1,25 @@
+{
+  "name": "@cedricziel/opencode-toolkit",
+  "version": "1.23.0",
+  "description": "OpenCode adapter for the toolkit plugin: personal instructions, host-neutral skills, and the TDD and rebase reminders.",
+  "type": "module",
+  "exports": {
+    ".": "./opencode/index.js"
+  },
+  "files": [
+    "opencode",
+    "host-skills",
+    "skills",
+    "instructions",
+    "scripts"
+  ],
+  "license": "MIT",
+  "repository": "https://github.com/cedricziel/claude-plugins",
+  "keywords": [
+    "opencode",
+    "plugin",
+    "git",
+    "signaldb",
+    "opentelemetry"
+  ]
+}

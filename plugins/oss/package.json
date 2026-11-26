@@ -1,0 +1,25 @@
+{
+  "name": "@cedricziel/opencode-oss",
+  "version": "0.9.0",
+  "description": "OpenCode adapter for the oss plugin: generic engineering instructions and the commit-discipline, pull-request, stacked-PR, testing, writing, issue, release-note, and skill-maintenance skills.",
+  "type": "module",
+  "exports": {
+    ".": "./opencode/index.js"
+  },
+  "files": [
+    "opencode",
+    "skills",
+    "instructions"
+  ],
+  "license": "MIT",
+  "repository": "https://github.com/cedricziel/claude-plugins",
+  "keywords": [
+    "opencode",
+    "plugin",
+    "oss",
+    "commit-discipline",
+    "pull-request",
+    "testing",
+    "technical-writing"
+  ]
+}

@@ -98,14 +98,14 @@ change. It proposes changes; it does not apply them until the user approves.
    the offending line for each:
    - **Placement**: the rule fits the plugin's audience, and `shared.md` names
      no host-specific models, agents, tools, or commands.
-   - **Parity**: each rule in `claude.md` has a `codex.md` equivalent, or has
-     a clear reason not to have one (and the reverse).
+   - **Parity**: each rule in `claude.md` has a `codex.md` and `opencode.md`
+     equivalent, or has a clear reason not to have one (and the reverse).
    - **Duplication**: no rule repeats one in another file or layer.
    - **Conflict**: no two rules contradict each other, within a host or
      across layers.
    - **References**: every skill, agent, file, command, and model a rule names
      exists. Check skills under `plugins/*/skills/` and
-     `plugins/toolkit/codex-skills/`, and check that model names are current
+     `plugins/toolkit/host-skills/`, and check that model names are current
      for the host.
    - **Actionability**: an agent can tell when the rule applies and what to
      do. Vague advice ("be careful") fails.

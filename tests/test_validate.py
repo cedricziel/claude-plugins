@@ -210,13 +210,71 @@ class CodexValidateTest(unittest.TestCase):
         self.assertIn("hooks must be a relative file path", r.stdout)
 
 
-def add_release_please(tmp, version="1.0.0", codex=False):
+def add_opencode(plugin, version="1.0.0"):
+    (plugin / "opencode").mkdir()
+    (plugin / "opencode" / "index.js").write_text("export default { id: 'p', async setup() {} }\n")
+    (plugin / "package.json").write_text(json.dumps({
+        "name": "@cedricziel/opencode-p",
+        "version": version,
+        "type": "module",
+        "exports": {".": "./opencode/index.js"},
+    }))
+
+
+class OpenCodeValidateTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.plugin = make_repo(self.tmp)
+        add_opencode(self.plugin)
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def test_valid_opencode_package_passes(self):
+        r = run(self.tmp)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
+    def test_missing_package_json_fails(self):
+        (self.plugin / "package.json").unlink()
+        r = run(self.tmp)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("package.json", r.stdout)
+
+    def test_version_must_match_marketplace(self):
+        package = self.plugin / "package.json"
+        data = json.loads(package.read_text())
+        data["version"] = "9.9.9"
+        package.write_text(json.dumps(data))
+        r = run(self.tmp)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("version", r.stdout)
+
+    def test_export_target_must_exist(self):
+        package = self.plugin / "package.json"
+        data = json.loads(package.read_text())
+        data["exports"]["."] = "./opencode/missing.js"
+        package.write_text(json.dumps(data))
+        r = run(self.tmp)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("does not exist", r.stdout)
+
+    def test_opencode_instructions_are_required(self):
+        (self.plugin / "instructions").mkdir()
+        (self.plugin / "instructions" / "shared.md").write_text("- shared\n")
+        r = run(self.tmp)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("opencode.md", r.stdout)
+
+
+def add_release_please(tmp, version="1.0.0", codex=False, opencode=False):
     extra = [
         {"type": "json", "path": ".claude-plugin/plugin.json", "jsonpath": "$.version"},
         {"type": "json", "path": "/.claude-plugin/marketplace.json", "jsonpath": "$.plugins[?(@.name=='p')].version"},
     ]
     if codex:
         extra.append({"type": "json", "path": ".codex-plugin/plugin.json", "jsonpath": "$.version"})
+    if opencode:
+        extra.append({"type": "json", "path": "package.json", "jsonpath": "$.version"})
     (tmp / "release-please-config.json").write_text(json.dumps({
         "packages": {"plugins/p": {"release-type": "simple", "extra-files": extra}},
     }))
@@ -275,6 +333,18 @@ class ReleasePleaseValidateTest(unittest.TestCase):
         r = run(self.tmp)
         self.assertNotEqual(r.returncode, 0)
         self.assertIn("2.0.0", r.stdout)
+
+    def test_opencode_package_must_be_an_extra_file(self):
+        add_opencode(self.plugin)
+        r = run(self.tmp)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("package.json", r.stdout)
+
+    def test_opencode_package_extra_file_passes(self):
+        add_opencode(self.plugin)
+        add_release_please(self.tmp, opencode=True)
+        r = run(self.tmp)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
 
 
 if __name__ == "__main__":

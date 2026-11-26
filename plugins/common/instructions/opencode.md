@@ -1,0 +1,1 @@
+- Use OpenCode's supported tools, skills, and subagent interface; follow project and user preferences for models and effort.

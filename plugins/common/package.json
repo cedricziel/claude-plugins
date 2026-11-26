@@ -1,0 +1,25 @@
+{
+  "name": "@cedricziel/opencode-common",
+  "version": "1.10.0",
+  "description": "OpenCode adapter for the common plugin: shared instructions, the auto-format hook, and the unslop, code-comments, and test-strategy skills.",
+  "type": "module",
+  "exports": {
+    ".": "./opencode/index.js"
+  },
+  "files": [
+    "opencode",
+    "skills",
+    "instructions",
+    "scripts",
+    "hooks"
+  ],
+  "license": "MIT",
+  "repository": "https://github.com/cedricziel/claude-plugins",
+  "keywords": [
+    "opencode",
+    "plugin",
+    "formatting",
+    "writing",
+    "shared"
+  ]
+}

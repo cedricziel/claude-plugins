@@ -4,13 +4,15 @@
 #     ask for a failing test first, once per file per session.
 #   - First test-file edit in a session: point at the test-hygiene skills.
 # Silent outside git repos and on config, generated, and vendored files.
+# Hosts: `codex` and `opencode` arguments select their own state directories.
 # Off: TDD_NUDGE_DISABLE=1, or a `.no-tdd-nudge` file at the repo root.
 set -u
 [ "${TDD_NUDGE_DISABLE:-0}" = "1" ] && exit 0
 
-if [ "${1:-}" = "codex" ]; then
-  export TDD_STATE_DIR="${TDD_STATE_DIR:-${CODEX_HOME:-$HOME/.codex}/hooks/toolkit/tdd}"
-fi
+case "${1:-}" in
+  codex) export TDD_STATE_DIR="${TDD_STATE_DIR:-${CODEX_HOME:-$HOME/.codex}/hooks/toolkit/tdd}" ;;
+  opencode) export TDD_STATE_DIR="${TDD_STATE_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/opencode/plugins/toolkit/tdd}" ;;
+esac
 input=$(cat)
 if [ "$(printf '%s' "$input" | jq -r '.tool_name // empty' 2>/dev/null)" = "apply_patch" ]; then
   hook_script="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"

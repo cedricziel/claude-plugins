@@ -8,7 +8,10 @@ set -u
 root="${CLAUDE_PLUGIN_ROOT:-${PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}}"
 shared="$root/instructions/shared.md"
 specific="$root/instructions/claude.md"
-[ "${1:-}" = "codex" ] && specific="$root/instructions/codex.md"
+case "${1:-}" in
+  codex) specific="$root/instructions/codex.md" ;;
+  opencode) specific="$root/instructions/opencode.md" ;;
+esac
 fleet="$root/instructions/fleet-brief.md"
 [ -f "$shared" ] && [ -f "$specific" ] || exit 0
 

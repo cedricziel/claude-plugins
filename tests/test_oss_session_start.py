@@ -26,11 +26,19 @@ class OssSessionStartTest(unittest.TestCase):
         self.assertIn("Code comments and docstrings", ctx)
 
     def test_instruction_file_exists(self):
-        for name in ("shared.md", "claude.md", "codex.md"):
+        for name in ("shared.md", "claude.md", "codex.md", "opencode.md"):
             self.assertTrue((PLUGIN / "instructions" / name).is_file())
 
     def test_codex_context_uses_codex_instructions(self):
         r = run({"PLUGIN_ROOT": str(PLUGIN)}, ("codex",))
+        self.assertEqual(r.returncode, 0, r.stderr)
+        ctx = json.loads(r.stdout)["hookSpecificOutput"]["additionalContext"]
+        self.assertIn("technical-writing", ctx)
+        self.assertIn("Code comments and docstrings", ctx)
+        self.assertNotIn("oss:technical-writer", ctx)
+
+    def test_opencode_context_uses_opencode_instructions(self):
+        r = run({"PLUGIN_ROOT": str(PLUGIN)}, ("opencode",))
         self.assertEqual(r.returncode, 0, r.stderr)
         ctx = json.loads(r.stdout)["hookSpecificOutput"]["additionalContext"]
         self.assertIn("technical-writing", ctx)
