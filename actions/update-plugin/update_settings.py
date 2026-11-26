@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Pin a Claude Code plugin marketplace to its latest commit in a settings file.
+"""Pin plugin marketplaces in Claude settings and Codex project config.
 
 Creates the settings file, the marketplace entry, and the enabledPlugins entries
 when they are missing; otherwise only moves the pinned sha forward.
 
 Usage: update_settings.py --settings PATH --marketplace NAME --repo OWNER/REPO
            [--plugins a,b] [--ref REF] [--sha SHA] [--session-hook]
+           [--codex-config PATH] [--codex-plugins common,oss]
 Prints `changed=true|false`, `bootstrapped=true|false` and `sha=<sha>` on stdout,
-plus `hook=<path>` when a session-start hook script was written.
+plus `settings=<path>`, `hook=<path>`, or `codex=<path>` when those files changed.
 """
 import argparse
 import json
@@ -73,6 +74,26 @@ def update(settings, marketplace, repo, plugins, ref, sha):
     return changed, bootstrapped
 
 
+def update_codex(config, marketplace, repo, plugins, sha):
+    markets = config.setdefault("marketplaces", {})
+    entry = markets.get(marketplace)
+    bootstrapped = entry is None
+    source = f"https://github.com/{repo}.git"
+    if bootstrapped:
+        entry = {"source_type": "git", "source": source, "ref": sha}
+        markets[marketplace] = entry
+    elif entry.get("source_type") != "git" or entry.get("source") != source:
+        raise SystemExit(f"Codex marketplace '{marketplace}' already points elsewhere")
+
+    changed = bootstrapped or entry.get("ref") != sha
+    entry["ref"] = sha
+    if bootstrapped:
+        enabled = config.setdefault("plugins", {})
+        for plugin in plugins:
+            enabled.setdefault(f"{plugin}@{marketplace}", {"enabled": True})
+    return changed, bootstrapped
+
+
 def hook_script(marketplace, repo, plugins):
     installs = "".join(f"claude plugin install {p}@{marketplace} >/dev/null 2>&1\n" for p in plugins)
     return (
@@ -119,33 +140,56 @@ def main():
     p.add_argument("--ref", default="main")
     p.add_argument("--sha", default="")
     p.add_argument("--session-hook", action="store_true")
+    p.add_argument("--codex-config", default=".codex/config.toml")
+    p.add_argument("--codex-plugins", default="common,oss")
     args = p.parse_args()
 
     plugins = [x.strip() for x in args.plugins.split(",") if x.strip()]
+    codex_plugins = [x.strip() for x in args.codex_plugins.split(",") if x.strip()]
     check("marketplace", args.marketplace, NAME)
     check("repo", args.repo, REPO)
     check("ref", args.ref, REF)
     if args.sha:
         check("sha", args.sha, SHA)
-    for plugin in plugins:
+    for plugin in plugins + codex_plugins:
         check("plugin", plugin, NAME)
 
-    path = Path(args.settings)
-    settings = json.loads(path.read_text()) if path.is_file() else {}
+    path = Path(args.settings) if args.settings else None
+    settings = json.loads(path.read_text()) if path and path.is_file() else {}
     sha = args.sha or resolve_sha(args.repo, args.ref)
 
-    changed, bootstrapped = update(settings, args.marketplace, args.repo, plugins, args.ref, sha)
-    hook = add_session_hook(settings, path, args.marketplace, args.repo) if args.session_hook else None
+    changed, bootstrapped = (
+        update(settings, args.marketplace, args.repo, plugins, args.ref, sha)
+        if path else (False, False)
+    )
+    codex_changed = False
+    if args.codex_config:
+        import tomlkit
+
+        codex_path = Path(args.codex_config)
+        config = tomlkit.parse(codex_path.read_text()) if codex_path.is_file() else tomlkit.document()
+        codex_changed, codex_bootstrapped = update_codex(
+            config, args.marketplace, args.repo, codex_plugins, sha,
+        )
+        bootstrapped = bootstrapped or codex_bootstrapped
+    hook = add_session_hook(settings, path, args.marketplace, args.repo) if args.session_hook and path else None
     changed = changed or hook is not None
     if changed:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(settings, indent=2) + "\n")
+    if codex_changed:
+        codex_path.parent.mkdir(parents=True, exist_ok=True)
+        codex_path.write_text(tomlkit.dumps(config))
 
-    print(f"changed={str(changed).lower()}")
+    print(f"changed={str(changed or codex_changed).lower()}")
     print(f"bootstrapped={str(bootstrapped).lower()}")
     print(f"sha={sha}")
+    if changed:
+        print(f"settings={path}")
     if hook:
         print(f"hook={hook}")
+    if codex_changed:
+        print(f"codex={codex_path}")
     return 0
 
 

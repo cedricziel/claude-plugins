@@ -48,9 +48,11 @@ Adapt each to the repo's language; keep them minimal.
 | Project-local `verify` skill | For a runnable app or service, record a repeatable way to launch a throwaway instance, exercise meaningful behavior, inspect results, and clean up. Isolate ports, data stores, files, profiles, and processes; use test credentials and destinations instead of inherited user or production settings. Maintain it as the app changes; omit it when there is no useful runtime verification loop yet. |
 | `.gitignore` | Language standard. Do not ignore `.claude/settings.json` or `.claude/hooks/`. |
 
-## 4. Claude plugins
+## 4. Agent plugins
 
-Enable `oss` unless the user names others (`toolkit` is the personal layer; ask before adding it to a repo other people use).
+Enable `oss` unless the user names others. The updater also enables `common` and
+`oss` for Codex. Keep `toolkit` personal; do not add it to a shared repository
+without an explicit request. Do not copy user-level model or workflow settings.
 
 ```yaml
 # .github/workflows/update-claude-plugins.yml
@@ -67,7 +69,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: cedricziel/claude-plugins/actions/update-plugin@7d5e56c1a0f1f689b982ebdb15aa11fa97710d81 # main
+      - uses: cedricziel/claude-plugins/actions/update-plugin@275b2981d29e4953625b908037939f7e988fa1b4 # Codex support
         with:
           plugins: oss
 ```
@@ -80,6 +82,12 @@ gh workflow run update-claude-plugins.yml
 ```
 
 Once merged, the first run creates `.claude/settings.json` (marketplace pinned to the latest commit, `oss` enabled) and `.claude/hooks/install-claude-plugins.sh`, registered as a `SessionStart` hook that installs the plugins in cloud sessions. The action opens a PR with auto-merge on. Pass `session-hook: "false"` to skip the hook.
+
+It also creates `.codex/config.toml` with the marketplace pinned to the same
+commit and `common` and `oss` enabled. Existing plugin choices are preserved;
+`plugins: toolkit` does not add toolkit to Codex. Codex project config requires
+a trusted project, and plugin hooks require user trust. Pass `codex-config: ""`
+to skip Codex or `codex-plugins` to choose a different bootstrap list.
 
 ## 5. Report
 

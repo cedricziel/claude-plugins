@@ -61,7 +61,8 @@ dashboards) that anyone using that tool could reuse.
   `codex-skills/`; its Claude workflow engine and enforcement hooks are not part
   of Codex. SessionStart combines `instructions/shared.md` with host-specific
   `instructions/claude.md` or `instructions/codex.md` in common, oss, and toolkit.
-- `python3 -m unittest discover -s tests && python3 scripts/validate.py` before commit.
+- Install test dependencies with `python3 -m pip install -r actions/update-plugin/requirements.txt`.
+  Run `python3 -m unittest discover -s tests && python3 scripts/validate.py` before commit.
 - Public repo: no hostnames, IPs, or secret-manager item names.
 - Hook scripts fail open and keep state under `~/.claude/hooks/`, never in the plugin dir.
 - Ship it: push, then `claude plugin marketplace update cedricziel && claude plugin update toolkit@cedricziel`.

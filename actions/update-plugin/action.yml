@@ -1,7 +1,7 @@
-name: Update Claude Code plugin
+name: Update agent plugins
 description: >
-  Pin a Claude Code plugin marketplace to its latest commit in .claude/settings.json
-  (creating the config if it does not exist), open a PR, and enable auto-merge.
+  Pin plugin marketplaces in .claude/settings.json and .codex/config.toml to the
+  same commit, bootstrap missing configs, open a PR, and enable auto-merge.
 author: Cedric Ziel
 
 inputs:
@@ -20,8 +20,16 @@ inputs:
     description: Branch or tag to track. Kept from the existing entry if one is set.
     default: main
   settings-file:
-    description: Settings file to create or update.
+    description: Settings file to create or update. Set to an empty string to skip this host.
     default: .claude/settings.json
+  codex-config:
+    description: Codex project config to create or update. Set to an empty string to skip Codex.
+    default: .codex/config.toml
+  codex-plugins:
+    description: >
+      Comma-separated Codex plugins to enable when its marketplace is bootstrapped.
+      Independent of plugins; existing choices are preserved. Personal plugins are opt-in.
+    default: common,oss
   session-hook:
     description: >
       "true" adds a SessionStart hook that installs the plugins in remote (cloud) sessions,
@@ -41,10 +49,10 @@ inputs:
 
 outputs:
   changed:
-    description: "true if the settings file changed."
+    description: "true if either config or the install hook changed."
     value: ${{ steps.update.outputs.changed }}
   bootstrapped:
-    description: "true if the config did not exist and was created."
+    description: "true if a marketplace entry was created in either config."
     value: ${{ steps.update.outputs.bootstrapped }}
   sha:
     description: Commit the marketplace is now pinned to.
@@ -66,19 +74,36 @@ runs:
         PLUGINS: ${{ inputs.plugins }}
         REF: ${{ inputs.ref }}
         SESSION_HOOK: ${{ inputs.session-hook }}
+        CODEX_CONFIG: ${{ inputs.codex-config }}
+        CODEX_PLUGINS: ${{ inputs.codex-plugins }}
       run: |
         set -euo pipefail
-        case "$SETTINGS" in
-          /* | *..*) echo "::error::settings-file must be a relative path inside the repo"; exit 1 ;;
-        esac
+        for path in "$SETTINGS" "$CODEX_CONFIG"; do
+          case "$path" in
+            /* | *..* | *$'\n'* | *$'\r'*) echo "::error::Config paths must be relative and inside the repo"; exit 1 ;;
+          esac
+        done
+        if [ -n "$SETTINGS" ] && git check-ignore -q "$SETTINGS"; then
+          echo "::warning::${SETTINGS} is gitignored. Skipping this host."
+          SETTINGS=""
+        fi
+        if [ -n "$CODEX_CONFIG" ] && git check-ignore -q "$CODEX_CONFIG"; then
+          echo "::warning::${CODEX_CONFIG} is gitignored. Skipping Codex."
+          CODEX_CONFIG=""
+        fi
+        deps=$(mktemp -d)
+        trap 'rm -rf "$deps"' EXIT
+        python3 -m pip install --disable-pip-version-check --target "$deps" -r "$ACTION_PATH/requirements.txt"
         args=()
         if [ "$SESSION_HOOK" = "true" ]; then args+=(--session-hook); fi
-        python3 "$ACTION_PATH/update_settings.py" \
+        PYTHONPATH="$deps${PYTHONPATH:+:$PYTHONPATH}" python3 "$ACTION_PATH/update_settings.py" \
           --settings "$SETTINGS" \
           --marketplace "$MARKETPLACE" \
           --repo "$REPO" \
           --plugins "$PLUGINS" \
           --ref "$REF" \
+          --codex-config "$CODEX_CONFIG" \
+          --codex-plugins "$CODEX_PLUGINS" \
           ${args[@]+"${args[@]}"} | tee -a "$GITHUB_OUTPUT"
 
     - id: pr
@@ -86,32 +111,35 @@ runs:
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.token }}
-        SETTINGS: ${{ inputs.settings-file }}
+        SETTINGS: ${{ steps.update.outputs.settings }}
         MARKETPLACE: ${{ inputs.marketplace }}
         SHA: ${{ steps.update.outputs.sha }}
         HOOK: ${{ steps.update.outputs.hook }}
+        CODEX_CONFIG: ${{ steps.update.outputs.codex }}
         BOOTSTRAPPED: ${{ steps.update.outputs.bootstrapped }}
         BASE: ${{ inputs.base }}
         METHOD: ${{ inputs.merge-method }}
       run: |
         set -euo pipefail
-        if git check-ignore -q "$SETTINGS"; then
-          echo "::warning::${SETTINGS} is gitignored in this repo, so it can't be updated. Skipping."
-          exit 0
-        fi
         branch="claude-plugins/update-${MARKETPLACE}"
         short="${SHA:0:7}"
         if [ "$BOOTSTRAPPED" = "true" ]; then
-          title="chore(claude): add ${MARKETPLACE} plugins at ${short}"
+          title="chore(plugins): add ${MARKETPLACE} plugins at ${short}"
         else
-          title="chore(claude): update ${MARKETPLACE} plugins to ${short}"
+          title="chore(plugins): update ${MARKETPLACE} plugins to ${short}"
         fi
-        body="Pins the \`${MARKETPLACE}\` marketplace in \`${SETTINGS}\` to \`${SHA}\`."
+        body="Pins the \`${MARKETPLACE}\` marketplace to \`${SHA}\`."
+        if [ -n "$SETTINGS" ]; then
+          body+=" Updates \`${SETTINGS}\`."
+        fi
+        if [ -n "$CODEX_CONFIG" ]; then
+          body+=" Updates \`${CODEX_CONFIG}\` to the same commit, preserving existing plugin choices."
+        fi
 
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git checkout -B "$branch"
-        git add "$SETTINGS" ${HOOK:+"$HOOK"}
+        git add ${SETTINGS:+"$SETTINGS"} ${HOOK:+"$HOOK"} ${CODEX_CONFIG:+"$CODEX_CONFIG"}
         git commit -m "$title"
         git push --force-with-lease -u origin "$branch" ||
           git push --force -u origin "$branch"
