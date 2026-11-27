@@ -1,6 +1,6 @@
 {
   "name": "@cedricziel/opencode-common",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "description": "OpenCode adapter for the common plugin: shared instructions, the auto-format hook, and the unslop, code-comments, and test-strategy skills.",
   "type": "module",
   "exports": {

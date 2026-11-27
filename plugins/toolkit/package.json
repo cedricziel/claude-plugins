@@ -1,6 +1,6 @@
 {
   "name": "@cedricziel/opencode-toolkit",
-  "version": "1.23.0",
+  "version": "1.24.0",
   "description": "OpenCode adapter for the toolkit plugin: personal instructions, host-neutral skills, and the TDD and rebase reminders.",
   "type": "module",
   "exports": {
