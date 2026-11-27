@@ -1,2 +1,2 @@
-- Use semantic commits and reviewable PRs; apply `commit-discipline`, and `git-stacked-prs` when a change needs a stack.
+- Use semantic commits and reviewable PRs; apply `commit-discipline`. When a change needs more than one PR, build a GitHub native stack with `gh stack` (`init`, `add` per layer, `submit`; `link` adopts existing branches) as described in `git-stacked-prs` — never one oversized PR or a hand-rolled chain.
 - For documentation, use `technical-writing` and verify claims against source. Code comments and docstrings follow `code-comments`.

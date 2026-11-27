@@ -30,7 +30,7 @@ package includes the SignalDB, repository setup, project review, and reflection 
 engine, agents, and enforcement hooks do not run in Codex. `common`, `oss`, and
 `toolkit` include Codex SessionStart instructions; Codex requires the user to
 trust plugin hooks before they run. Codex also receives automatic formatting,
-TDD reminders, and rebase reminders.
+stack reminders, and the toolkit's TDD and rebase reminders.
 
 ### OpenCode
 
@@ -63,9 +63,10 @@ OpenCode does not install the layered dependencies automatically either. Add
 `common` when using `oss` or `skills`. Add `common`, `oss`, and `skills` when
 using `toolkit`. Each plugin registers its skills, a slash command for every
 skill, and, where it has them, its shared instructions. `common` also runs the
-auto-format hook; `toolkit` adds TDD and rebase reminders and exposes the
-host-neutral skills from `host-skills/`. The Claude `Workflow` engine,
-workflow-backed skills, and scoped agents do not run in OpenCode. OpenCode
+auto-format hook; `oss` adds the PR-stack reminder; `toolkit` adds TDD and rebase
+reminders and exposes the host-neutral skills from `host-skills/`. The Claude
+`Workflow` engine, workflow-backed skills, and scoped agents do not run in
+OpenCode. OpenCode
 already discovers project `.claude/skills` and `.agents/skills`, and reads
 `CLAUDE.md` when a directory has no `AGENTS.md`; if both exist, put required
 rules in `AGENTS.md`. Project-local skills and instructions need no adapter.
@@ -114,6 +115,13 @@ A SessionStart hook injects `instructions/shared.md` plus host-specific guidance
 Both hosts use `technical-writing` for documentation. Personal model routing
 and mandatory documentation delegation belong to `toolkit`, not `oss` or its
 `common` dependency. Off switch: `OSS_INSTRUCTIONS_DISABLE=1`.
+
+**Hooks**
+
+| Event                      | What it does                                                                                                                                                                                                                                                                       |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SessionStart` (Claude/Codex) or model-step `context` hook (OpenCode) | Injects `instructions/shared.md` plus host-specific guidance. Disable with `OSS_INSTRUCTIONS_DISABLE=1` |
+| `UserPromptSubmit` (Claude/Codex) or prompt hook (OpenCode) | When the branch is at least `STACK_HOOK_MIN_COMMITS` (default 2) commits ahead of the default branch, reminds the agent to ship a GitHub native stack with `gh stack` (`init`/`add`/`submit`/`link`) per `git-stacked-prs` instead of one oversized PR. Throttled per branch and head commit. Claude state lives under `~/.claude/hooks/oss/stack`; Codex under `${CODEX_HOME:-~/.codex}/hooks/oss/stack`; OpenCode under `${XDG_STATE_HOME:-~/.local/state}/opencode/plugins/oss/stack`. |
 
 **Skills** (loaded automatically when relevant)
 
@@ -182,8 +190,8 @@ subagents. Depends on `common@cedricziel`, `oss@cedricziel`, and
 | `PostToolUse` (Edit/Write; Codex `apply_patch`; OpenCode `edit`/`write`/`patch`) | Nudges once per file when source changes with no test changed on the branch, and points at `test-strategy`/`writing-tests` on the first test edit. Claude state lives under `~/.claude/hooks/toolkit/tdd`; Codex under `${CODEX_HOME:-~/.codex}/hooks/toolkit/tdd`; OpenCode under `${XDG_STATE_HOME:-~/.local/state}/opencode/plugins/toolkit/tdd`. |
 | `UserPromptSubmit` (Claude/Codex) or prompt hook (OpenCode) | Reminds to rebase when the branch has fallen behind the default branch, on every host. OpenCode keeps reminder state under `${XDG_STATE_HOME:-~/.local/state}/opencode/plugins/toolkit/rebase`. |
 
-Knobs and off-switches are documented in the headers of `plugins/{common,toolkit}/scripts/*.sh`.
-Disable per repo with `.no-rebase-nudge` / `.no-format-hook` / `.no-tdd-nudge`.
+Knobs and off-switches are documented in the headers of `plugins/{common,oss,toolkit}/scripts/*.sh`.
+Disable per repo with `.no-stack-nudge` / `.no-rebase-nudge` / `.no-format-hook` / `.no-tdd-nudge`.
 
 **Workflows**
 
