@@ -127,6 +127,7 @@ and mandatory documentation delegation belong to `toolkit`, not `oss` or its
 | `technical-writing`  | `/oss:technical-writing` — Diátaxis + Google style + STE + Global English standard for docs, RFCs, READMEs, PR descriptions — vendored from pstack (MIT)        |
 | `release-notes`      | Draft informative, non-bloated, user-value-focused release notes for a GitHub release: output shape, include/omit rules, input gathering with `gh`, grounding and unslop gates |
 | `skill-maintenance`  | When to add, edit, or delete a skill, at which scope, and how to lay out references and scripts |
+| `ux-design`          | IA, screen structure, forms, states, microcopy, accessibility, design systems, and research planning — backed by a cited reference library |
 
 **Agents**
 
