@@ -121,6 +121,7 @@ class OpenCodePluginTest(unittest.TestCase):
         self.assertIn("commit-discipline", data["skills"])
         self.assertIn("technical-writing", data["skills"])
         self.assertIn("semantic commits", data["system"])
+        self.assertIn("prompt", data["hooks"])
         self.assertNotIn("execute.after", data["hooks"])
         stacked = next(item for item in data["skillMeta"] if item["id"] == "git-stacked-prs")
         self.assertIn("stack of reviewable PRs", stacked["description"])

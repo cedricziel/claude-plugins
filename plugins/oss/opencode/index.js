@@ -2,11 +2,19 @@
 //
 // Registers the plugin's skills and a slash command per skill, and injects the
 // shared engineering instructions before each model step.
+import { execFile } from "node:child_process"
 import fs from "node:fs"
+import os from "node:os"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)))
+const dataDir = path.join(
+  process.env.XDG_STATE_HOME || path.join(os.homedir(), ".local", "state"),
+  "opencode",
+  "plugins",
+  "oss",
+)
 const disabled = (name) => process.env[name] === "1"
 
 function read(relative) {
@@ -97,6 +105,27 @@ function discoverSkills(directories) {
   return skills
 }
 
+function run(script, payload, env = {}) {
+  return new Promise((resolve) => {
+    const child = execFile(
+      "bash",
+      [path.join(root, "scripts", script)],
+      { env: { ...process.env, ...env }, timeout: 60_000, maxBuffer: 1024 * 1024 },
+      (error, stdout) => resolve(error ? "" : stdout),
+    )
+    child.stdin?.on("error", () => {})
+    child.stdin?.end(JSON.stringify(payload))
+  })
+}
+
+function additionalContext(stdout) {
+  try {
+    return JSON.parse(stdout)?.hookSpecificOutput?.additionalContext ?? ""
+  } catch {
+    return ""
+  }
+}
+
 function commandPrompt(prompt, sessionID, delivery, skillID) {
   const arguments_ = prompt.text?.trim() ?? ""
   const next = {
@@ -157,7 +186,29 @@ async function injectInstructions(ctx) {
 export default {
   id: "cedricziel.oss",
   async setup(ctx) {
+    const pending = new Map()
+
     await register(ctx)
     await injectInstructions(ctx)
+
+    await ctx.session.hook("context", (event) => {
+      const notes = pending.get(event.sessionID)
+      if (!notes?.length) return
+      pending.delete(event.sessionID)
+      event.system.push({ type: "text", text: notes.join("\n") })
+    })
+
+    await ctx.session.hook("prompt", async (event) => {
+      const output = await run(
+        "stack-hook.sh",
+        { cwd: ctx.location.directory },
+        { STACK_HOOK_STATE_DIR: path.join(dataDir, "stack") },
+      )
+      const note = additionalContext(output)
+      if (!note) return
+      const notes = pending.get(event.sessionID) ?? []
+      notes.push(note)
+      pending.set(event.sessionID, notes)
+    })
   },
 }
