@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.24.0](https://github.com/cedricziel/claude-plugins/compare/toolkit-v1.23.0...toolkit-v1.24.0) (2026-11-27)
+
+
+### Features
+
+* **opencode:** add OpenCode V2 support ([#94](https://github.com/cedricziel/claude-plugins/issues/94)) ([442624d](https://github.com/cedricziel/claude-plugins/commit/442624dcb0bd46b8c85117a8f16af7759374a9a6))
+* **toolkit:** add OpenCode Zen and Go model routing ([#98](https://github.com/cedricziel/claude-plugins/issues/98)) ([0012de5](https://github.com/cedricziel/claude-plugins/commit/0012de585110a8206340fe1545d6c5be31b73ede))
+
 ## [1.23.0](https://github.com/cedricziel/claude-plugins/compare/toolkit-v1.22.0...toolkit-v1.23.0) (2026-10-25)
 
 

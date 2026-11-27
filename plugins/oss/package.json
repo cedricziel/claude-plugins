@@ -1,6 +1,6 @@
 {
   "name": "@cedricziel/opencode-oss",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "OpenCode adapter for the oss plugin: generic engineering instructions and the commit-discipline, pull-request, stacked-PR, testing, writing, issue, release-note, skill-maintenance, and UX-design skills.",
   "type": "module",
   "exports": {

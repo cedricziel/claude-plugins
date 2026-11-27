@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.0](https://github.com/cedricziel/claude-plugins/compare/common-v1.10.0...common-v1.11.0) (2026-11-27)
+
+
+### Features
+
+* **opencode:** add OpenCode V2 support ([#94](https://github.com/cedricziel/claude-plugins/issues/94)) ([442624d](https://github.com/cedricziel/claude-plugins/commit/442624dcb0bd46b8c85117a8f16af7759374a9a6))
+
 ## [1.10.0](https://github.com/cedricziel/claude-plugins/compare/common-v1.9.0...common-v1.10.0) (2026-10-25)
 
 

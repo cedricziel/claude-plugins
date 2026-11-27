@@ -1,6 +1,6 @@
 {
   "name": "@cedricziel/opencode-skills",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "OpenCode adapter for the skills plugin: CodeRabbit, Forgejo, Pangolin, OpenSpec, and dashboard tool-integration skills.",
   "type": "module",
   "exports": {

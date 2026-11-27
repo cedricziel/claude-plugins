@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.10.0](https://github.com/cedricziel/claude-plugins/compare/oss-v0.9.0...oss-v0.10.0) (2026-11-27)
+
+
+### Features
+
+* **opencode:** add OpenCode V2 support ([#94](https://github.com/cedricziel/claude-plugins/issues/94)) ([442624d](https://github.com/cedricziel/claude-plugins/commit/442624dcb0bd46b8c85117a8f16af7759374a9a6))
+* **oss:** add deterministic ux-lint and design nudges ([#97](https://github.com/cedricziel/claude-plugins/issues/97)) ([b667a3e](https://github.com/cedricziel/claude-plugins/commit/b667a3e0af51302d00d9d0f50751ea0b82562b12))
+* **oss:** add ux-design skill with cited reference library ([#95](https://github.com/cedricziel/claude-plugins/issues/95)) ([c75a35f](https://github.com/cedricziel/claude-plugins/commit/c75a35f53ca9ecd130c101e50fb3fdd7f8fc89b2))
+* **oss:** remind agents to build GitHub native PR stacks ([#96](https://github.com/cedricziel/claude-plugins/issues/96)) ([f8893df](https://github.com/cedricziel/claude-plugins/commit/f8893df7d8f6feca0a632a26469632d25d397bbc))
+
 ## [0.9.0](https://github.com/cedricziel/claude-plugins/compare/oss-v0.8.0...oss-v0.9.0) (2026-10-13)
 
 
