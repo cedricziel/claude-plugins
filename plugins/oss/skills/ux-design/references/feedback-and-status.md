@@ -52,6 +52,7 @@ Limits and required behaviour from Nielsen's response-time thresholds [1].
 - Match the skeleton to the final layout. A skeleton that predicts the wrong block sizes turns content arrival into a jarring reflow [4][inference].
 - Treat a shimmer as motion: keep it subtle, and disable it under reduced-motion preferences [4][5].
 - Skeletons buy tolerance, not speed. Fix the request before polishing the placeholder; the article is explicit that they do not replace performance work [4].
+- Do not rely on `aria-busy` to hide loading content: most screen readers ignore it, so hide the busy section with `aria-hidden` or CSS and keep visible "Loading" text for assistive technology [11].
 - Paint the shell and above-the-fold content first, then stage the rest, so the first paint carries real information [inference].
 - Accept the limit: no indicator makes a 30 s wait acceptable. Reduce the work, cache it, or move it off the critical path [inference].
 
@@ -71,6 +72,8 @@ Limits and required behaviour from Nielsen's response-time thresholds [1].
 - An auto-dismissing error toast can cost minutes: one user waited five minutes for content because the failure notice had faded after five seconds [6].
 - Action-required messages should be intrusive and persistent, dismissed by an explicit act; passive messages can be a badge or non-modal popover [6].
 - Place confirmation near the control that caused it. A banner at the top of a long page is routinely missed [6].
+- Do not move focus to a notification that has nothing to act on; focus stays with the user's task and a live region carries the message, because focus moved to a passive message leaves the user at a dead end [8].
+- Lead each message with its type in words ("Error:", "Info:") instead of a colour or icon alone, and only notify about changes the user can still find afterwards in the interface [8].
 - Do not confirm what the user can already see. Per-keystroke "Draft saved" toasts train dismissal [inference].
 - A confirmation nobody reads is worse than none: it adds noise and teaches users to close messages unread [inference].
 - State completion in words, not only a checkmark or a colour [7]; add what happens next and a reference the user can quote [inference].
@@ -92,6 +95,7 @@ Limits and required behaviour from Nielsen's response-time thresholds [1].
 - On validation failure, move focus to the summary or the first field in error [7].
 - After async navigation, move focus to the new `h1` or a skip target; never leave focus on a node that was removed [inference].
 - Keep the live region mounted before updating it. Replacing the node usually prevents the announcement [inference].
+- Create one polite and one assertive region at page load, insert each message in one go, and empty the region between updates; many regions compete, and an assertive update can clear queued polite messages [9][10].
 - Do not announce every poll or refresh; throttle and announce only meaningful changes [inference].
 - Pair reduced-motion support with a text status so users who disable animation still get the update [5].
 
@@ -110,3 +114,11 @@ Limits and required behaviour from Nielsen's response-time thresholds [1].
 [6] [Indicators, Validations, and Notifications: Pick the Correct Communication Option](https://www.nngroup.com/articles/indicators-validations-notifications/) — Kim Flaherty, Nielsen Norman Group — accessed 2026-11-27 — supports: indicator versus validation versus notification, action-required versus passive messages, toasts unsuitable for errors, the five-second error that cost five minutes, confirmations missed when placed away from focus.
 
 [7] [User Notification](https://www.w3.org/WAI/tutorials/forms/notifications/) — W3C Web Accessibility Initiative — accessed 2026-11-27 — supports: overall versus inline feedback, success messaging, focus to the first field in error, `aria-live="polite"` during typing versus `assertive` on focus change.
+
+[8] [Notifications](https://inclusive-components.design/notifications/) — Heydon Pickering, Inclusive Components — accessed 2026-11-27 — supports: not moving focus to passive messages, live regions for status, text type prefixes over colour and icons, notifications referring to something still discoverable, not announcing every change.
+
+[9] [Accessible notifications with ARIA Live Regions (Part 1)](https://www.sarasoueidan.com/blog/accessible-notifications-with-aria-live-regions-part-1/) — Sara Soueidan — accessed 2026-11-27 — supports: live region container inserted before updates, `:not(:empty)` styling, `assertive` reserved for critical messages, naming a region, transient announcements, inconsistent `aria-busy` support.
+
+[10] [Accessible notifications with ARIA Live Regions (Part 2)](https://www.sarasoueidan.com/blog/accessible-notifications-with-aria-live-regions-part-2/) — Sara Soueidan — accessed 2026-11-27 — supports: one polite and one assertive region, single-insertion messages, emptying between updates, live regions unsuitable for rich or interactive content, state attributes over announcements.
+
+[11] [More Accessible Skeletons](https://adrianroselli.com/2020/11/more-accessible-skeletons.html) — Adrian Roselli — accessed 2026-11-27 — supports: poor `aria-busy` support, hiding busy content with `aria-hidden` or CSS, visible loading text, skeleton contrast and reduced-motion caveats.

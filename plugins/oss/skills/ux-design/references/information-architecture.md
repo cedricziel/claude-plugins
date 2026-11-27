@@ -10,6 +10,7 @@ Answers one question: how should content be inventoried, grouped, hierarchically
 - Settle the IA before committing to a navigation layout. An inverted-L pattern (top bar plus left rail) accommodates roughly four tiers; discovering five-tier sections later forces either a new navigation design or a crammed tree [1].
 - When a section goes unvisited, split the diagnosis: users reject the label (IA cause) or never notice the link (UI cause). Run one IA-focused and one UI-focused method before redesigning either [8].
 - Do not accept "users will just search". Search logs record the vocabulary users bring, including terms the navigation and category names never use [7].
+- Derive the URL scheme from the IA before wireframes: one stable plain-English segment per object type, plural so the path walks back to an index, and a permanent identifier rather than the title or the current parent [11].
 
 ## Model the user's vocabulary, not the org chart
 
@@ -20,6 +21,7 @@ Answers one question: how should content be inventoried, grouped, hierarchically
 - Distrust internal classification schemes. Rental-car classes such as _economy_, _intermediate_, and _full-size_ fail where users sort by size, seats, and price [4].
 - Mirror existing domain vocabulary where it is stable, and describe content where no shared term exists; an invented abstraction costs more than a plain description [inference].
 - Check every label against the org chart: department names (_Office of the Vice Chancellor of Finance_) mean nothing to users who do not already know where the content lives [2].
+- Build the card list from user questions, objections, and tasks, not from the sections the organisation wants to promote; merge duplicates into 30–60 plain-language cards [9].
 
 ## Choose breadth and depth deliberately
 
@@ -49,6 +51,7 @@ Both shapes describe the same content; the trade is between label specificity an
 - Account for the tool limit: most tree-testing software scores only leaf nodes, so an intermediate category landing page cannot be the correct answer [5].
 - Always tree-test the hierarchy produced by a card sort. Sorts generate options, never a validated structure [5].
 - Follow the standard sequence: usability test the current site for findability failures, card sort to generate options, tree test to choose one [5].
+- Treat cards filed under several sections — or dropped into an added _I don't know_ bucket — as cross-linking targets: link the page from every section users filed it under, not only its canonical parent [9].
 
 ## Label for information scent
 
@@ -87,6 +90,7 @@ Both shapes describe the same content; the trade is between label specificity an
 - Maintain the taxonomy in a tool that stores preferred and non-preferred terms, not in prose documents [6].
 - Skip the full inventory on a small, fully authored site; insist on it for migrations, mergers, and any site whose content ownership is unclear [inference].
 - Version the tree with a date and an owner. A hierarchy that changes silently makes old tree-test results unreadable [inference].
+- Number nodes decimally in the sitemap (1.0, 1.1, 1.2.1) and reuse those IDs in audits, wireframes, and tickets so the team cites the same page [10].
 
 ## Sources
 
@@ -105,3 +109,9 @@ Both shapes describe the same content; the trade is between label specificity an
 [7] [Search-Log Analysis: The Most Overlooked Opportunity in Web UX Research](https://www.nngroup.com/articles/search-log-analysis/) — Nielsen Norman Group, Susan Farrell — accessed 2026-11-27 — supports: query volumes and windows, no-result analysis, session chains, vocabulary mismatch, privacy, review cadence.
 
 [8] [Low Findability and Discoverability: Four Testing Methods to Identify the Causes](https://www.nngroup.com/articles/navigation-ia-tests/) — Nielsen Norman Group, Jen Cardello — accessed 2026-11-27 — supports: findability vs. discoverability, IA-vs-UI diagnosis, click tests, method combination.
+
+[9] [How To Create An Information Architecture That Is Easy To Use](https://www.smashingmagazine.com/2022/03/easy-information-architecture/) — Smashing Magazine, Paul Boag — accessed 2026-11-27 — supports: questions/objections/tasks as the card source, the added "I don't know" bucket, cross-linking cards filed under several sections.
+
+[10] [Everyday Information Architecture: Auditing for Structure](https://alistapart.com/article/everyday-information-architecture-excerpt/) — A List Apart, Lisa Maria Martin — accessed 2026-11-27 — supports: decimal page IDs reused across audits, sitemap, and wireframes; structural audit columns.
+
+[11] [Responsive Design Begins With The URL](https://www.smashingmagazine.com/2014/05/responsive-design-begins-with-the-url/) — Smashing Magazine, David Marland — accessed 2026-11-27 — supports: URL scheme derived from the IA, permanent object identifiers over titles and parents, canonical home per object.

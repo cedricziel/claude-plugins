@@ -27,6 +27,7 @@ This file answers what WCAG 2.2 Level AA actually requires of a screen, which cr
 - Chart lines, bars, map regions, and status icons are graphical objects: 3:1 against adjacent colours wherever they carry meaning [2].
 - If the same values appear as text or in a table, the graphic is no longer required for understanding and the contrast bar drops [2].
 - Inline body links need a non-colour cue such as an underline, or 3:1 against the surrounding text [2].
+- Test in a user contrast theme, not only in default colours: forced-colors drops background images, gradients, and shadows, so every boundary and state must survive as a border, text, or `currentColor` icon, and the user's palette must not be overridden [13].
 
 ## Zoom, Reflow, And Text Spacing
 
@@ -66,6 +67,7 @@ This file answers what WCAG 2.2 Level AA actually requires of a screen, which cr
 - Keep the live-region node in the DOM before changing its text, and do not announce the same event through both a live region and a focus move [inference].
 - Headings are the page's table of contents for screen readers; a skipped level breaks the outline even when the visual size looks right [10][inference].
 - The page title names screen and state ("Invoice 1042 – Paid") and is the first thing a screen reader announces [10].
+- Mark up data tables with `<caption>` and `<th scope="col">` / `<th scope="row">`, and keep `<caption>` and `<th>` out of layout tables; otherwise screen readers announce a data grid with navigation that does not exist [14].
 
 ## Forms, Labels, Errors
 
@@ -86,7 +88,7 @@ This file answers what WCAG 2.2 Level AA actually requires of a screen, which cr
 - Animation the page starts on its own is a separate problem: provide visible controls to stop animation and autoplaying sound [10].
 - Colour is never the only channel; pair it with text, an icon, a pattern, or position for required, error, selected, and chart-series identity [2].
 - Provide captions for prerecorded video with speech, transcripts for audio, and audio description when visuals carry meaning absent from the soundtrack [10].
-- Decorative images get empty alt text; informative images describe purpose, not appearance; charts need a data table or text alternative [10][2].
+- Give every image an `alt` attribute: empty for decorative or redundant images, purpose rather than appearance for informative ones, and the destination when the image is the only content of a link or button; charts need a data table or text alternative [10][2][12].
 - Avoid text baked into images; where unavoidable, meet 4.5:1 inside the image and repeat the text nearby [1].
 
 ## Testing Without A Scanner
@@ -99,6 +101,7 @@ This file answers what WCAG 2.2 Level AA actually requires of a screen, which cr
 - State pass: focus, hover, active, disabled, error, loading, empty, plus dark and high-contrast modes [inference].
 - These checks catch barriers a visual pass misses, but they are not exhaustive; passing them is a floor, not a certificate [10].
 - Recruit at least one assistive-technology user for flows with legal, financial, or health consequences; expert inspection is not a substitute [inference].
+- A conformance claim names the screen readers, browsers, operating systems, and versions tested and what each announced; "screen-reader tested" without that list is an assertion, not a result [15].
 
 ## Sources
 
@@ -113,3 +116,7 @@ This file answers what WCAG 2.2 Level AA actually requires of a screen, which cr
 [9] [Understanding SC 2.3.3: Animation from Interactions (Level AAA)](https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions.html) — W3C Web Accessibility Initiative — accessed 2026-11-27 — supports: `prefers-reduced-motion`, parallax and interaction-triggered animation, vestibular harm, difference from 2.2.2.
 [10] [Easy Checks – A First Review of Web Accessibility](https://www.w3.org/WAI/test-evaluate/easy-checks/) — W3C Web Accessibility Initiative — accessed 2026-11-27 — supports: skip link, visible focus, zoom, headings, labels, captions, transcripts, audio description checks, and the warning that passing them is not comprehensive.
 [11] [Developing a Keyboard Interface](https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/) — W3C ARIA Authoring Practices Guide — accessed 2026-11-27 — supports: keyboard operability, DOM-order tab sequence, `tabindex` values, roving tabindex, `aria-activedescendant`, focus persistence, initial focus guidance.
+[12] [Alternative Text](https://webaim.org/techniques/alttext/) — WebAIM — accessed 2026-11-27 — supports: every image needs an alt attribute, empty alt for decorative and redundant images, functional images inside links and buttons, "image of" redundancy, context deciding the text.
+[13] [WHCM and System Colors](https://adrianroselli.com/2021/02/whcm-and-system-colors.html) — Adrian Roselli — accessed 2026-11-27 — supports: forced-colors stripping background images, gradients, and shadows; `currentColor` for icons; honouring the user's contrast theme and system colour pairings.
+[14] [Creating Accessible Tables — Data Tables](https://webaim.org/techniques/tables/data) — WebAIM — accessed 2026-11-27 — supports: `<caption>`, `<th>` and `scope`, headers never empty, layout tables that must not use data-table markup, proportional sizing.
+[15] [Your Accessibility Claims Are Wrong, Unless…](https://adrianroselli.com/2022/11/your-accessibility-claims-are-wrong-unless.html) — Adrian Roselli — accessed 2026-11-27 — supports: naming the assistive technology, browser, OS and versions tested, showing what was announced, distrusting inspector output.

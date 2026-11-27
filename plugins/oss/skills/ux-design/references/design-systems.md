@@ -10,6 +10,7 @@ This file answers whether to reuse, extend, or create a component, how tokens an
 - Never fork a component into a product folder; a fork loses upstream fixes and splits the meaning of its name [inference].
 - Extend at the token or variant layer, not with per-screen overrides; a one-off style prop is untested API from the day it lands [inference].
 - Count consumers before extending: a variant for one screen is a local composition or a documented exception [inference].
+- Treat the first request for a new pattern as a one-off in the product backlog; promote it into the system when a second team asks for the same thing [6].
 - A system's public inventory is its contract: GOV.UK ships a named component for each recurring job and expects teams to compose those parts across different patterns and contexts [4].
 - Compose before extending: most "missing components" are an existing text input, alert, or summary list arranged differently [4].
 
@@ -33,6 +34,7 @@ Costs in the table are [inference]; the adopt → adapt → create ordering and 
 - Separate primitive tokens (palette) from semantic tokens (role) and let components reference semantic tokens only [inference].
 - Theme by swapping semantic values, never by overriding a component's internals per brand [inference].
 - Keep a motion scale (for example 100/150/250 ms) and a named easing set; ad-hoc cubic-beziers are the most common untokenised value after colour [inference].
+- Define a value for every component-level token in every theme; a token that exists in one theme only is an override with a nicer name [7].
 - Hardcoded values rot silently: dark mode, high-contrast mode, density, and rebrand all miss them, and audits cannot find them by token name [inference].
 - A value like `13px` or `18px` signals a missing scale step; fix the scale, not the screen [inference].
 
@@ -40,6 +42,7 @@ Costs in the table are [inference]; the adopt → adapt → create ordering and 
 
 - Prefer variants over booleans: two booleans create four combinations, five create thirty-two, and half are undefined [inference].
 - Accept one `variant` enum plus orthogonal `size` and `tone`; reject `isPrimary` / `isSecondary` / `isDanger` triples [inference].
+- Split a component whose surface multiplies intent × type × size × state into one public component per intent; a single all-options component hides which choice is correct [8].
 - Use slots or children for content; a component that takes `title`, `subtitle`, `iconLeft`, `iconRight`, and `actions` is a page pretending to be a component [inference].
 - Do not expose raw style props (`color`, `padding`, `fontSize`); they bypass tokens and make every screen unique again [inference].
 - Define every state in the API: default, hover, active, focus-visible, disabled, loading, error, selected. Missing states get improvised per screen [inference].
@@ -71,6 +74,7 @@ Costs in the table are [inference]; the adopt → adapt → create ordering and 
 ## Contributing, Deprecating, Versioning
 
 - Publish intake criteria: used in two products or twice in one, stable behaviour, accessible, and owned by a team [inference].
+- Publish the intake route and support protocol before the first request: where to ask, who triages, and whether the answer is a one-off or a system change [9].
 - Give every component an owner and a response time; unowned components accumulate stale issues and quiet forks [1].
 - Deprecate in three steps: mark it in docs, warn at build time, remove it at a major version, with the replacement and a codemod published [inference].
 - Version semantically: a breaking prop or markup change is major, a new variant is minor, a visual fix is patch [inference].
@@ -98,3 +102,7 @@ Costs in the table are [inference]; the adopt → adapt → create ordering and 
 [3] [Jakob's Law](https://lawsofux.com/jakobs-law/) — Jon Yablonski, Laws of UX — accessed 2026-11-27 — supports: transferred expectations from other products, cost of discord, transition escape hatches.
 [4] [Components](https://design-system.service.gov.uk/components/) — GOV.UK Design System — accessed 2026-11-27 — supports: reusable component inventory as the system's contract, composing components across patterns and contexts.
 [5] [Components](https://designsystem.digital.gov/components/overview/) — U.S. Web Design System (GSA) — accessed 2026-11-27 — supports: published inventory of 47 components, one user-interface need per component, audit starting point.
+[6] [Maintaining Design Systems](https://atomicdesign.bradfrost.com/chapter-5/) — Brad Frost, Atomic Design — accessed 2026-11-27 — supports: one-off until a second application needs it, system-level fixes, pattern-library obsolescence, governance questions, communicating change.
+[7] [The Anatomy Of Themed Design System Components](https://www.smashingmagazine.com/2022/12/anatomy-themed-design-system-components/) — Dan Donald, Smashing Magazine — accessed 2026-11-27 — supports: core, semantic and component token layers, tokenising as themes diverge, a component token carrying a value per theme, code audit alongside the live audit.
+[8] [Building Components For Consumption, Not Complexity (Part 2)](https://www.smashingmagazine.com/2023/12/building-components-consumption-not-complexity-part2/) — Luis Ouriach, Smashing Magazine — accessed 2026-11-27 — supports: optimising for usage over creation, splitting an overloaded variant matrix by intent, discoverability through specific names and aliases.
+[9] [A Design System Governance Process](https://bradfrost.com/blog/post/a-design-system-governance-process/) — Brad Frost, bradfrost.com — accessed 2026-11-27 — supports: intake and triage route, snowflake versus system work, support protocol, release and adoption QA gates.

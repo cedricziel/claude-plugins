@@ -160,9 +160,11 @@ into a full ordered pass with severity.
 The references synthesize public guidance from Nielsen Norman Group, the W3C
 (WCAG 2.2 understanding docs, WAI-ARIA Authoring Practices, WAI tutorials),
 GOV.UK Design System and GOV.UK content guidance, USWDS, Baymard Institute,
-Laws of UX, MeasuringU, Mailchimp's content style guide, and Google Research.
-Each file lists the exact pages it drew on, the access date, and what each
-supports.
+Laws of UX, MeasuringU, Mailchimp's content style guide, and Google Research,
+plus practitioner writing from Smashing Magazine, A List Apart, WebAIM, Adrian
+Roselli, Heydon Pickering's Inclusive Components, Sara Soueidan, Adam Silver,
+Brad Frost, Josh Comeau, and Practical Typography. Each file lists the exact
+pages it drew on, the access date, and what each supports.
 
 Text is paraphrased; quotations stay under 25 words and are attributed. Nothing
 here reproduces a source wholesale, and no source is paywalled content

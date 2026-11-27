@@ -11,6 +11,7 @@ What a first-time user should see, how much of it to build, and how to tell whet
 - Keep feature promotion out of first run and put it where people compare products; inside the app, mention a feature only once it becomes usable [2].
 - Design for the person who skips. Users start working immediately rather than reading preparation material [1].
 - Reserve a dedicated walkthrough for a genuinely novel interaction model, not for standard controls [1].
+- Ask for a system permission only from a control the user chose, at the point the benefit is visible ("Alert me when prices drop"), never on first paint before any value [13].
 
 ## The first screen proves three things
 
@@ -66,6 +67,8 @@ What a first-time user should see, how much of it to build, and how to tell whet
 - Collapse or remove the checklist once complete; a permanent "1 of 5 done" panel becomes furniture, then noise [inference].
 - Only include items the product can verify. Manually ticked items that stay unticked read as personal failure [inference].
 - Complete checklist items from the real action, not from clicking "Next" in a tutorial [2].
+- Ask onboarding questions only where the answer visibly changes the next screen; personalisation nobody can see is worse than none, so cut questions whose answers only land in a profile page [12].
+- Never ask again, inside one flow, what an earlier step already collected; a repeated question reads as the product not listening [12].
 
 ## Pick one activation event
 
@@ -76,6 +79,7 @@ What a first-time user should see, how much of it to build, and how to tell whet
 - Set the bar at a real outcome, not a session. A first session with no outcome is a failed first run even when engagement looks healthy [inference].
 - Report activation rate and time to value together; fast-but-rare activation is a different problem from slow-but-common activation [inference].
 - Re-derive the event after a redesign; the old milestone may no longer exist in the flow [9].
+- Test the metric against a real-world outcome: if the number can rise while users still fail at the actual task, it is a proxy, and the product will drift towards producing the proxy rather than the outcome [11].
 
 ## Re-onboarding after change
 
@@ -115,3 +119,6 @@ What a first-time user should see, how much of it to build, and how to tell whet
 [8] [Confirm an email address](https://design-system.service.gov.uk/patterns/confirm-an-email-address/) — GOV.UK Design System team — accessed 2026-11-27 — supports: blocking versus non-blocking confirmation loops, sending immediately, resending and correcting the address, disruption of leaving the service.
 [9] [Product-Led Growth and UX](https://www.nngroup.com/articles/product-led-growth-ux/) — Sara Paul, Nielsen Norman Group — accessed 2026-11-27 — supports: definition of time to value, minimising it, removing login walls, only required steps, reading early behaviour of users who converted.
 [10] [Understanding SC 3.2.1: On Focus](https://www.w3.org/WAI/WCAG22/Understanding/on-focus.html) — W3C Web Accessibility Initiative — accessed 2026-11-27 — supports: no change of context on focus, the help-dialog failure case, predictable first-paint focus behaviour.
+[11] [Designed for a Dead Language](https://alistapart.com/article/designed-for-a-dead-language/) — Shrey Shah, A List Apart — accessed 2026-11-27 — supports: optimising for a measurable proxy instead of the real outcome, and inherited constraints mistaken for truth about the problem.
+[12] [How to Craft Onboarding Surveys Users Love: 5 Do's and Don'ts](https://growth.design/case-studies/grammarly-onboarding-survey) — Growth.Design — accessed 2026-11-27 — supports: simple questions first, stating why each question is asked, personalising from earlier answers, duplicated steps within one flow.
+[13] [How Hopper Perfectly Nails the Permission Requests UX During Onboarding](https://growth.design/case-studies/hopper-permission-requests-ux) — Growth.Design — accessed 2026-11-27 — supports: user-triggered permission prompts, asking at the moment of need, showing the direct benefit, prompts that arrive before trust.

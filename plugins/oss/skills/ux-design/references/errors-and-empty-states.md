@@ -15,6 +15,7 @@ What to say and show when the system cannot do what the user asked: validation, 
 
 - Do not disable the submit button as the validation strategy: a disabled control cannot say which field is wrong, while the guidance is to explain the problem and the fix [4][inference].
 - Let the user attempt the action and report errors on submit; validate while typing only for error-prone formats such as passwords and dates [2].
+- If you validate inline, start when the field is complete — on blur or at its expected length — then re-check on every keystroke and clear the message the moment the value is valid [9].
 - Never fire an error on blur of an empty field the user merely tabbed through; premature errors are hostile [2].
 - Accept forgiving input — spaces, punctuation, several date and phone formats — normalise server-side rather than rejecting [1].
 - Warn before a likely mistake (missing attachment, unsaved changes) rather than reporting it afterwards [2].
@@ -30,6 +31,8 @@ What to say and show when the system cannot do what the user asked: validation, 
 - Show an error code only as secondary diagnostic text, never as the message [2].
 - Drop exclamation marks, humour, and blame; describe the requirement, not the user's failure [2][6].
 - Write a distinct message per case — empty, too long, too short, wrong format, out of range [4].
+- Write at least four to seven messages for each hard field (card number, email, phone), each naming its real sub-case instead of a single generic message [8].
+- Rank error cases by how often they occur and how often the user then abandons; rewrite the top two before polishing rare ones [8].
 - Use an instruction for an empty field ("Enter your name") and a description for a violated rule ("Name must be 35 characters or fewer") [4].
 
 ```
@@ -64,6 +67,7 @@ Good: Enter a start date after 31 August 2017.
 
 - Name the state before designing it: first use (nothing created), no results (query matched nothing), cleared (user finished or deleted everything), error (the fetch failed) [5][6].
 - First use: say what the container holds, why it is empty, one primary action to create the first item, and an example or demo data [5].
+- Seed first use with what the user just created during setup; their own data beats demo content and an illustration [10].
 - No results: show the query and filters that produced zero, keep the search box populated, offer similar queries, spelling fixes, and a browse path [6].
 - Cleared: confirm the completion ("All 12 items reviewed") and offer the next action; do not reuse first-use copy [5][inference].
 - Error: say loading failed, keep a retry control, and never render the no-data message for a failed request [5].
@@ -102,3 +106,6 @@ Good: Enter a start date after 31 August 2017.
 [5] [Designing Empty States in Complex Applications: 3 Guidelines](https://www.nngroup.com/articles/empty-state-interface-design/) — Kate Kaplan, Nielsen Norman Group — accessed 2026-11-27 — supports: system status, misleading empty messages, learning cues, direct pathways, demo data.
 [6] [3 Guidelines for Search Engine “No Results” Pages](https://www.nngroup.com/articles/search-no-results-serp/) — Kathryn Whitenton, Nielsen Norman Group — accessed 2026-11-27 — supports: salience of the no-results message, query retention, alternative queries, no humour.
 [7] [10 Usability Heuristics for User Interface Design](https://www.nngroup.com/articles/ten-usability-heuristics/) — Jakob Nielsen, Nielsen Norman Group — accessed 2026-11-27 — supports: error prevention priority by cost, user control, plain-language recovery.
+[8] [Improve Validation Errors with Adaptive Messages (98% Don’t)](https://baymard.com/research-articles/adaptive-validation-error-messages) — Edward Scott, Baymard Institute — accessed 2026-11-27 — supports: generic messages locking users out, four to seven messages per complex field, prioritising by error frequency and abandonment.
+[9] [Usability Testing of Inline Form Validation: 31% Don’t Have It, 4% Get It Wrong](https://baymard.com/research-articles/inline-form-validation) — Edward Scott, Baymard Institute — accessed 2026-11-27 — supports: premature validation complaints, checking on blur or at expected length, clearing the error on correction.
+[10] [Trello User Onboarding](https://growth.design/case-studies/trello-user-onboarding) — Growth.Design — accessed 2026-11-27 — supports: carrying setup input into the first-use board, saved input versus an intimidating empty state.

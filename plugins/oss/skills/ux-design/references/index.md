@@ -33,6 +33,13 @@ ceiling, and a third means the question is too broad — narrow it instead.
 | [research-and-validation.md](research-and-validation.md)         | What evidence to gather and how much is enough            | NN/g (five users, heuristic evaluation, usability testing), SUS, Google HEART                                                          |
 | [review-checklist.md](review-checklist.md)                       | A repeatable pre-ship pass with severity                  | Synthesis; cites the heuristics, WCAG criteria, and deceptive-pattern research behind each check                                       |
 
+Beyond standards bodies and research organisations, several files also draw on
+practitioner sources: Smashing Magazine, A List Apart, WebAIM, Adrian Roselli,
+Inclusive Components, Sara Soueidan, Adam Silver, Brad Frost, Josh Comeau,
+Practical Typography, Growth.Design, MeasuringU, and Baymard. The per-file
+`## Sources` lists are authoritative; this table names only the dominant one or
+two per file.
+
 ## Reading Rules
 
 - Read the frame paragraph first. Every file opens with the question it answers

@@ -12,6 +12,7 @@ How a control should look, sit, and behave — target size, choice count, disclo
 - Keep one treatment per meaning across the product; the same visual style must not mean "link" here and "label" there [2].
 - Do not strip depth to look modern: flat redesigns remove the strongest clickability cue and produce click uncertainty. Keep a border, a shadow, or a filled surface [2].
 - Never let hover be the only evidence of interactivity — users should not scrub the page with the pointer to discover what is clickable [2].
+- Make one element the card's target: link the title and stretch it over the card, or trigger that title link from the card; a link or button nested inside a card-wide link is announced incompletely or not at all [11].
 - On touch there is no hover: trigger the same state change on tap-down or the first tap, and keep the cue permanently visible [inference].
 
 ## Target size, spacing, and Fitts's law
@@ -44,6 +45,8 @@ How a control should look, sit, and behave — target size, choice count, disclo
 - Never hide the primary action, the total cost, a destructive consequence, the current validation state, or anything that changes what the user is agreeing to [7][inference].
 - Do not use disclosure to hide the price of an action; that is deception, not simplification [inference].
 - Accept the extra click only when the hidden content is genuinely rare; otherwise the click cost exceeds the clutter saved [7].
+- Build each disclosure from a `<button>` with `aria-expanded` on the button and `hidden` on the panel; `aria-expanded` on the panel, or turning the heading itself into a button, either hides the state or drops the heading from the outline [13].
+- Do not put `role="menu"` and `role="menuitem"` on site navigation: ARIA menus are application menus with arrow-key focus and non-interactive items, while navigation is a list of links that must keep link behaviour [12].
 - Keep interdependent options (dates, prices, availability) on one screen so users can compare without navigating [7].
 
 | Disclose behind a click          | Keep visible at all times         |
@@ -98,6 +101,7 @@ How a control should look, sit, and behave — target size, choice count, disclo
 - Return focus after any dialog, overlay, or inline edit closes, to the control that opened it [9].
 - Send initial focus to the first field of a form opened by an explicit action, and to the page heading after navigation [inference].
 - Bind Escape to cancel or dismiss, and Enter to submit only while a single-line input has focus [inference].
+- Keep a toggle button's label fixed and expose state with `aria-pressed`, or `role="switch"` with `aria-checked`; changing label and state together leaves no stable name and can produce a paused control announced as pressed [14].
 - Let hover add information, never gate it: tooltips and hover menus need focus and tap equivalents, and no label may be readable only on hover [2][inference].
 
 ## Sources
@@ -112,3 +116,7 @@ How a control should look, sit, and behave — target size, choice count, disclo
 [8] [The Power of Defaults](https://www.nngroup.com/articles/the-power-of-defaults/) — Jakob Nielsen, Nielsen Norman Group — accessed 2026-11-27 — supports: defaults as instructions, credibility cost, pre-populating common values.
 [9] [Dialog (Modal) Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/) — W3C Web Accessibility Initiative — accessed 2026-11-27 — supports: focus containment, Escape, focus return, `aria-modal`, initial focus choice.
 [10] [Confirmation Dialogs Can Prevent User Errors — If Not Overused](https://www.nngroup.com/articles/confirmation-dialog/) — Jakob Nielsen, Nielsen Norman Group — accessed 2026-11-27 — supports: undo over confirmation, specificity, outcome-labelled buttons, typed confirmation.
+[11] [Cards](https://inclusive-components.design/cards/) — Heydon Pickering, Inclusive Components — accessed 2026-11-27 — supports: whole-card targets, nested interactive elements in block links, focus-within for card-level focus, avoiding redundant "read more" tab stops.
+[12] [Menus & Menu Buttons](https://inclusive-components.design/menus-menu-buttons/) — Heydon Pickering, Inclusive Components — accessed 2026-11-27 — supports: navigation as nested link lists, ARIA menu semantics reserved for application menus, `aria-expanded` on the trigger, state changing on click not focus.
+[13] [Collapsible Sections](https://inclusive-components.design/collapsible-sections/) — Heydon Pickering, Inclusive Components — accessed 2026-11-27 — supports: button inside the heading, `aria-expanded` on the control, `hidden` on the panel, not overriding heading roles, `currentColor` icons in high contrast.
+[14] [Toggle Buttons](https://inclusive-components.design/toggle-button/) — Heydon Pickering, Inclusive Components — accessed 2026-11-27 — supports: `aria-pressed` and switch semantics, never changing label and state together, `aria-labelledby` for auxiliary labels, colour alone failing 1.4.1.

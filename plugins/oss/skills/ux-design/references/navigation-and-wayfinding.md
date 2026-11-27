@@ -52,6 +52,8 @@ Answers how users learn where they are, where they can go, and how they got here
 - Open submenus on click, not hover; hover is unavailable to keyboard and touch users and misfires for everyone else [3].
 - Mark items that open a submenu with a caret so users can tell them from items that navigate [3].
 - Use a homepage-as-hub only for task-based products where users complete one job per session; otherwise it wastes the homepage and adds a step to every navigation action [6].
+- Give each menu row one function: the whole row opens the submenu, and the category page is linked inside the panel; a row split into a title link plus a separate expander icon misfires even with a divider [9].
+- Maintain one navigation tree, not one per breakpoint: two copies drift apart, and links hidden with `display: none` still download for mobile users [11].
 
 | Pattern             | Fits                         | Characteristic failure                           |
 | ------------------- | ---------------------------- | ------------------------------------------------ |
@@ -73,6 +75,7 @@ Pattern descriptions and failure modes per [3], [4], [5], [6].
 - Omit breadcrumbs on sites one or two levels deep and on linear, non-hierarchical experiences [2].
 - Pick one canonical path for polyhierarchical content and show only that trail; multiple trails confuse users and search engines [2].
 - On mobile, forbid wrapping, keep tap targets at least 1 cm × 1 cm, and consider truncating the trail to the immediate parent [2].
+- Link every ancestor crumb; a trail that mixes links with plain-text intermediates in the same styling collects rage clicks [10].
 
 ## Keep back, history, and deep links predictable
 
@@ -82,6 +85,7 @@ Pattern descriptions and failure modes per [3], [4], [5], [6].
 - Put filters, sort order, pagination, and selected tabs in the URL so a copied link reproduces the view [inference].
 - Only block indexing for pages that genuinely must not be seen first; deep links are how motivated users arrive [7].
 - Remember the measured cost of bad paths: difficulty getting from homepage to the right product page accounted for 27% of e-commerce task failures across 20 sites [7].
+- Replace a generic _Back_ in a slide-in menu with the name of the level it returns to, and stack visited levels so return is one tap [9].
 
 ## Make navigation operable without a mouse
 
@@ -111,3 +115,9 @@ Pattern descriptions and failure modes per [3], [4], [5], [6].
 [7] [Deep Linking is Good Linking](https://www.nngroup.com/articles/deep-linking-is-good-linking/) — Nielsen Norman Group, Jakob Nielsen — accessed 2026-11-27 — supports: three required elements on interior pages, drill-down assumption, 27% failure share, indexing exceptions.
 
 [8] [Menus Tutorial](https://www.w3.org/WAI/tutorials/menus/) — W3C Web Accessibility Initiative — accessed 2026-11-27 — supports: bypass blocks, focus order, focus visible, name/role/value, fly-out dismissal, target size, colour-only state, current-location technique G128.
+
+[9] [Designing Navigation for Mobile: Design Patterns and Best Practices](https://www.smashingmagazine.com/2022/11/navigation-design-mobile-ux/) — Smashing Magazine, Vitaly Friedman — accessed 2026-11-27 — supports: single function per menu row, billboard pattern for top tasks, contextual back labels, navigation stacks, two-level drawers.
+
+[10] [Designing Effective Breadcrumbs Navigation](https://www.smashingmagazine.com/2022/04/breadcrumbs-ux-design/) — Smashing Magazine, Vitaly Friedman — accessed 2026-11-27 — supports: breadcrumb placement above the heading, all crumbs as links, rage clicks on disabled intermediates.
+
+[11] [Responsive Navigation Patterns](https://bradfrost.com/blog/post/responsive-nav-patterns/) — bradfrost.com, Brad Frost — accessed 2026-11-27 — supports: hide-and-cry costs, duplicate navigation trees per breakpoint, footer-only discovery failure.

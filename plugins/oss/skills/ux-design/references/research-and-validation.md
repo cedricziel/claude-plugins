@@ -8,14 +8,16 @@ This file answers which research method fits a given design question, how many p
 - Separate behavioural from attitudinal: observation and analytics show what happened, surveys show what people say about it [2][5].
 - Pick the smallest method that can falsify the claim under discussion: a heuristic pass before five users, five users before a survey, an A/B test last [7][inference].
 - Use qualitative work for causes and quantitative work for size; neither substitutes for the other [2][4].
+- Classify the study as discovery, estimation, or comparison before choosing n: discovery follows problem frequency, estimation the margin of error, comparison the smallest difference worth detecting [9].
 - Write down the decision the study will change before recruiting. No decision, no study [inference].
 - Match the artifact to the question: paper or prototype for flow, live build for interaction detail, tree for hierarchy, live traffic for outcome size [inference].
 - Recruit people who match the task, not colleagues or friends; a proxy participant produces proxy findings [2][inference].
+- Fix who is in the sample before adding participants: size buys precision, not representativeness, and a large sample of the wrong people stays wrong [10].
 - Keep stakeholders out of the room unless they are taking notes; a stakeholder defending a decision contaminates the session [2][inference].
 
 ## Five Users, And What It Cannot Tell You
 
-- Five participants per round typically surface about 85% of usability problems in one comparable user group [1].
+- Five participants surface about 85% of the problems that most users hit, and only about 38% of all problems in a large benchmark; state which tier the round is meant to cover [1][8].
 - The model behind it: a single user exposes roughly 31% of problems on average, and findings overlap heavily after the fifth [1].
 - Spend a fixed budget on three rounds of five rather than one round of fifteen; fixes between rounds teach more than extra users [1].
 - Use 3–4 participants per group when testing two distinct groups, and 3 per group for three or more groups [1].
@@ -65,6 +67,7 @@ This file answers which research method fits a given design question, how many p
 - Run an A/B test only with a hypothesis from prior research, one changed element, a primary metric, and guardrail metrics [4].
 - Size the test before starting: baseline rate, minimum detectable effect, significance threshold; then run at least one to two weeks to absorb weekly variation [4].
 - Skip A/B on low-traffic pages; without thousands of interactions the difference is noise [4].
+- Size an A/B from the effect, not the traffic: detecting 5% → 6% takes roughly 12,800 users, so a few thousand only settles large differences [9].
 - Do not bundle several changes into one variant; you learn that the bundle moved a number, not which change did it [4].
 - Expect most tests to lose: about one in seven wins, so a losing test is normal rather than a failed team [4].
 - Do not let one winning metric overrule guardrails; a deceptive variant can raise conversion and destroy retention [4].
@@ -92,3 +95,6 @@ This file answers which research method fits a given design question, how many p
 [5] [Measuring Usability with the System Usability Scale (SUS)](https://measuringu.com/sus/) — Jeff Sauro, MeasuringU — accessed 2026-11-27 — supports: ten-item scoring, average 68, percentile interpretation, not a percentage, not diagnostic, modest correlation with task performance.
 [6] [Measuring the User Experience on a Large Scale: User-Centered Metrics for Web Applications](https://research.google/pubs/measuring-the-user-experience-on-a-large-scale-user-centered-metrics-for-web-applications/) — Kerry Rodden, Hilary Hutchinson, Xin Fu, Google Research (CHI 2010) — accessed 2026-11-27 — supports: HEART framework, mapping product goals to signals and metrics, large-scale behavioural measurement.
 [7] [How to Conduct a Heuristic Evaluation](https://www.nngroup.com/articles/how-to-conduct-a-heuristic-evaluation/) — Kate Moran and Kelley Gordon, Nielsen Norman Group — accessed 2026-11-27 — supports: 1–2 hour timebox, three to five independent evaluators, narrow scope, independent passes, consolidation, heuristics as hypotheses not user findings.
+[8] [Sample Size in Usability Studies: How Well Does the Math Match Reality?](https://measuringu.com/sample-size-reality/) — Jeff Sauro, MeasuringU — accessed 2026-11-27 — supports: 38% of 406 problems found by the first five users, 91% of the most common tier, problem frequency separated from severity.
+[9] [How to Find the Sample Size for 8 Common Research Designs](https://measuringu.com/sample-size/) — Jeff Sauro, MeasuringU — accessed 2026-11-27 — supports: discovery, estimation and comparison study types, 5 users for 30% problems and 21 for 10%, A/B sample size from the effect.
+[10] [Getting Started Finding the Right Sample Size](https://measuringu.com/samplesize-start/) — Jeff Sauro, MeasuringU — accessed 2026-11-27 — supports: representativeness distinct from sample size, homogeneous versus mixed populations, precision scaling with n.

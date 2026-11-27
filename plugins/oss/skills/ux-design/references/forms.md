@@ -12,6 +12,7 @@ This file answers one question: how should a form be built so people can answer 
 - Ask for each piece of information once per journey; pre-fill it or offer a previously entered answer as a choice [4].
 - Order questions by the user's task, not the data model: ask disqualifying questions first so ineligible users stop early [inference].
 - Write down why every question exists before building it. If you cannot say what the answer changes, delete the field [4].
+- On a check-answers page, give every row its own change link that opens the page holding that answer. One shared link covering a group of answers sends people hunting, then scrolling, for the field they meant [11].
 
 ## Labels, hints, and why placeholders fail
 
@@ -44,6 +45,7 @@ This file answers one question: how should a form be built so people can answer 
 - Place prefixes and suffixes outside the input, mark them `aria-hidden`, and repeat the unit in the label. Tolerate users who type the symbol themselves rather than erroring [1].
 - Apply input masks only to fixed, unambiguous formats. Masks break paste, IME input, screen readers, and international numbers, and can hide the real value from validation [inference].
 - Do not split one number across several fields (phone, card, account). Per-segment labels are usually meaningless when read aloud [inference].
+- When the value must be read back in chunks, play it back under the field or on the check-answers page instead of splitting the input. Keep multiple inputs for values that are genuinely ambiguous as one string, such as dates [13].
 - Allow "I do not know" or "not sure" where that is a valid answer instead of forcing a guess [4].
 - Show remaining characters next to the field when a limit is real, rather than only reporting it after submit [inference].
 
@@ -90,6 +92,8 @@ Patterns from the GOV.UK error message guidance [2].
 - Cut fields before decorating them. Remove anything derivable, collectable later, or never used. Baymard's 2024 benchmark: average checkout 11.3 fields against roughly 8 needed, and 17% of users have abandoned over checkout complexity [8].
 - Checkout specifics: hide Address line 2 and coupon code behind links (30% of testers stopped at Address line 2), default billing to shipping, offer guest checkout, and delay account creation to the confirmation step (84% of sites do not) [8].
 - Keep payment fields in the expected order (number, expiry, security code), label the pay button with the amount ("Pay £24.00"), and place security or returns reassurance next to that button rather than in the footer [inference].
+- Align the primary button with the left edge of the fields, put the back link above the form, and move tangentially related links ("Forgot your password?") above the form too, so they never sit between the last field and the button in the tab order [12].
+- Count pause time as part of the form's cost: the re-reading, the check-answers step, and the guessing about what happens after submit. Put the facts people hesitate over — delivery time, returns window, where a submitted record goes — before the primary button [14].
 
 ## Sources
 
@@ -112,3 +116,11 @@ Patterns from the GOV.UK error message guidance [2].
 [9] [Understanding SC 2.5.8 Target Size (Minimum)](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html) — W3C Web Accessibility Initiative — accessed 2026-11-27 — supports: 24×24 CSS pixel minimum target size and the 24 px spacing exception.
 
 [10] [User Notification](https://www.w3.org/WAI/tutorials/forms/notifications/) — W3C Web Accessibility Initiative — accessed 2026-11-27 — supports: validation during typing versus on focus change, `aria-live` politeness, focus to the first field in error.
+
+[11] [End with one thing per page](https://adamsilver.io/blog/end-with-one-thing-per-page) — Adam Silver — accessed 2026-11-27 — supports: one change link per row on check-answers pages, why shared change links fail, one thing per page as the default end state.
+
+[12] [Where to put buttons on forms](https://adamsilver.io/blog/where-to-put-buttons-on-forms) — Adam Silver — accessed 2026-11-27 — supports: primary button aligned to the input edge, back link above the form, tangentially related links above the form, button choices and their cost.
+
+[13] [Form design: multiple inputs versus one input](https://adamsilver.io/blog/form-design-multiple-inputs-versus-one-input) — Adam Silver — accessed 2026-11-27 — supports: paste and effort costs of split inputs, playing answers back in chunks, dates as the legitimate multi-input case, input masks.
+
+[14] [The second law of form design](https://adamsilver.io/blog/the-second-law-of-form-design) — Adam Silver — accessed 2026-11-27 — supports: completion time as question time plus pause time, hesitation over delivery and returns facts, optional fields that force a decision.
