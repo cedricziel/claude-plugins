@@ -246,6 +246,14 @@ class OpenCodeValidateTest(unittest.TestCase):
         self.assertNotEqual(r.returncode, 0)
         self.assertIn("opencode/index.js", r.stdout)
 
+    def test_package_json_must_be_an_object(self):
+        for content in ("null\n", "[]\n"):
+            with self.subTest(content=content):
+                (self.plugin / "package.json").write_text(content)
+                r = run(self.tmp)
+                self.assertNotEqual(r.returncode, 0)
+                self.assertIn("must be a JSON object", r.stdout)
+
     def test_version_must_match_marketplace(self):
         package = self.plugin / "package.json"
         data = json.loads(package.read_text())

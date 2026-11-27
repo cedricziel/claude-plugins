@@ -102,6 +102,11 @@ def check_opencode_plugin(root, entry):
     where = f"plugin '{name}' OpenCode package"
     package = load_json(package_path)
     if package is None:
+        if package_path.exists():
+            err(f"{where}: package.json must be a JSON object")
+        return
+    if not isinstance(package, dict):
+        err(f"{where}: package.json must be a JSON object")
         return
     require(package, ("name", "version", "type", "exports"), where)
     if not entry_js.is_file():
