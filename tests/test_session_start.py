@@ -32,9 +32,18 @@ class SessionStartTest(unittest.TestCase):
         self.assertIn(str(PLUGIN / "instructions" / "fleet-brief.md"), ctx)
 
     def test_instruction_files_exist(self):
-        for name in ("shared.md", "claude.md", "codex.md"):
+        for name in ("shared.md", "claude.md", "codex.md", "opencode.md"):
             self.assertTrue((PLUGIN / "instructions" / name).is_file())
         self.assertTrue((PLUGIN / "instructions" / "fleet-brief.md").is_file())
+
+    def test_opencode_context_uses_opencode_instructions(self):
+        r = run({"PLUGIN_ROOT": str(PLUGIN)}, ("opencode",))
+        self.assertEqual(r.returncode, 0, r.stderr)
+        ctx = json.loads(r.stdout)["hookSpecificOutput"]["additionalContext"]
+        self.assertIn("Caveman Compression", ctx)
+        self.assertIn("OpenCode's models", ctx)
+        self.assertNotIn("{{FLEET_BRIEF}}", ctx)
+        self.assertNotIn("context7", ctx)
 
     def test_codex_context_uses_openai_model_guidance(self):
         r = run({"PLUGIN_ROOT": str(PLUGIN)}, ("codex",))

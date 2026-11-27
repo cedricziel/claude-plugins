@@ -20,6 +20,11 @@
           "type": "json",
           "path": ".codex-plugin/plugin.json",
           "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": "package.json",
+          "jsonpath": "$.version"
         }
       ]
     },
@@ -40,6 +45,11 @@
         {
           "type": "json",
           "path": ".codex-plugin/plugin.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": "package.json",
           "jsonpath": "$.version"
         }
       ]
@@ -62,6 +72,11 @@
           "type": "json",
           "path": ".codex-plugin/plugin.json",
           "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": "package.json",
+          "jsonpath": "$.version"
         }
       ]
     },
@@ -82,6 +97,11 @@
         {
           "type": "json",
           "path": ".codex-plugin/plugin.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": "package.json",
           "jsonpath": "$.version"
         }
       ]

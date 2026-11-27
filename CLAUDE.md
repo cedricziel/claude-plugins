@@ -51,16 +51,23 @@ dashboards) that anyone using that tool could reuse.
   session effort.
 
 - Never edit `version` by hand: release-please owns it. It rewrites the plugin's
-  `.claude-plugin/plugin.json`, its `.codex-plugin/plugin.json` (where present), and its
-  marketplace entry from conventional commits, so PR titles must be semantic
-  (`feat(oss): …`, `fix(toolkit): …`; `!` or `BREAKING CHANGE` for breaking). A plugin's
-  config lives in `release-please-config.json`; new plugins need an entry there and in
-  `.release-please-manifest.json` (`scripts/validate.py` checks).
+  `.claude-plugin/plugin.json`, its `.codex-plugin/plugin.json` (where present), its
+  `package.json` (where present), and its marketplace entry from conventional commits,
+  so PR titles must be semantic (`feat(oss): …`, `fix(toolkit): …`; `!` or `BREAKING CHANGE`
+  for breaking). A plugin's config lives in `release-please-config.json`; new plugins need
+  an entry there and in `.release-please-manifest.json` (`scripts/validate.py` checks).
 - All four plugins have `.codex-plugin/plugin.json` and are listed in
-  `.agents/plugins/marketplace.json`. Toolkit exposes Codex-safe skills through
-  `codex-skills/`; its Claude workflow engine and enforcement hooks are not part
-  of Codex. SessionStart combines `instructions/shared.md` with host-specific
-  `instructions/claude.md` or `instructions/codex.md` in common, oss, and toolkit.
+  `.agents/plugins/marketplace.json`. Toolkit exposes host-neutral skills through
+  `host-skills/`; its Claude workflow engine and enforcement hooks are not part
+  of Codex or OpenCode. SessionStart combines `instructions/shared.md` with
+  host-specific `instructions/claude.md`, `instructions/codex.md`, or
+  `instructions/opencode.md` in common, oss, and toolkit.
+- All four plugins are also OpenCode V2 packages: `package.json` maps `"."` to
+  `opencode/index.js`, which exports a plain `{ id, setup }` object (no
+  `@opencode/plugin` import, so no build step). The adapter registers skills and
+  one slash command per skill, injects the shared and `opencode.md` instructions
+  through the model-step `context` hook, and runs the format, TDD, and rebase
+  scripts. OpenCode cannot register agents, so scoped agents stay Claude-only.
 - `python3 -m unittest discover -s tests && python3 scripts/validate.py` before commit.
 - Public repo: no hostnames, IPs, or secret-manager item names.
 - Hook scripts fail open and keep state under `~/.claude/hooks/`, never in the plugin dir.

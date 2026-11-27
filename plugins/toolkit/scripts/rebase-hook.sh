@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Rebase reminder for both hosts; pass codex to use Codex state.
+# Rebase reminder for Claude, Codex, and OpenCode; pass `codex` or `opencode`
+# to use that host's state.
 #   UserPromptSubmit: when the current branch has fallen behind the repo's
 #   default branch, inject a note asking the agent to rebase before continuing.
 #
@@ -14,12 +15,16 @@
 # Off switches:
 #   touch ~/.claude/hooks/toolkit/rebase/paused   — disable for Claude
 #   touch ~/.codex/hooks/toolkit/rebase/paused    — disable for Codex
+#   touch ~/.local/state/opencode/plugins/toolkit/rebase/paused — disable for OpenCode
 #   touch <repo>/.no-rebase-nudge                — disable for one repo
 set -u
 
 INPUT="$(cat 2>/dev/null || true)"
 HOST_STATE="$HOME/.claude/hooks/toolkit/rebase"
-[ "${1:-}" = "codex" ] && HOST_STATE="${CODEX_HOME:-$HOME/.codex}/hooks/toolkit/rebase"
+case "${1:-}" in
+  codex) HOST_STATE="${CODEX_HOME:-$HOME/.codex}/hooks/toolkit/rebase" ;;
+  opencode) HOST_STATE="${XDG_STATE_HOME:-$HOME/.local/state}/opencode/plugins/toolkit/rebase" ;;
+esac
 STATE_DIR="${REBASE_HOOK_STATE_DIR:-$HOST_STATE}"
 FETCH_INTERVAL="${REBASE_HOOK_FETCH_INTERVAL:-900}"
 NAG_INTERVAL="${REBASE_HOOK_NAG_INTERVAL:-1800}"

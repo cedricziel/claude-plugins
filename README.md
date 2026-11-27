@@ -1,6 +1,6 @@
 # claude-plugins
 
-Cedric Ziel's plugin marketplace for [Claude Code](https://docs.claude.com/en/docs/claude-code) and Codex.
+Cedric Ziel's plugin marketplace for [Claude Code](https://docs.claude.com/en/docs/claude-code), Codex, and OpenCode.
 
 ## Install
 
@@ -31,6 +31,44 @@ engine, agents, and enforcement hooks do not run in Codex. `common`, `oss`, and
 `toolkit` include Codex SessionStart instructions; Codex requires the user to
 trust plugin hooks before they run. Codex also receives automatic formatting,
 TDD reminders, and rebase reminders.
+
+### OpenCode
+
+Every plugin is also an [OpenCode V2](https://opencode.ai/docs/) plugin package
+(`package.json` plus `opencode/index.js`). Install the layers you want from Git:
+
+```
+opencode plugin add 'github:cedricziel/claude-plugins#main::path:plugins/common'
+opencode plugin add 'github:cedricziel/claude-plugins#main::path:plugins/oss'
+opencode plugin add 'github:cedricziel/claude-plugins#main::path:plugins/skills'
+opencode plugin add 'github:cedricziel/claude-plugins#main::path:plugins/toolkit'
+```
+
+For a local checkout, point `plugins` in `opencode.json` at the directories
+instead:
+
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugins": [
+    "./claude-plugins/plugins/common",
+    "./claude-plugins/plugins/oss",
+    "./claude-plugins/plugins/skills",
+    "./claude-plugins/plugins/toolkit"
+  ]
+}
+```
+
+OpenCode does not install the layered dependencies automatically either. Add
+`common` when using `oss` or `skills`. Add `common`, `oss`, and `skills` when
+using `toolkit`. Each plugin registers its skills, a slash command for every
+skill, and, where it has them, its shared instructions. `common` also runs the
+auto-format hook; `toolkit` adds TDD and rebase reminders and exposes the
+host-neutral skills from `host-skills/`. The Claude `Workflow` engine,
+workflow-backed skills, and scoped agents do not run in OpenCode. OpenCode
+already discovers project `.claude/skills` and `.agents/skills`, and reads
+`CLAUDE.md` when a directory has no `AGENTS.md`; if both exist, put required
+rules in `AGENTS.md`. Project-local skills and instructions need no adapter.
 
 ## Plugins
 
@@ -63,8 +101,8 @@ Shared building blocks used by `oss` and `toolkit` (and installable on its own).
 
 | Event                      | What it does                                                                                                                                                                                                                                                                                |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PostToolUse` (Edit/Write, Codex `apply_patch`) | Auto-formats edited files (cargo fmt/rustfmt, goimports/gofmt, swiftformat/swift-format, dart, ruff/black, prettier) — fail-open |
-| `SessionStart`             | Injects `instructions/shared.md` plus `instructions/claude.md` or `instructions/codex.md`, depending on the host. Re-injected after compaction. Disable with `COMMON_INSTRUCTIONS_DISABLE=1` |
+| `PostToolUse` (Edit/Write; Codex `apply_patch`; OpenCode `edit`/`write`/`patch`) | Auto-formats edited files (cargo fmt/rustfmt, goimports/gofmt, swiftformat/swift-format, dart, ruff/black, prettier) — fail-open |
+| `SessionStart` (Claude/Codex) or model-step `context` hook (OpenCode) | Injects `instructions/shared.md` plus `instructions/claude.md`, `instructions/codex.md`, or `instructions/opencode.md`, depending on the host. Re-injected after compaction. Disable with `COMMON_INSTRUCTIONS_DISABLE=1` |
 
 ### oss
 
@@ -140,9 +178,9 @@ subagents. Depends on `common@cedricziel`, `oss@cedricziel`, and
 
 | Event                      | What it does                                                                                                                                                   |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SessionStart`             | Injects `instructions/shared.md` plus host-specific guidance. Codex receives compact OpenAI model routing; Claude receives its workflow rules. Disable with `TOOLKIT_INSTRUCTIONS_DISABLE=1` |
-| `PostToolUse` (Edit/Write, Codex `apply_patch`) | Nudges once per file when source changes with no test changed on the branch, and points at `test-strategy`/`writing-tests` on the first test edit. Codex state lives under `${CODEX_HOME:-~/.codex}/hooks/toolkit/tdd`. |
-| `UserPromptSubmit`         | Reminds to rebase when the branch has fallen behind the default branch, on both hosts. Codex keeps reminder state under `${CODEX_HOME:-~/.codex}/hooks/toolkit/rebase`. |
+| `SessionStart` (Claude/Codex) or model-step `context` hook (OpenCode) | Injects `instructions/shared.md` plus host-specific guidance. Codex receives compact OpenAI model routing; Claude receives its workflow rules; OpenCode receives provider-neutral delegation guidance. Disable with `TOOLKIT_INSTRUCTIONS_DISABLE=1` |
+| `PostToolUse` (Edit/Write; Codex `apply_patch`; OpenCode `edit`/`write`/`patch`) | Nudges once per file when source changes with no test changed on the branch, and points at `test-strategy`/`writing-tests` on the first test edit. Claude state lives under `~/.claude/hooks/toolkit/tdd`; Codex under `${CODEX_HOME:-~/.codex}/hooks/toolkit/tdd`; OpenCode under `${XDG_STATE_HOME:-~/.local/state}/opencode/plugins/toolkit/tdd`. |
+| `UserPromptSubmit` (Claude/Codex) or prompt hook (OpenCode) | Reminds to rebase when the branch has fallen behind the default branch, on every host. OpenCode keeps reminder state under `${XDG_STATE_HOME:-~/.local/state}/opencode/plugins/toolkit/rebase`. |
 
 Knobs and off-switches are documented in the headers of `plugins/{common,toolkit}/scripts/*.sh`.
 Disable per repo with `.no-rebase-nudge` / `.no-format-hook` / `.no-tdd-nudge`.
@@ -271,6 +309,7 @@ Inputs: `marketplace`, `repo`, `plugins`, `ref`, `settings-file`, `session-hook`
 python3 -m unittest discover -s tests
 python3 scripts/validate.py
 claude --plugin-dir plugins/toolkit   # local smoke test
+# OpenCode: point `plugins` in opencode.json at plugins/{common,oss,skills,toolkit}
 ```
 
 ## License

@@ -25,7 +25,7 @@ class TddEditCheckTest(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.tmp)
 
-    def edit(self, rel, session="s1", codex=False, patch=None):
+    def edit(self, rel, session="s1", codex=False, patch=None, opencode=False):
         path = self.repo / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(path.read_text() + "y = 2\n" if path.exists() else "y = 2\n")
@@ -38,6 +38,8 @@ class TddEditCheckTest(unittest.TestCase):
             hook = config["hooks"]["PostToolUse"][0]["hooks"][0]
             self.env["PLUGIN_ROOT"] = str(PLUGIN)
             command = ["bash", "-c", hook["command"]]
+        elif opencode:
+            command = ["bash", str(HOOK), "opencode"]
         r = subprocess.run(
             command, input=json.dumps(payload),
             capture_output=True, text=True, env=self.env, cwd=self.repo,
@@ -56,6 +58,13 @@ class TddEditCheckTest(unittest.TestCase):
         del self.env["TDD_STATE_DIR"]
         self.assertIn("writing-tests", self.edit("src/app.py", codex=True))
         self.assertTrue((self.tmp / ".codex/hooks/toolkit/tdd/s1").is_file())
+        self.assertFalse((self.tmp / ".claude").exists())
+
+    def test_opencode_uses_separate_default_state(self):
+        del self.env["TDD_STATE_DIR"]
+        self.assertIn("writing-tests", self.edit("src/app.py", opencode=True))
+        self.assertTrue((self.tmp / ".local/state/opencode/plugins/toolkit/tdd/s1").is_file())
+        self.assertFalse((self.tmp / ".codex").exists())
         self.assertFalse((self.tmp / ".claude").exists())
 
     def test_codex_combines_multifile_reminders_into_one_response(self):
