@@ -21,7 +21,7 @@ def context(plugin, host):
 
 class InstructionBoundaryTest(unittest.TestCase):
     def test_public_dependency_chain_excludes_personal_workflow(self):
-        for host in ("claude", "codex"):
+        for host in ("claude", "codex", "opencode"):
             with self.subTest(host=host):
                 public = context("common", host) + context("oss", host)
                 personal = context("toolkit", host)
@@ -30,11 +30,11 @@ class InstructionBoundaryTest(unittest.TestCase):
                     "micro-commits",
                     "exactly one item in progress",
                 ]
-                markers += (
-                    ["`sonnet`", "`opus`", "/simplify", "oss:technical-writer"]
-                    if host == "claude"
-                    else ["`gpt-6-luna`", "`gpt-6.1-sol`", "`gpt-6-astra`"]
-                )
+                markers += {
+                    "claude": ["`sonnet`", "`opus`", "/simplify", "oss:technical-writer"],
+                    "codex": ["`gpt-6-luna`", "`gpt-6.1-sol`", "`gpt-6-astra`"],
+                    "opencode": ["`gpt-6.2-sol`", "`glm-5.3-flash`", "`grok-4.7`"],
+                }[host]
                 for marker in markers:
                     self.assertNotIn(marker, public, marker)
                     self.assertIn(marker, personal, marker)
