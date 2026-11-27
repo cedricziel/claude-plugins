@@ -116,12 +116,20 @@ Both hosts use `technical-writing` for documentation. Personal model routing
 and mandatory documentation delegation belong to `toolkit`, not `oss` or its
 `common` dependency. Off switch: `OSS_INSTRUCTIONS_DISABLE=1`.
 
+UI edits also run the `ux-design` linter: the four unambiguous slop defects
+(shipped placeholder copy, a `div` acting as a button, a removed focus ring, an
+image without `alt`) are blocked before they land, and the rest arrive as a
+short nudge on the next step. Off switches: `UX_LINT_DISABLE=1` or a
+`.no-ux-lint` file at the repo root.
+
 **Hooks**
 
 | Event                      | What it does                                                                                                                                                                                                                                                                       |
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `SessionStart` (Claude/Codex) or model-step `context` hook (OpenCode) | Injects `instructions/shared.md` plus host-specific guidance. Disable with `OSS_INSTRUCTIONS_DISABLE=1` |
 | `UserPromptSubmit` (Claude/Codex) or prompt hook (OpenCode) | When the branch is at least `STACK_HOOK_MIN_COMMITS` (default 2) commits ahead of the default branch, and a remote is on GitHub, reminds the agent to ship a native stack with `gh stack` (`init`/`add`/`submit`/`link`) per `git-stacked-prs` instead of one oversized PR. Throttled per branch and head commit. Claude state lives under `~/.claude/hooks/oss/stack`; Codex under `${CODEX_HOME:-~/.codex}/hooks/oss/stack`; OpenCode under `${XDG_STATE_HOME:-~/.local/state}/opencode/plugins/oss/stack`. |
+| `PreToolUse` / `PostToolUse` (Claude), `PostToolUse` (Codex), `execute.after` (OpenCode) | Runs the `ux-design` linter on UI edits: blocks the four unambiguous defects (placeholder copy, `div`-as-button, removed focus ring, image without `alt`) before they land, and attaches up to six findings to the next step, once per session. Off: `UX_LINT_DISABLE=1` or `.no-ux-lint`. |
+
 
 **Skills** (loaded automatically when relevant)
 

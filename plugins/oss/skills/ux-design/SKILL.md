@@ -155,6 +155,24 @@ into a full ordered pass with severity.
   documented user research. Missing evidence is a reason to say so, not to
   invent a rule.
 
+## Guardrails
+
+[scripts/ux-lint.py](scripts/ux-lint.py) is the deterministic half of this skill:
+shipped placeholder copy, non-semantic click targets, a removed focus ring,
+images without alt, raw colour beside a real token set, off-scale spacing, and
+marketing vocabulary. It exits 2 on a blocking finding, 0 otherwise.
+
+The oss plugin runs it on every UI edit — `PreToolUse` blocks the four
+unambiguous defects before they land, `PostToolUse` attaches up to six findings
+to the next model step, once per session. Run it by hand with
+`python3 scripts/ux-lint.py --staged`, or check one file with
+`python3 scripts/ux-lint.py src/Hero.tsx`. Off switches: `UX_LINT_DISABLE=1`, a
+`.no-ux-lint` file at the repo root, or `ux-lint-ignore` on the line before a
+finding the project intends.
+
+It is a floor, not a review. It cannot see hierarchy, density, or whether the
+states exist; that is what the checklist and the reference files are for.
+
 ## Sources And Licensing
 
 The references synthesize public guidance from Nielsen Norman Group, the W3C
