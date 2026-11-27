@@ -37,7 +37,8 @@ class RebaseHookTest(unittest.TestCase):
             timeout = hook["timeout"]
         result = subprocess.run(
             command, shell=shell, cwd=self.home, input=json.dumps({"cwd": str(self.repo)}),
-            env={**os.environ, "HOME": str(self.home), "CODEX_HOME": str(self.home / ".codex"), "PLUGIN_ROOT": str(PLUGIN),
+            env={**{k: v for k, v in os.environ.items() if k not in ("XDG_STATE_HOME", "REBASE_HOOK_STATE_DIR")},
+                 "HOME": str(self.home), "CODEX_HOME": str(self.home / ".codex"), "PLUGIN_ROOT": str(PLUGIN),
                  "CLAUDE_PLUGIN_ROOT": str(PLUGIN)},
             capture_output=True, text=True, timeout=timeout,
         )

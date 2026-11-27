@@ -51,11 +51,21 @@ for (const [name, callback] of state.hooks) {
   if (name === "context") await callback({ sessionID: "s1", system: state.system })
 }
 if (state.commands[0]) {
-  await state.commands[0].execute({ sessionID: "s1", prompt: { text: "arg" }, delivery: "steer" })
+  await state.commands[0].execute({
+    sessionID: "s1",
+    prompt: {
+      text: "arg",
+      files: [{ uri: "file:///tmp/example.png", mention: { start: 0, end: 3, text: "arg" } }],
+      agents: [{ name: "reviewer", mention: { start: 0, end: 3, text: "arg" } }],
+      skills: [{ id: "review", mention: { start: 0, end: 3, text: "arg" } }],
+    },
+    delivery: "steer",
+  })
 }
 console.log(JSON.stringify({
   id: plugin.id,
   skills: state.skills.map((skill) => skill.id),
+  skillMeta: state.skills.map(({ id, description, autoinvoke }) => ({ id, description, autoinvoke })),
   commands: state.commands.map((command) => command.name),
   hooks: state.hooks.map(([name]) => name),
   system: state.system.map((part) => part.text).join("\n"),
@@ -96,6 +106,14 @@ class OpenCodePluginTest(unittest.TestCase):
         self.assertIn("execute.after", data["hooks"])
         self.assertIn("Load the `", data["prompts"][0]["text"])
         self.assertIn("arg", data["prompts"][0]["text"])
+        self.assertEqual(data["prompts"][0]["files"], [{"uri": "file:///tmp/example.png"}])
+        self.assertEqual(data["prompts"][0]["agents"], [{"name": "reviewer"}])
+        self.assertEqual(data["prompts"][0]["skills"], [{"id": "review"}])
+        strategy = next(item for item in data["skillMeta"] if item["id"] == "test-strategy")
+        self.assertIn("Deciding what deserves a test", strategy["description"])
+        for item in data["skillMeta"]:
+            self.assertTrue(item["description"], item["id"])
+            self.assertNotEqual(item["description"], ">", item["id"])
 
     def test_oss_registers_skills_and_instructions(self):
         data = self.load("oss")
@@ -104,12 +122,24 @@ class OpenCodePluginTest(unittest.TestCase):
         self.assertIn("technical-writing", data["skills"])
         self.assertIn("semantic commits", data["system"])
         self.assertNotIn("execute.after", data["hooks"])
+        stacked = next(item for item in data["skillMeta"] if item["id"] == "git-stacked-prs")
+        self.assertIn("stack of reviewable PRs", stacked["description"])
+        no_comments = next(item for item in data["skillMeta"] if item["id"] == "no-comments")
+        self.assertFalse(no_comments["autoinvoke"])
+        package = json.loads((ROOT / "plugins" / "oss" / "package.json").read_text())
+        self.assertIn("agents/comment-sicko.md", package["files"])
+        for item in data["skillMeta"]:
+            self.assertTrue(item["description"], item["id"])
+            self.assertNotEqual(item["description"], ">", item["id"])
 
     def test_skills_registers_only_skills(self):
         data = self.load("skills")
         self.assertEqual(data["id"], "cedricziel.skills")
         for skill in ("coderabbit", "forgejo-cli", "pangolin-api", "dashboarding", "openspec-doctor"):
             self.assertIn(skill, data["skills"])
+        for item in data["skillMeta"]:
+            self.assertTrue(item["description"], item["id"])
+            self.assertNotEqual(item["description"], ">", item["id"])
         self.assertEqual(data["system"], "")
         self.assertEqual(data["hooks"], [])
 
@@ -123,6 +153,9 @@ class OpenCodePluginTest(unittest.TestCase):
         self.assertIn(str(self.tmp / "state" / "opencode" / "plugins" / "toolkit"), data["system"])
         self.assertIn("prompt", data["hooks"])
         self.assertIn("execute.after", data["hooks"])
+        for item in data["skillMeta"]:
+            self.assertTrue(item["description"], item["id"])
+            self.assertNotEqual(item["description"], ">", item["id"])
 
 
 if __name__ == "__main__":

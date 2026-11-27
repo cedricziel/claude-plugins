@@ -9,7 +9,8 @@
   "files": [
     "opencode",
     "skills",
-    "instructions"
+    "instructions",
+    "agents/comment-sicko.md"
   ],
   "license": "MIT",
   "repository": "https://github.com/cedricziel/claude-plugins",

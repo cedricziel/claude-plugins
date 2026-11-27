@@ -240,6 +240,12 @@ class OpenCodeValidateTest(unittest.TestCase):
         self.assertNotEqual(r.returncode, 0)
         self.assertIn("package.json", r.stdout)
 
+    def test_missing_entrypoint_fails(self):
+        (self.plugin / "opencode" / "index.js").unlink()
+        r = run(self.tmp)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("opencode/index.js", r.stdout)
+
     def test_version_must_match_marketplace(self):
         package = self.plugin / "package.json"
         data = json.loads(package.read_text())

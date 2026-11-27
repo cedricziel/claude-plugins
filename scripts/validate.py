@@ -95,14 +95,17 @@ def check_workflow(js):
 def check_opencode_plugin(root, entry):
     name = entry.get("name", "?")
     plugin_dir = (root / entry.get("source", "")).resolve()
+    package_path = plugin_dir / "package.json"
     entry_js = plugin_dir / "opencode" / "index.js"
-    if not entry_js.is_file():
+    if not package_path.exists() and not entry_js.exists():
         return
     where = f"plugin '{name}' OpenCode package"
-    package = load_json(plugin_dir / "package.json")
+    package = load_json(package_path)
     if package is None:
         return
     require(package, ("name", "version", "type", "exports"), where)
+    if not entry_js.is_file():
+        err(f"{where}: opencode/index.js is missing")
     if package.get("type") != "module":
         err(f"{where}: package.json type must be 'module'")
     if package.get("version") != entry.get("version"):

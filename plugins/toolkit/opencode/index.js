@@ -31,14 +31,52 @@ function read(relative) {
   }
 }
 
+function fold(lines) {
+  let out = ""
+  for (const line of lines) {
+    if (line === "") out += "\n"
+    else if (out && !out.endsWith("\n")) out += ` ${line}`
+    else out += line
+  }
+  return out.trim()
+}
+
 function frontmatter(text) {
   const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/.exec(text)
   const fields = {}
-  for (const line of match?.[1]?.split(/\r?\n/) ?? []) {
-    const pair = /^([A-Za-z][\w-]*):\s*(.+)$/.exec(line)
-    if (pair) fields[pair[1]] = pair[2].trim().replace(/^["']|["']$/g, "")
+  if (!match) return { fields, body: text }
+  const lines = match[1].split(/\r?\n/)
+  for (let i = 0; i < lines.length; i++) {
+    const pair = /^([A-Za-z][\w-]*):\s*(.*)$/.exec(lines[i])
+    if (!pair) continue
+    const key = pair[1]
+    const value = pair[2].trim()
+    if (value === "" || /^[>|][+-]?$/.test(value)) {
+      const block = []
+      let j = i + 1
+      while (j < lines.length) {
+        const next = lines[j]
+        if (next.trim() === "") {
+          block.push("")
+          j++
+          continue
+        }
+        if (!/^\s+/.test(next)) break
+        block.push(next)
+        j++
+      }
+      if (block.some((line) => line.trim())) {
+        i = j - 1
+        const indents = block.filter((line) => line.trim()).map((line) => line.match(/^\s*/)[0].length)
+        const indent = indents.length ? Math.min(...indents) : 0
+        const cleaned = block.map((line) => line.slice(indent))
+        fields[key] = value.startsWith("|") ? cleaned.join("\n").trim() : fold(cleaned)
+        continue
+      }
+    }
+    fields[key] = value.replace(/^["']|["']$/g, "")
   }
-  return { fields, body: match ? text.slice(match[0].length) : text }
+  return { fields, body: text.slice(match[0].length) }
 }
 
 function discoverSkills(directories) {
@@ -59,13 +97,15 @@ function discoverSkills(directories) {
         continue
       }
       const { fields, body } = frontmatter(fs.readFileSync(file, "utf8"))
-      skills.push({
+      const skill = {
         id: entry.name,
         name: fields.name || entry.name,
         description: fields.description,
         path: file,
         content: body,
-      })
+      }
+      if (/^(true|yes|1)$/i.test(fields["disable-model-invocation"] ?? "")) skill.autoinvoke = false
+      skills.push(skill)
     }
   }
   return skills
@@ -93,6 +133,7 @@ function additionalContext(stdout) {
 }
 
 function withFile(event, directory) {
+  if (!["edit", "write", "patch"].includes(event.tool)) return undefined
   const input = event.input
   if (!input || typeof input !== "object") return undefined
   if (event.tool === "patch") {
@@ -109,6 +150,20 @@ function withFile(event, directory) {
     cwd: directory,
     tool_input: { file_path: path.resolve(directory, file) },
   }
+}
+
+function commandPrompt(prompt, sessionID, delivery, skillID) {
+  const arguments_ = prompt.text?.trim() ?? ""
+  const next = {
+    ...prompt,
+    sessionID,
+    delivery,
+    text: `Load the \`${skillID}\` skill with the skill tool, then follow it.${arguments_ ? `\n\n${arguments_}` : ""}`,
+  }
+  for (const key of ["files", "agents", "skills"]) {
+    if (Array.isArray(next[key])) next[key] = next[key].map(({ mention, ...item }) => item)
+  }
+  return next
 }
 
 async function register(ctx) {
@@ -134,12 +189,7 @@ async function register(ctx) {
           name: skill.id,
           description: skill.description,
           execute: async ({ sessionID, prompt, delivery }) => {
-            const arguments_ = prompt.text?.trim() ?? ""
-            await ctx.session.prompt({
-              sessionID,
-              delivery,
-              text: `Load the \`${skill.id}\` skill with the skill tool, then follow it.${arguments_ ? `\n\n${arguments_}` : ""}`,
-            })
+            await ctx.session.prompt(commandPrompt(prompt, sessionID, delivery, skill.id))
           },
         })
       } catch {
@@ -193,7 +243,9 @@ export default {
       if (event.status !== "completed") return
       const payload = withFile(event, ctx.location.directory)
       if (!payload) return
-      const output = await run("tdd-hook.sh", payload, { TDD_STATE_DIR: path.join(dataDir, "tdd") })
+      const output = await run("tdd-hook.sh", { ...payload, session_id: event.sessionID }, {
+        TDD_STATE_DIR: path.join(dataDir, "tdd"),
+      })
       remember(event.sessionID, additionalContext(output))
     })
 

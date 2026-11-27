@@ -59,15 +59,16 @@ instead:
 }
 ```
 
-OpenCode does not install the layered dependencies automatically either, so add
-`common` explicitly when using `oss`, `skills`, or `toolkit`. Each plugin
-registers its skills, a slash command for every skill, and, where it has them,
-its shared instructions. `common` also runs the auto-format hook; `toolkit` adds
-TDD and rebase reminders and exposes the host-neutral skills from `host-skills/`.
-The Claude `Workflow` engine, workflow-backed skills, and scoped agents do not
-run in OpenCode. OpenCode already discovers project `.claude/skills`,
-`.agents/skills`, and `CLAUDE.md`, so project-local skills and instructions need
-no adapter.
+OpenCode does not install the layered dependencies automatically either. Add
+`common` when using `oss` or `skills`. Add `common`, `oss`, and `skills` when
+using `toolkit`. Each plugin registers its skills, a slash command for every
+skill, and, where it has them, its shared instructions. `common` also runs the
+auto-format hook; `toolkit` adds TDD and rebase reminders and exposes the
+host-neutral skills from `host-skills/`. The Claude `Workflow` engine,
+workflow-backed skills, and scoped agents do not run in OpenCode. OpenCode
+already discovers project `.claude/skills` and `.agents/skills`, and reads
+`CLAUDE.md` when a directory has no `AGENTS.md`; if both exist, put required
+rules in `AGENTS.md`. Project-local skills and instructions need no adapter.
 
 ## Plugins
 
