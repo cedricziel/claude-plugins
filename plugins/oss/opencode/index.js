@@ -9,13 +9,19 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)))
+const disabled = (name) => process.env[name] === "1"
 const dataDir = path.join(
   process.env.XDG_STATE_HOME || path.join(os.homedir(), ".local", "state"),
   "opencode",
   "plugins",
   "oss",
 )
-const disabled = (name) => process.env[name] === "1"
+const pending = new Map()
+
+function remember(sessionID, text) {
+  if (!text) return
+  pending.set(sessionID, [...(pending.get(sessionID) ?? []), text])
+}
 
 function read(relative) {
   try {
@@ -105,11 +111,11 @@ function discoverSkills(directories) {
   return skills
 }
 
-function run(script, payload, env = {}) {
+function run(script, payload, env = {}, args = []) {
   return new Promise((resolve) => {
     const child = execFile(
       "bash",
-      [path.join(root, "scripts", script)],
+      [path.join(root, "scripts", script), ...args],
       { env: { ...process.env, ...env }, timeout: 60_000, maxBuffer: 1024 * 1024 },
       (error, stdout) => resolve(error ? "" : stdout),
     )
@@ -173,6 +179,31 @@ async function register(ctx) {
   })
 }
 
+function withFile(event, directory) {
+  if (!["edit", "write", "patch"].includes(event.tool)) return undefined
+  const input = event.input
+  if (!input || typeof input !== "object") return undefined
+  if (event.tool === "patch") {
+    return { tool_name: "apply_patch", cwd: directory, tool_input: { command: input.patchText ?? "" } }
+  }
+  const file = input.path ?? input.filePath ?? input.file_path
+  if (typeof file !== "string" || !file) return undefined
+  return { tool_name: "Edit", cwd: directory, tool_input: { file_path: path.resolve(directory, file) } }
+}
+
+async function lintEdits(ctx) {
+  if (disabled("UX_LINT_DISABLE")) return
+  await ctx.tool.hook("execute.after", async (event) => {
+    if (event.status !== "completed") return
+    const payload = withFile(event, ctx.location.directory)
+    if (!payload) return
+    const output = await run("ux-nudge.sh", { ...payload, session_id: event.sessionID }, {
+      UX_LINT_STATE_DIR: path.join(dataDir, "ux"),
+    }, ["advise", "opencode"])
+    remember(event.sessionID, additionalContext(output))
+  })
+}
+
 async function injectInstructions(ctx) {
   if (disabled("OSS_INSTRUCTIONS_DISABLE")) return
   const body = ["instructions/shared.md", "instructions/opencode.md"].map(read).filter(Boolean).join("\n").trim()
@@ -186,10 +217,9 @@ async function injectInstructions(ctx) {
 export default {
   id: "cedricziel.oss",
   async setup(ctx) {
-    const pending = new Map()
-
     await register(ctx)
     await injectInstructions(ctx)
+    await lintEdits(ctx)
 
     await ctx.session.hook("context", (event) => {
       const notes = pending.get(event.sessionID)
@@ -204,11 +234,7 @@ export default {
         { cwd: ctx.location.directory },
         { STACK_HOOK_STATE_DIR: path.join(dataDir, "stack") },
       )
-      const note = additionalContext(output)
-      if (!note) return
-      const notes = pending.get(event.sessionID) ?? []
-      notes.push(note)
-      pending.set(event.sessionID, notes)
+      remember(event.sessionID, additionalContext(output))
     })
   },
 }
