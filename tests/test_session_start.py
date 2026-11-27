@@ -42,6 +42,9 @@ class SessionStartTest(unittest.TestCase):
         ctx = json.loads(r.stdout)["hookSpecificOutput"]["additionalContext"]
         self.assertIn("Caveman Compression", ctx)
         self.assertIn("OpenCode's models", ctx)
+        self.assertIn("`gpt-6.2-sol`", ctx)
+        self.assertIn("`glm-5.3-flash`", ctx)
+        self.assertIn("`grok-4.7`", ctx)
         self.assertNotIn("{{FLEET_BRIEF}}", ctx)
         self.assertNotIn("context7", ctx)
 

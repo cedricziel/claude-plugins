@@ -195,7 +195,7 @@ subagents. Depends on `common@cedricziel`, `oss@cedricziel`, and
 
 | Event                      | What it does                                                                                                                                                   |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SessionStart` (Claude/Codex) or model-step `context` hook (OpenCode) | Injects `instructions/shared.md` plus host-specific guidance. Codex receives compact OpenAI model routing; Claude receives its workflow rules; OpenCode receives provider-neutral delegation guidance. Disable with `TOOLKIT_INSTRUCTIONS_DISABLE=1` |
+| `SessionStart` (Claude/Codex) or model-step `context` hook (OpenCode) | Injects `instructions/shared.md` plus host-specific guidance. Codex receives compact OpenAI model routing; Claude receives its workflow rules; OpenCode receives Zen and Go model routing. Disable with `TOOLKIT_INSTRUCTIONS_DISABLE=1` |
 | `PostToolUse` (Edit/Write; Codex `apply_patch`; OpenCode `edit`/`write`/`patch`) | Nudges once per file when source changes with no test changed on the branch, and points at `test-strategy`/`writing-tests` on the first test edit. Claude state lives under `~/.claude/hooks/toolkit/tdd`; Codex under `${CODEX_HOME:-~/.codex}/hooks/toolkit/tdd`; OpenCode under `${XDG_STATE_HOME:-~/.local/state}/opencode/plugins/toolkit/tdd`. |
 | `UserPromptSubmit` (Claude/Codex) or prompt hook (OpenCode) | Reminds to rebase when the branch has fallen behind the default branch, on every host. OpenCode keeps reminder state under `${XDG_STATE_HOME:-~/.local/state}/opencode/plugins/toolkit/rebase`. |
 
