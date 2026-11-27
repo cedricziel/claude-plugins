@@ -5,8 +5,9 @@
 #   the default branch, ask the agent to ship a GitHub native stack (`gh stack`)
 #   instead of one oversized PR or a hand-rolled chain.
 #
-# No-ops silently outside git repos, on the default branch, in detached HEAD,
-# while a rebase/merge/bisect is in progress, and below the commit threshold.
+# No-ops silently outside git repos, when no remote is on GitHub (the stack
+# workflow is GitHub-specific), on the default branch, in detached HEAD, while
+# a rebase/merge/bisect is in progress, and below the commit threshold.
 #
 # Knobs (env):
 #   STACK_HOOK_BASE            base branch name (default: auto-detected, e.g. main)
@@ -58,6 +59,17 @@ done
 
 BRANCH="$(git symbolic-ref --quiet --short HEAD 2>/dev/null)" || exit 0
 [ -n "$BRANCH" ] || exit 0
+
+# `gh stack` only exists on GitHub; stay quiet on GitLab, Forgejo, and friends.
+REMOTE="$(git remote get-url origin 2>/dev/null || true)"
+if [ -z "$REMOTE" ]; then
+  FIRST_REMOTE="$(git remote 2>/dev/null | head -n 1)"
+  [ -n "$FIRST_REMOTE" ] && REMOTE="$(git remote get-url "$FIRST_REMOTE" 2>/dev/null || true)"
+fi
+case "$REMOTE" in
+  *github*) ;;
+  *) exit 0 ;;
+esac
 
 # ---- resolve the base branch ----
 BASE="${STACK_HOOK_BASE:-}"

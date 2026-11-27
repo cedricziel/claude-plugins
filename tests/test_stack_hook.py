@@ -22,6 +22,7 @@ class StackHookTest(unittest.TestCase):
         (self.repo / "file.txt").write_text("base\n")
         git(self.repo, "add", ".")
         git(self.repo, "commit", "-q", "-m", "base")
+        git(self.repo, "remote", "add", "origin", "git@github.com:example/repo.git")
         git(self.repo, "checkout", "-q", "-b", "stack")
         self.commit("one")
         self.commit("two")
@@ -103,6 +104,18 @@ class StackHookTest(unittest.TestCase):
         self.commit("only")
         output = json.loads(self.run_hook(extra_env={"STACK_HOOK_MIN_COMMITS": "1"}))["hookSpecificOutput"]
         self.assertIn("1 commit(s) ahead", output["additionalContext"])
+
+    def test_quiet_on_non_github_remotes(self):
+        git(self.repo, "remote", "set-url", "origin", "git@gitlab.com:example/repo.git")
+        self.assertEqual(self.run_hook(), "")
+
+    def test_quiet_without_a_remote(self):
+        git(self.repo, "remote", "remove", "origin")
+        self.assertEqual(self.run_hook(), "")
+
+    def test_falls_back_to_the_first_remote_when_origin_is_missing(self):
+        git(self.repo, "remote", "rename", "origin", "upstream")
+        self.assertIn("additionalContext", self.run_hook())
 
     def test_quiet_during_a_merge(self):
         (self.repo / ".git" / "MERGE_HEAD").write_text("deadbeef\n")
